@@ -6,16 +6,27 @@ export class Scratch {
     this.activeBlock = null
   }
 
-  getBlocks() {
-    return this.blocks.filter((b) => !b.isRelative)
+  findComponent(blockId, componentId) {
+    const block = this.blocks.find((b) => b.id == blockId)
+    if (!block) return null
+
+    return block.template.components.find((c) => c.id == componentId)
   }
 
-  addBlock(block) {
-    this.blocks.push(block)
+  getBlocks() {
+    return this.blocks.filter((b) => !b.isChild())
   }
 
   setActiveBlock(block) {
     this.activeBlock = block
+  }
+
+  addBlock(block) {
+    if (!block.scratch) {
+      block.scratch = this
+    }
+
+    this.blocks.push(block)
   }
 
   removeBlock(block) {

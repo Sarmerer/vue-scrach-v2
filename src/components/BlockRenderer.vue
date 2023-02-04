@@ -2,11 +2,13 @@
   <div
     :id="block.id"
     class="scratch__block"
-    :class="{ relative, active: block.isActive }"
+    :class="{ relative, stacked, active: block.isActive }"
     :style="{ transform }"
     @mousedown.stop="block.dragStart($event)"
   >
-    <Dropzone v-bind="{ block, type: 'before' }" />
+    <slot name="top-dropzone">
+      <Dropzone v-bind="{ block, type: 'before' }" />
+    </slot>
 
     <component
       v-for="(component, index) of block.template.components"
@@ -15,7 +17,9 @@
       v-bind="{ block, component }"
     ></component>
 
-    <Dropzone v-bind="{ block, type: 'after' }" />
+    <slot name="bottom-dropzone">
+      <Dropzone v-bind="{ block, type: 'after' }" />
+    </slot>
   </div>
 </template>
 
@@ -40,6 +44,11 @@ export default {
       type: Boolean,
       default: false,
     },
+
+    stacked: {
+      type: Boolean,
+      default: false,
+    },
   },
 
   components: {
@@ -51,7 +60,7 @@ export default {
 
   computed: {
     transform() {
-      if (this.block.isRelative) return null
+      if (this.block.isChild()) return null
 
       return `translate(${this.block.x}px, ${this.block.y}px)`
     },
@@ -67,6 +76,10 @@ export default {
 
   &.relative {
     position: relative;
+  }
+
+  &.stacked {
+    margin-top: 5px;
   }
 
   &.active {

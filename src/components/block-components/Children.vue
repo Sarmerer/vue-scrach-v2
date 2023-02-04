@@ -3,13 +3,24 @@
     <div class="block__children__bar" :style="componentStyle"></div>
     <div class="block__children__container" :class="{ empty: isEmpty }">
       <BlockRenderer
-        v-for="child in children"
-        :key="child.id"
+        v-for="(child, index) in children"
+        :key="`block-${child.id}`"
         :block="child"
         relative
-      />
+      >
+        <template #top-dropzone>
+          <Dropzone
+            :key="`dropzone-${child.id}`"
+            v-bind="{ block, component, index, type: 'child' }"
+          />
+        </template>
 
-      <Dropzone v-if="isEmpty" v-bind="{ block, component, type: 'child' }" />
+        <template #bottom-dropzone>
+          <span></span>
+        </template>
+      </BlockRenderer>
+
+      <Dropzone v-bind="{ block, component, type: 'child' }" />
     </div>
   </div>
 </template>

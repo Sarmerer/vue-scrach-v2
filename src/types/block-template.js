@@ -20,8 +20,8 @@ export class BlockTemplate {
     return this
   }
 
-  header(text) {
-    this.components.push(new BlockComponent('Header', { text }))
+  header(text, inputs) {
+    this.components.push(new BlockComponent('Header', { text, inputs }))
     return this
   }
 
@@ -30,8 +30,8 @@ export class BlockTemplate {
     return this
   }
 
-  footer() {
-    this.components.push(new BlockComponent('Footer'))
+  footer(inputs) {
+    this.components.push(new BlockComponent('Footer', { inputs }))
     return this
   }
 

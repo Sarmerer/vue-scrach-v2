@@ -20,8 +20,9 @@ export default {
       type: String,
     },
 
-    target: {
-      default: null,
+    index: {
+      type: Number,
+      default: -1,
     },
   },
 
@@ -29,8 +30,7 @@ export default {
     isShown() {
       return (
         this.scratch.activeBlock &&
-        this.scratch.activeBlock.id !== this.block.id &&
-        this.scratch.activeBlock.id !== this.block.childOf
+        !this.block.isRelatedTo(this.scratch.activeBlock)
       )
     },
   },
@@ -40,14 +40,18 @@ export default {
       const block = this.scratch.activeBlock
       if (!block) return
 
-      block.setTarget(this.type, this.block, this.component)
+      block.target.set(this.type, {
+        block: this.block,
+        component: this.component,
+        index: this.index,
+      })
     },
 
     clearTarget() {
       const block = this.scratch.activeBlock
       if (!block) return
 
-      block.setTarget(null, null)
+      block.target.reset()
     },
   },
 }

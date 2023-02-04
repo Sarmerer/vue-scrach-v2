@@ -1,5 +1,5 @@
 <template>
-  <div class="scratch">
+  <div class="scratch" @contextmenu.prevent="spawnBlock">
     <BlockRenderer
       v-for="block of scratch.getBlocks()"
       :key="block.id"
@@ -13,6 +13,7 @@ import { mapState } from 'vuex'
 
 import BlockRenderer from './BlockRenderer.vue'
 import { Block } from '../types/block'
+import { BlockInput } from '../types/block-input'
 
 export default {
   name: 'Scratch',
@@ -24,19 +25,26 @@ export default {
   },
 
   mounted() {
-    const block = new Block()
-    block.template
-      .header('Sample Header')
-      .children()
-      .footer()
-      .children()
-      .footer()
+    const b1 = new Block()
+    b1.template.header('function').children().footer().backgroundColor('purple')
+    this.scratch.addBlock(b1)
+  },
 
-    const block2 = new Block()
-    block2.template.header('Block2').backgroundColor('orange')
+  methods: {
+    spawnBlock(event) {
+      const block = new Block(null, event.clientX, event.clientY)
+      block.template
+        .header('Sample Header ' + this.scratch.blocks.length, [
+          new BlockInput(0, { label: 'input' }),
+        ])
+        .children()
+        .footer()
+        .children()
+        .footer()
+        .backgroundColor('orange')
 
-    this.scratch.addBlock(block)
-    this.scratch.addBlock(block2)
+      this.scratch.addBlock(block)
+    },
   },
 }
 </script>

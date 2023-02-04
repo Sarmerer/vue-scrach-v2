@@ -1,25 +1,32 @@
 import { BlockTemplate } from './block-template'
-import store from '../store'
+import { BlockTarget } from './block-target'
+import { Scratch } from './scratch'
 import { uuidv4 } from '../utils'
 
 export class Block {
-  constructor() {
+  /**
+   * @param {Scratch} scratch
+   * @param {Number} x
+   * @param {Number} y
+   */
+  constructor(scratch, x = 0, y = 0) {
+    this.scratch = scratch
+
     this.id = uuidv4()
 
-    this.x = 0
-    this.y = 0
+    this.x = x
+    this.y = y
     this.offsetX = 0
     this.offsetY = 0
-    this.targetType = null
-    this.targetBlock = null
-    this.targetComponent = null
-
-    this.blockAfter = null
-    this.childOf = null
+    this.target = new BlockTarget()
 
     this.isActive = false
     this.isFrozen = false
-    this.isRelative = false
+
+    this.childOf = {
+      block: null,
+      component: null,
+    }
 
     this.template = new BlockTemplate()
 
@@ -29,51 +36,30 @@ export class Block {
     }
   }
 
-  get scratch() {
-    return store.state.scratch
+  isChild() {
+    return this.childOf.block || this.childOf.component
   }
 
-  setTarget(type, block, component) {
-    this.targetType = type
-    this.targetBlock = block
-    this.targetComponent = component
+  isRelatedTo(block) {
+    return this.id == block.id || this.childOf == block.id
   }
 
-  resolveTarget() {
-    switch (this.targetType) {
-      case 'child':
-        this.targetComponent.children.push(this.id)
-        this.childOf = this.targetBlock.id
-        this.isRelative = true
-        break
-      case 'before':
-        this.targetBlock.isRelative = true
-        this.isRelative = false
-        this.blockAfter = this.targetBlock.id
-        break
-      case 'after':
-        this.isRelative = true
-        this.targetBlock.blockAfter = this.id
-        break
-      default:
-        break
+  setChildOf(block, component) {
+    this.childOf = {
+      block: block?.id || null,
+      component: component?.id || null,
     }
-
-    this.targetType = null
-    this.target = null
   }
 
   dragStart(event) {
-    if (this.isFrozen) return
+    if (this.isFrozen || this.isActive) return
 
-    if (this.isRelative) {
+    if (this.isChild()) {
       const el = document.getElementById(this.id)
       const { x, y } = el.getBoundingClientRect()
       this.x = x
       this.y = y
-      this.isRelative = false
-      this.childOf = null
-      this.blockAfter = null
+      this.detach()
     }
 
     this.offsetX = this.x - event.clientX
@@ -101,9 +87,40 @@ export class Block {
 
     window.removeEventListener('mousemove', this.listeners.drag)
 
-    this.resolveTarget()
+    switch (this.target.type) {
+      case 'child':
+        this.attachToBlockComponent(
+          this.target.block,
+          this.target.component,
+          this.target.index
+        )
+        break
+      case 'before':
+        // this.attachToRootComponent(this.target.component, this.target.index)
+        break
+      case 'after':
+        // this.attachToRootComponent(this.target.component, this.target.index)
+        break
+      default:
+        this.detach()
+        break
+    }
 
     this.isActive = false
     this.scratch.setActiveBlock(null)
+    this.target.reset()
+  }
+
+  detach() {
+    if (!this.childOf) return
+
+    const component = this.scratch.findComponent(
+      this.childOf.block,
+      this.childOf.component
+    )
+    this.setChildOf(null, null)
+    if (!component) return
+
+    component.removeChild(this)
   }
 }
