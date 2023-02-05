@@ -2,6 +2,7 @@ import { BlockTarget } from './block-target'
 import { Scratch } from './scratch'
 import {
   BlockDummyInput,
+  BlockInput,
   BlockStatementInput,
   BlockValueInput,
 } from './block-input'
@@ -45,10 +46,12 @@ export class Block {
     }
   }
 
+  /** @returns {Boolean} */
   isRelative() {
     return this.prevBlock || this.inputOf || this.firstStatementOf
   }
 
+  /** @returns {Boolean} */
   isActive() {
     return (
       this.isDragged ||
@@ -58,6 +61,7 @@ export class Block {
     )
   }
 
+  /** @returns {Array<Array<BlockInput>>} */
   getInputGroups() {
     return this.inputs.reduce((acc, input) => {
       if (input.group > acc.length - 1) acc.push([])
@@ -66,6 +70,7 @@ export class Block {
     }, [])
   }
 
+  /** @returns {Block} */
   getHead() {
     if (this.prevBlock) {
       return this.prevBlock.getHead()
@@ -74,6 +79,7 @@ export class Block {
     return this
   }
 
+  /** @returns {Block} */
   getTail() {
     if (this.nextBlock) {
       return this.nextBlock.getTail()
@@ -176,6 +182,7 @@ export class Block {
     this.detachNext()
   }
 
+  /** @param {MouseEvent} event */
   dragStart(event) {
     if (this.isDragged) return
 
@@ -199,6 +206,7 @@ export class Block {
     window.addEventListener('mouseup', this.listeners.dragEnd, { once: true })
   }
 
+  /** @param {MouseEvent} event */
   drag(event) {
     if (!this.isDragged) return
 
@@ -231,24 +239,28 @@ export class Block {
     this.target.reset()
   }
 
+  /** @returns {BlockDummyInput} */
   addValueInput() {
     const input = new BlockValueInput(this)
     this.inputs.push(input)
     return input
   }
 
+  /** @returns {BlockDummyInput} */
   addDummyInput() {
     const input = new BlockDummyInput(this)
     this.inputs.push(input)
     return input
   }
 
+  /** @returns {BlockDummyInput} */
   addStatementInput() {
     const input = new BlockStatementInput(this)
     this.inputs.push(input)
     return input
   }
 
+  /** @returns {Block} */
   allowOutput() {
     this.hasOutput = true
     this.hasNext = false
@@ -256,28 +268,35 @@ export class Block {
     return this
   }
 
+  /** @returns {Block} */
   allowPrev() {
     this.hasPrev = true
     this.hasOutput = false
     return this
   }
 
+  /** @returns {Block} */
   allowNext() {
     this.hasNext = true
     this.hasOutput = false
     return this
   }
 
+  /** @returns {Block} */
   setBackgroundColor(cssColor) {
     this.colors.background = cssColor
     return this
   }
 
+  /**
+   * @returns {Block}
+   */
   setTextColor(cssColor) {
     this.colors.text = cssColor
     return this
   }
 
+  /** @returns {Block} */
   clearInputs() {
     this.inputs = []
     return this

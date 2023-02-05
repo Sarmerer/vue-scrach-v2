@@ -1,6 +1,11 @@
 import { uuidv4 } from '../utils'
+import { Block } from './block'
 
 export class BlockField {
+  /**
+   * @param {'TextField'} type
+   * @param {String} label
+   */
   constructor(type, label = '') {
     this.type = type
     this.value = null
@@ -9,6 +14,10 @@ export class BlockField {
 }
 
 export class BlockInput {
+  /**
+   * @param {Block} block
+   * @param {'Value' | 'Dummy' | 'Statement'} type
+   */
   constructor(block, type) {
     this.id = uuidv4()
     this.block = block
@@ -24,24 +33,32 @@ export class BlockInput {
     }
   }
 
+  /**
+   * @param {String} label
+   * @returns {BlockInput}
+   */
   addTextField(label) {
     this.fields.push(new BlockField('TextField', label))
     return this
   }
 
+  /** @returns {Boolean} */
   isFirst() {
     return this.index == 0
   }
 
+  /** @returns {Boolean} */
   isLast() {
     return this.index >= this.block.inputs.length - 1
   }
 
+  /** @returns {BlockInput | null} */
   getPrev() {
     if (this.isFirst()) return null
     return this.block.inputs[this.index - 1]
   }
 
+  /** @returns {BlockInput | null} */
   getNext() {
     if (this.isLast()) return null
     return this.block.inputs[this.index + 1]
@@ -49,12 +66,14 @@ export class BlockInput {
 }
 
 export class BlockValueInput extends BlockInput {
+  /** @param {Block} block */
   constructor(block) {
     super(block, 'Value')
   }
 }
 
 export class BlockStatementInput extends BlockInput {
+  /** @param {Block} block */
   constructor(block) {
     super(block, 'Statement')
     this.group++
@@ -62,6 +81,7 @@ export class BlockStatementInput extends BlockInput {
 }
 
 export class BlockDummyInput extends BlockInput {
+  /** @param {Block} block */
   constructor(block) {
     super(block, 'Dummy')
   }

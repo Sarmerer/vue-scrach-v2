@@ -14,6 +14,7 @@ export class BlockTarget {
    * @param {Object} target
    * @param {BlockInput} target.input
    * @param {Block} target.block
+   * @param {Number} target.index
    */
   set(type, target = {}) {
     target = Object.assign(

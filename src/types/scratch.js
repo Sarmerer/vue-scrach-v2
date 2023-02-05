@@ -1,3 +1,5 @@
+import { Block } from './block'
+
 export class Scratch {
   constructor() {
     this.blocks = []
@@ -6,14 +8,17 @@ export class Scratch {
     this.activeBlock = null
   }
 
+  /** @returns {Array<Block>} */
   getBlocks() {
     return this.blocks.filter((b) => !b.isRelative())
   }
 
+  /** @param {Block} block */
   setActiveBlock(block) {
     this.activeBlock = block
   }
 
+  /** @param {Block} block */
   addBlock(block) {
     if (!block.scratch) {
       block.scratch = this
@@ -22,6 +27,7 @@ export class Scratch {
     this.blocks.push(block)
   }
 
+  /** @param {Block} block */
   removeBlock(block) {
     if (!block) return
 
