@@ -6,7 +6,6 @@ import TextField from '../block-fields/Text.vue'
 export const props = {
   block: { type: Block, required: true },
   input: { type: BlockInput, required: true },
-  index: Number,
 }
 
 export const components = { TextField }
@@ -18,22 +17,6 @@ export const computed = {
 
   fields() {
     return this.input.fields
-  },
-
-  isFirstInput() {
-    return this.index == 0
-  },
-
-  isLastInput() {
-    return this.index == this.block.inputs.length - 1
-  },
-
-  prevInput() {
-    if (this.index == 0) {
-      return null
-    }
-
-    return this.block.inputs[this.index - 1]
   },
 
   nextInput() {
@@ -54,11 +37,11 @@ export const computed = {
 
 export const methods = {
   nextInputIs(type) {
-    return this.nextInput?.type == type
+    return this.input.getNext()?.type == type
   },
 
   prevInputIs(type) {
-    return this.prevInput?.type == type
+    return this.input.getPrev()?.type == type
   },
 }
 

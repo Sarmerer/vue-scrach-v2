@@ -12,12 +12,18 @@
       :class="{ absolute: !isRelative }"
     />
 
-    <component
-      v-for="(input, index) of block.inputs"
+    <div
+      v-for="(group, index) of block.getInputGroups()"
       :key="index"
-      :is="input.type"
-      v-bind="{ block, input, index }"
-    ></component>
+      class="scratch__block__inputs-group"
+    >
+      <component
+        v-for="input of group"
+        :key="input.id"
+        :is="input.type"
+        v-bind="{ block, input }"
+      ></component>
+    </div>
 
     <Dropzone
       v-if="block.hasNext && !nextBlock"
@@ -90,5 +96,10 @@ export default {
   &.stack-offset {
     margin-top: 3px;
   }
+}
+
+.scratch__block__inputs-group {
+  position: relative;
+  width: fit-content;
 }
 </style>

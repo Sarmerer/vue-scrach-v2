@@ -42,8 +42,8 @@ export default {
 
     classes() {
       return {
-        'block--border-first': this.isFirstInput,
-        'block--border-last': this.isLastInput,
+        'block--border-first': this.input.isFirst(),
+        'block--border-last': this.input.isLast(),
         'block--border-before-statement': this.nextInputIs('Statement'),
         'block--border-after-statement': this.prevInputIs('Statement'),
       }
@@ -61,7 +61,7 @@ export default {
   position: relative;
   min-width: 70px;
   min-height: 20px;
-  width: max-content;
+  width: 100%;
   height: fit-content;
   padding: 7px;
 

@@ -9,7 +9,7 @@
       </div>
     </div>
     <div
-      v-if="isLastInput || nextInputIs('Statement')"
+      v-if="input.isLast() || nextInputIs('Statement')"
       class="block__statement__footer"
       :class="borderClasses"
       :style="style"
@@ -37,7 +37,7 @@ export default {
     },
 
     borderClasses() {
-      return { 'block--border-last': this.isLastInput }
+      return { 'block--border-last': this.input.isLast() }
     },
   },
 }

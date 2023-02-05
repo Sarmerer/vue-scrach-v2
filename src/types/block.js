@@ -58,6 +58,14 @@ export class Block {
     )
   }
 
+  getInputGroups() {
+    return this.inputs.reduce((acc, input) => {
+      if (input.group > acc.length - 1) acc.push([])
+      acc[acc.length - 1].push(input)
+      return acc
+    }, [])
+  }
+
   getHead() {
     if (this.prevBlock) {
       return this.prevBlock.getHead()
@@ -229,14 +237,14 @@ export class Block {
     return input
   }
 
-  addStatementInput() {
-    const input = new BlockStatementInput(this)
+  addDummyInput() {
+    const input = new BlockDummyInput(this)
     this.inputs.push(input)
     return input
   }
 
-  addDummyInput() {
-    const input = new BlockDummyInput(this)
+  addStatementInput() {
+    const input = new BlockStatementInput(this)
     this.inputs.push(input)
     return input
   }
