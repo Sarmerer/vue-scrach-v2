@@ -1,25 +1,25 @@
 import { Block } from './block'
-import { BlockComponent } from './block-component'
+import { BlockInput } from './block-input'
 
 export class BlockTarget {
   constructor() {
     this.type = null
     this.block = null
-    this.component = null
+    this.input = null
     this.index = -1
   }
 
   /**
-   * @param {'child' | 'before' | 'after'} type
+   * @param {'statement' | 'prev' | 'next'} type
    * @param {Object} target
-   * @param {BlockComponent} target.component
+   * @param {BlockInput} target.input
    * @param {Block} target.block
    */
   set(type, target = {}) {
     target = Object.assign(
       {
         block: null,
-        component: null,
+        input: null,
         index: -1,
       },
       target
@@ -27,14 +27,14 @@ export class BlockTarget {
 
     this.type = type
     this.block = target.block
-    this.component = target.component
+    this.input = target.input
     this.index = target.index
   }
 
   reset() {
     this.type = null
     this.block = null
-    this.component = null
+    this.input = null
     this.index = null
   }
 }

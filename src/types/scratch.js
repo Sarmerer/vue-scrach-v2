@@ -6,15 +6,8 @@ export class Scratch {
     this.activeBlock = null
   }
 
-  findComponent(blockId, componentId) {
-    const block = this.blocks.find((b) => b.id == blockId)
-    if (!block) return null
-
-    return block.template.components.find((c) => c.id == componentId)
-  }
-
   getBlocks() {
-    return this.blocks.filter((b) => !b.isChild())
+    return this.blocks.filter((b) => !b.isRelative())
   }
 
   setActiveBlock(block) {

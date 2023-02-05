@@ -1,6 +1,10 @@
-import { BlockTemplate } from './block-template'
 import { BlockTarget } from './block-target'
 import { Scratch } from './scratch'
+import {
+  BlockDummyInput,
+  BlockStatementInput,
+  BlockValueInput,
+} from './block-input'
 import { uuidv4 } from '../utils'
 
 export class Block {
@@ -10,9 +14,8 @@ export class Block {
    * @param {Number} y
    */
   constructor(scratch, x = 0, y = 0) {
-    this.scratch = scratch
-
     this.id = uuidv4()
+    this.scratch = scratch
 
     this.x = x
     this.y = y
@@ -20,15 +23,21 @@ export class Block {
     this.offsetY = 0
     this.target = new BlockTarget()
 
-    this.isActive = false
-    this.isFrozen = false
+    this.isDragged = false
+    this.hasOutput = false
+    this.hasPrev = false
+    this.hasNext = false
 
-    this.childOf = {
-      block: null,
-      component: null,
+    this.firstStatementOf = null
+    this.inputOf = null
+    this.prevBlock = null
+    this.nextBlock = null
+    this.inputs = []
+
+    this.colors = {
+      background: 'cyan',
+      text: 'white',
     }
-
-    this.template = new BlockTemplate()
 
     this.listeners = {
       drag: this.drag.bind(this),
@@ -36,30 +45,137 @@ export class Block {
     }
   }
 
-  isChild() {
-    return this.childOf.block || this.childOf.component
+  isRelative() {
+    return this.prevBlock || this.inputOf || this.firstStatementOf
   }
 
-  isRelatedTo(block) {
-    return this.id == block.id || this.childOf == block.id
+  isActive() {
+    return (
+      this.isDragged ||
+      this.prevBlock?.isActive() ||
+      this.inputOf?.block.isActive() ||
+      this.firstStatementOf?.block.isActive()
+    )
   }
 
-  setChildOf(block, component) {
-    this.childOf = {
-      block: block?.id || null,
-      component: component?.id || null,
+  getHead() {
+    if (this.prevBlock) {
+      return this.prevBlock.getHead()
+    }
+
+    return this
+  }
+
+  getTail() {
+    if (this.nextBlock) {
+      return this.nextBlock.getTail()
+    }
+
+    return this
+  }
+
+  applyToTarget() {
+    switch (this.target.type) {
+      case 'statement':
+        this.setAsOutputStatementOf(this.target.input, this.target.index)
+        break
+      case 'input':
+        this.setAsOutputOf(this.target.input)
+        break
+      case 'prev':
+        this.setNext(this.target.block)
+        break
+      case 'next':
+        this.setPrev(this.target.block)
+        break
+      default:
+        break
     }
   }
 
-  dragStart(event) {
-    if (this.isFrozen || this.isActive) return
+  /**
+   * @param {BlockValueInput} input
+   */
+  setAsOutputOf(input) {
+    if (!this.hasOutput) return
 
-    if (this.isChild()) {
+    this.inputOf = input
+  }
+
+  /**
+   * @param {Block} block
+   */
+  setPrev(block) {
+    if (!this.hasPrev || !block.hasNext) return
+
+    if (block.nextBlock) {
+      const tail = this.getTail()
+      tail.nextBlock = block.nextBlock
+      block.nextBlock.prevBlock = tail
+    }
+
+    this.prevBlock = block
+    block.nextBlock = this
+  }
+
+  /**
+   * @param {Block} block
+   */
+  setNext(block) {
+    if (!this.hasNext || !block.hasPrev) return
+
+    if (block.prevBlock) {
+      block.prevBlock.nextBlock = this
+      this.prevBlock = block.prevBlock
+    }
+
+    if (block.firstStatementOf) {
+      this.firstStatementOf = block.firstStatementOf
+      block.firstStatementOf = null
+    }
+
+    const tail = this.getTail()
+    tail.nextBlock = block
+    block.prevBlock = tail
+  }
+
+  /**
+   * @param {BlockStatementInput} statement
+   */
+  setAsOutputStatementOf(statement) {
+    this.firstStatementOf = statement
+  }
+
+  detachPrev() {
+    if (!this.prevBlock) return
+
+    this.prevBlock.nextBlock = null
+    this.prevBlock = null
+  }
+
+  detachNext() {
+    if (!this.nextBlock) return
+
+    this.nextBlock.prevBlock = null
+    this.nextBlock = null
+  }
+
+  detachAll() {
+    this.firstStatementOf = null
+    this.inputOf = null
+
+    this.detachPrev()
+    this.detachNext()
+  }
+
+  dragStart(event) {
+    if (this.isDragged) return
+
+    if (this.isRelative()) {
       const el = document.getElementById(this.id)
       const { x, y } = el.getBoundingClientRect()
       this.x = x
       this.y = y
-      this.detach()
     }
 
     this.offsetX = this.x - event.clientX
@@ -68,7 +184,7 @@ export class Block {
     this.xBeforeDrag = this.x
     this.yBeforeDrag = this.y
 
-    this.isActive = true
+    this.isDragged = true
     this.scratch.setActiveBlock(this)
 
     window.addEventListener('mousemove', this.listeners.drag)
@@ -76,51 +192,86 @@ export class Block {
   }
 
   drag(event) {
-    if (!this.isActive) return
+    if (!this.isDragged) return
 
-    this.x = event.clientX + this.offsetX
-    this.y = event.clientY + this.offsetY
+    const nextX = event.clientX + this.offsetX
+    const nextY = event.clientY + this.offsetY
+
+    if (this.isRelative()) {
+      const dx = Math.abs(this.xBeforeDrag - nextX)
+      const dy = Math.abs(this.yBeforeDrag - nextY)
+      if (dx < 15 && dy < 15) return
+
+      this.firstStatementOf = null
+      this.inputOf = null
+      this.detachPrev()
+    }
+
+    this.x = nextX
+    this.y = nextY
   }
 
   dragEnd() {
-    if (!this.isActive) return
+    if (!this.isDragged) return
 
     window.removeEventListener('mousemove', this.listeners.drag)
 
-    switch (this.target.type) {
-      case 'child':
-        this.attachToBlockComponent(
-          this.target.block,
-          this.target.component,
-          this.target.index
-        )
-        break
-      case 'before':
-        // this.attachToRootComponent(this.target.component, this.target.index)
-        break
-      case 'after':
-        // this.attachToRootComponent(this.target.component, this.target.index)
-        break
-      default:
-        this.detach()
-        break
-    }
+    this.applyToTarget()
 
-    this.isActive = false
+    this.isDragged = false
     this.scratch.setActiveBlock(null)
     this.target.reset()
   }
 
-  detach() {
-    if (!this.childOf) return
+  addValueInput() {
+    const input = new BlockValueInput(this)
+    this.inputs.push(input)
+    return input
+  }
 
-    const component = this.scratch.findComponent(
-      this.childOf.block,
-      this.childOf.component
-    )
-    this.setChildOf(null, null)
-    if (!component) return
+  addStatementInput() {
+    const input = new BlockStatementInput(this)
+    this.inputs.push(input)
+    return input
+  }
 
-    component.removeChild(this)
+  addDummyInput() {
+    const input = new BlockDummyInput(this)
+    this.inputs.push(input)
+    return input
+  }
+
+  allowOutput() {
+    this.hasOutput = true
+    this.hasNext = false
+    this.hasPrev = false
+    return this
+  }
+
+  allowPrev() {
+    this.hasPrev = true
+    this.hasOutput = false
+    return this
+  }
+
+  allowNext() {
+    this.hasNext = true
+    this.hasOutput = false
+    return this
+  }
+
+  setBackgroundColor(cssColor) {
+    this.colors.background = cssColor
+    return this
+  }
+
+  setTextColor(cssColor) {
+    this.colors.text = cssColor
+    return this
+  }
+
+  clearInputs() {
+    this.inputs = []
+    return this
   }
 }

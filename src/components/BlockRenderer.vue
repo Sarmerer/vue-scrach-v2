@@ -2,34 +2,38 @@
   <div
     :id="block.id"
     class="scratch__block"
-    :class="{ relative, stacked, active: block.isActive }"
+    :class="{ relative: isRelative, dragged: block.isDragged }"
     :style="{ transform }"
     @mousedown.stop="block.dragStart($event)"
   >
-    <slot name="top-dropzone">
-      <Dropzone v-bind="{ block, type: 'before' }" />
-    </slot>
+    <Dropzone
+      v-if="block.hasPrev"
+      v-bind="{ block, type: 'prev' }"
+      :class="{ absolute: !isRelative }"
+    />
 
     <component
-      v-for="(component, index) of block.template.components"
+      v-for="(input, index) of block.inputs"
       :key="index"
-      :is="component.type"
-      v-bind="{ block, component }"
+      :is="input.type"
+      v-bind="{ block, input, index }"
     ></component>
 
-    <slot name="bottom-dropzone">
-      <Dropzone v-bind="{ block, type: 'after' }" />
-    </slot>
+    <Dropzone
+      v-if="block.hasNext && !nextBlock"
+      v-bind="{ block, type: 'next' }"
+    />
+
+    <BlockRenderer v-else :block="nextBlock" class="stack-offset" />
   </div>
 </template>
 
 <script>
 import { Block } from '../types/block'
 
-import Header from './block-components/Header.vue'
-import Children from './block-components/Children.vue'
-import Footer from './block-components/Footer.vue'
-import Dropzone from './block-components/Dropzone.vue'
+import Value from './block-inputs/Value.vue'
+import Statement from './block-inputs/Statement.vue'
+import Dropzone from './Dropzone.vue'
 
 export default {
   name: 'BlockRenderer',
@@ -39,30 +43,28 @@ export default {
       type: Block,
       required: true,
     },
-
-    relative: {
-      type: Boolean,
-      default: false,
-    },
-
-    stacked: {
-      type: Boolean,
-      default: false,
-    },
   },
 
   components: {
-    Header,
-    Children,
-    Footer,
+    Dummy: Value,
+    Statement,
+    Value,
     Dropzone,
   },
 
   computed: {
+    isRelative() {
+      return this.block.isRelative()
+    },
+
     transform() {
-      if (this.block.isChild()) return null
+      if (this.isRelative) return null
 
       return `translate(${this.block.x}px, ${this.block.y}px)`
+    },
+
+    nextBlock() {
+      return this.block.nextBlock
     },
   },
 }
@@ -70,21 +72,23 @@ export default {
 
 <style lang="scss" scoped>
 .scratch__block {
-  transform-origin: 0 0;
   position: absolute;
+  transform-origin: 0 0;
+  user-select: none;
+  width: fit-content;
   z-index: 1;
 
   &.relative {
     position: relative;
   }
 
-  &.stacked {
-    margin-top: 5px;
-  }
-
-  &.active {
+  &.dragged {
     opacity: 0.5;
     pointer-events: none;
+  }
+
+  &.stack-offset {
+    margin-top: 3px;
   }
 }
 </style>

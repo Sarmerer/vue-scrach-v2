@@ -13,7 +13,6 @@ import { mapState } from 'vuex'
 
 import BlockRenderer from './BlockRenderer.vue'
 import { Block } from '../types/block'
-import { BlockInput } from '../types/block-input'
 
 export default {
   name: 'Scratch',
@@ -25,25 +24,24 @@ export default {
   },
 
   mounted() {
-    const b1 = new Block()
-    b1.template.header('function').children().footer().backgroundColor('purple')
-    this.scratch.addBlock(b1)
+    const b = new Block(null, event?.clientX, event?.clientY)
+    b.addValueInput().addTextField('name')
+    b.addValueInput().addTextField('name')
+    b.addValueInput().addTextField('name')
+    b.addDummyInput()
+    b.addValueInput().addTextField('name')
+    b.addStatementInput()
+    b.addStatementInput()
+    b.setBackgroundColor('green').allowNext().allowPrev()
+    this.scratch.addBlock(b)
   },
 
   methods: {
     spawnBlock(event) {
-      const block = new Block(null, event.clientX, event.clientY)
-      block.template
-        .header('Sample Header ' + this.scratch.blocks.length, [
-          new BlockInput(0, { label: 'input' }),
-        ])
-        .children()
-        .footer()
-        .children()
-        .footer()
-        .backgroundColor('orange')
-
-      this.scratch.addBlock(block)
+      const b = new Block(null, event?.clientX, event?.clientY)
+      b.addValueInput().addTextField('longer name')
+      b.setBackgroundColor('orange').allowNext().allowPrev()
+      this.scratch.addBlock(b)
     },
   },
 }
