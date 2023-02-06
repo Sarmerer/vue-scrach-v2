@@ -1,4 +1,5 @@
 export class DOMElement {
+  /** @param {String} id */
   constructor(id) {
     this.id = id
     this.element_ = null

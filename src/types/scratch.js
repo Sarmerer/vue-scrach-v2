@@ -1,9 +1,12 @@
+import { BlockProximityDetector } from './block-proximity-detector'
 import { Block } from './block'
 
 export class Scratch {
   constructor() {
     this.blocks = []
     this.variables = []
+
+    this.proximity = new BlockProximityDetector(this)
   }
 
   /** @returns {Array<Block>} */

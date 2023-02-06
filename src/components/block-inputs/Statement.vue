@@ -1,9 +1,9 @@
 <template>
-  <div :id="input.id" class="block__statement">
+  <div class="block__statement">
     <div class="block__statement__vertical-section">
       <div class="block__statement__bar" :style="style"></div>
-      <div class="block__statement__children">
-        <BlockRenderer v-if="firstChild" :block="firstChild" />
+      <div :id="input.id" class="block__statement__children">
+        <BlockRenderer v-if="inputBlock" :block="inputBlock" />
 
         <Dropzone v-else v-bind="{ block, input, type: 'statement' }" />
       </div>
@@ -27,12 +27,15 @@ export default {
 
   mixins: [mixins],
 
-  components: { BlockRenderer: () => import('../BlockRenderer.vue'), Dropzone },
+  components: {
+    BlockRenderer: () => import('../BlockRenderer.vue'),
+    Dropzone,
+  },
 
   computed: {
-    firstChild() {
+    inputBlock() {
       return this.scratch.blocks.find((block) => {
-        return block.firstStatementOf?.id == this.input.id
+        return block.inputOf?.id == this.input.id
       })
     },
 

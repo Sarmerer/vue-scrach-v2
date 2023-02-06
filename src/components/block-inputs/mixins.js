@@ -15,18 +15,6 @@ export const computed = {
     return this.block.scratch
   },
 
-  fields() {
-    return this.input.fields
-  },
-
-  nextInput() {
-    if (this.index >= this.block.inputs.length) {
-      return null
-    }
-
-    return this.block.inputs[this.index + 1]
-  },
-
   style() {
     return {
       backgroundColor: this.block.colors.background,

@@ -2,7 +2,7 @@
   <span class="block__value__wrapper">
     <div :id="input.id" class="block__value" :class="classes" :style="style">
       <component
-        v-for="(field, index) in fields"
+        v-for="(field, index) in input.fields"
         :key="index"
         :is="field.type"
         v-bind="{ field }"
@@ -28,7 +28,10 @@ export default {
 
   mixins: [mixins],
 
-  components: { Dropzone, BlockRenderer: () => import('../BlockRenderer.vue') },
+  components: {
+    BlockRenderer: () => import('../BlockRenderer.vue'),
+    Dropzone,
+  },
 
   computed: {
     isDummy() {

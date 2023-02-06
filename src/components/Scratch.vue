@@ -43,9 +43,8 @@ export default {
     spawnBlock(event) {
       const b = new Block(null, event?.clientX, event?.clientY)
       b.addValueInput().addTextField('longer name')
-      b.setBackgroundColor('orange').allowOutput()
+      b.setBackgroundColor('orange').allowNext().allowPrev()
       this.scratch.addBlock(b)
-      b.setPrev(this.scratch.blocks[0])
     },
   },
 }

@@ -27,7 +27,6 @@ export class BlockInput extends DOMElement {
     this.block = block
     this.type = type
     this.fields = []
-    this.proximateBlock = null
 
     this.index = block.inputs.length
     this.group = 0

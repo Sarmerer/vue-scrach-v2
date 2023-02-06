@@ -1,4 +1,3 @@
-import { BlockProximityDetector } from './block-proximity-detector'
 import { DOMElement } from './dom-element'
 import { Scratch } from './scratch'
 import { uuidv4 } from '../utils'
@@ -26,14 +25,12 @@ export class Block extends DOMElement {
     this.y = y
     this.offsetX = 0
     this.offsetY = 0
-    this.proximity = new BlockProximityDetector(this)
 
     this.isDragged = false
     this.hasOutput = false
     this.hasPrev = false
     this.hasNext = false
 
-    this.firstStatementOf = null
     this.inputOf = null
     this.prevBlock = null
     this.nextBlock = null
@@ -44,7 +41,7 @@ export class Block extends DOMElement {
       text: 'white',
     }
 
-    this.listeners = {
+    this.listeners_ = {
       drag: this.drag.bind(this),
       dragEnd: this.dragEnd.bind(this),
     }
@@ -52,7 +49,7 @@ export class Block extends DOMElement {
 
   /** @returns {Boolean} */
   isRelative() {
-    return this.prevBlock || this.inputOf || this.firstStatementOf
+    return this.prevBlock || this.inputOf
   }
 
   /** @returns {Boolean} */
@@ -60,8 +57,7 @@ export class Block extends DOMElement {
     return (
       this.isDragged ||
       this.prevBlock?.isActive() ||
-      this.inputOf?.block.isActive() ||
-      this.firstStatementOf?.block.isActive()
+      this.inputOf?.block.isActive()
     )
   }
 
@@ -92,42 +88,19 @@ export class Block extends DOMElement {
     return this
   }
 
-  resolveProximity() {
-    if (this.proximity.prev) {
-      this.setPrev(this.proximity.prev)
+  /** @param {BlockInput} input */
+  setInputOf(input) {
+    if (
+      !(this.hasOutput || (this.hasPrev && input.type == 'Statement')) ||
+      input.type == 'Dummy'
+    ) {
+      return
     }
-
-    if (this.proximity.next) {
-      this.setNext(this.proximity.next)
-    }
-
-    if (this.proximity.input) {
-      this.setAsOutputOf(this.proximity.input)
-    }
-
-    return
-
-    switch (this.target.type) {
-      case 'statement':
-        this.setAsOutputStatementOf(this.target.input, this.target.index)
-        break
-      default:
-        break
-    }
-  }
-
-  /**
-   * @param {BlockValueInput} input
-   */
-  setAsOutputOf(input) {
-    if (!this.hasOutput) return
 
     this.inputOf = input
   }
 
-  /**
-   * @param {Block} block
-   */
+  /** @param {Block} block */
   setPrev(block) {
     if (!this.hasPrev || !block.hasNext) return
 
@@ -141,9 +114,7 @@ export class Block extends DOMElement {
     block.nextBlock = this
   }
 
-  /**
-   * @param {Block} block
-   */
+  /** @param {Block} block */
   setNext(block) {
     if (!this.hasNext || !block.hasPrev) return
 
@@ -152,21 +123,14 @@ export class Block extends DOMElement {
       this.prevBlock = block.prevBlock
     }
 
-    if (block.firstStatementOf) {
-      this.firstStatementOf = block.firstStatementOf
-      block.firstStatementOf = null
+    if (block.inputOf) {
+      this.inputOf = block.inputOf
+      block.inputOf = null
     }
 
     const tail = this.getTail()
     tail.nextBlock = block
     block.prevBlock = tail
-  }
-
-  /**
-   * @param {BlockStatementInput} statement
-   */
-  setAsOutputStatementOf(statement) {
-    this.firstStatementOf = statement
   }
 
   detachPrev() {
@@ -184,7 +148,6 @@ export class Block extends DOMElement {
   }
 
   detachAll() {
-    this.firstStatementOf = null
     this.inputOf = null
 
     this.detachPrev()
@@ -210,8 +173,8 @@ export class Block extends DOMElement {
 
     this.isDragged = true
 
-    window.addEventListener('mousemove', this.listeners.drag)
-    window.addEventListener('mouseup', this.listeners.dragEnd, { once: true })
+    window.addEventListener('mousemove', this.listeners_.drag)
+    window.addEventListener('mouseup', this.listeners_.dragEnd, { once: true })
   }
 
   /** @param {MouseEvent} event */
@@ -226,7 +189,6 @@ export class Block extends DOMElement {
       const dy = Math.abs(this.yBeforeDrag - nextY)
       if (dx < 15 && dy < 15) return
 
-      this.firstStatementOf = null
       this.inputOf = null
       this.detachPrev()
     }
@@ -234,17 +196,16 @@ export class Block extends DOMElement {
     this.x = nextX
     this.y = nextY
 
-    this.proximity.update()
+    this.scratch.proximity.update(this)
   }
 
   dragEnd() {
     if (!this.isDragged) return
 
-    window.removeEventListener('mousemove', this.listeners.drag)
+    window.removeEventListener('mousemove', this.listeners_.drag)
 
     this.isDragged = false
-    this.resolveProximity()
-    this.proximity.clear()
+    this.scratch.proximity.resolve()
   }
 
   /** @returns {BlockDummyInput} */
@@ -296,9 +257,7 @@ export class Block extends DOMElement {
     return this
   }
 
-  /**
-   * @returns {Block}
-   */
+  /** @returns {Block} */
   setTextColor(cssColor) {
     this.colors.text = cssColor
     return this

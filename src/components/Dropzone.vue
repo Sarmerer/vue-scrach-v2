@@ -21,20 +21,12 @@ export default {
   },
 
   computed: {
+    scratch() {
+      return this.block.scratch
+    },
+
     isInput() {
       return this.type == 'input'
-    },
-
-    isPrev() {
-      return this.type == 'prev'
-    },
-
-    isNext() {
-      return this.type == 'next'
-    },
-
-    isStatement() {
-      return this.type == 'statement'
     },
 
     isShown() {
@@ -42,11 +34,17 @@ export default {
     },
 
     isSatisfied() {
-      return (
-        (this.isPrev && this.block.proximity.prev) ||
-        (this.isNext && this.block.proximity.next) ||
-        (this.isInput && this.input.proximateBlock)
-      )
+      const rules = {
+        statement: () => this.scratch.proximity.input?.id == this.input?.id,
+        input: () => this.scratch.proximity.input?.id == this.input?.id,
+        prev: () => this.scratch.proximity.next?.id == this.block.id,
+        next: () => this.scratch.proximity.prev?.id == this.block.id,
+      }
+
+      const rule = rules[this.type]
+      if (!rule) return false
+
+      return rule()
     },
   },
 }
