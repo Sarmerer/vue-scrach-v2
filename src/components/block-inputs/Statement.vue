@@ -1,5 +1,5 @@
 <template>
-  <div class="block__statement">
+  <div :id="input.id" class="block__statement">
     <div class="block__statement__vertical-section">
       <div class="block__statement__bar" :style="style"></div>
       <div class="block__statement__children">

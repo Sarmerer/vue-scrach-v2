@@ -4,18 +4,11 @@ export class Scratch {
   constructor() {
     this.blocks = []
     this.variables = []
-
-    this.activeBlock = null
   }
 
   /** @returns {Array<Block>} */
   getBlocks() {
     return this.blocks.filter((b) => !b.isRelative())
-  }
-
-  /** @param {Block} block */
-  setActiveBlock(block) {
-    this.activeBlock = block
   }
 
   /** @param {Block} block */

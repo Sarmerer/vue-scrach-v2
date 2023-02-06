@@ -3,8 +3,6 @@
     v-if="isShown"
     class="block__dropzone"
     :class="{ vertical: isInput }"
-    @mouseover="setTarget"
-    @mouseout="clearTarget"
   ></div>
 </template>
 
@@ -23,14 +21,6 @@ export default {
   },
 
   computed: {
-    scratch() {
-      return this.block.scratch
-    },
-
-    activeBlock() {
-      return this.scratch.activeBlock
-    },
-
     isInput() {
       return this.type == 'input'
     },
@@ -52,34 +42,11 @@ export default {
     },
 
     isSatisfied() {
-      if (!this.activeBlock) return false
-      if (this.activeBlock.hasOutput && this.isInput) return true
-      if (this.activeBlock.hasPrev && this.isPrev) return true
-      if (this.activeBlock.hasNext && this.isNext) return true
-      if (
-        (this.activeBlock.hasPrev || this.activeBlock.hasNext) &&
-        this.isStatement
+      return (
+        (this.isPrev && this.block.proximity.prev) ||
+        (this.isNext && this.block.proximity.next) ||
+        (this.isInput && this.input.proximateBlock)
       )
-        return true
-    },
-  },
-
-  methods: {
-    setTarget() {
-      if (!this.activeBlock) return
-
-      this.activeBlock.target.set(this.type, {
-        block: this.block,
-        input: this.input,
-        index: this.index,
-      })
-    },
-
-    clearTarget() {
-      const block = this.scratch.activeBlock
-      if (!block) return
-
-      block.target.reset()
     },
   },
 }
@@ -98,11 +65,6 @@ export default {
   &.absolute {
     position: absolute;
     top: -10px;
-  }
-
-  &:hover::after {
-    opacity: 1;
-    background-color: #3880e6;
   }
 
   &::after {

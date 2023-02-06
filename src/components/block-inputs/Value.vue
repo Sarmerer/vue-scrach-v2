@@ -1,12 +1,13 @@
 <template>
   <span class="block__value__wrapper">
-    <div class="block__value" :class="classes" :style="style">
+    <div :id="input.id" class="block__value" :class="classes" :style="style">
       <component
         v-for="(field, index) in fields"
         :key="index"
         :is="field.type"
         v-bind="{ field }"
       ></component>
+
       <Dropzone
         v-if="!isDummy && !inputBlock"
         v-bind="{ block, input, type: 'input' }"
@@ -61,7 +62,7 @@ export default {
   position: relative;
   min-width: 70px;
   min-height: 20px;
-  width: 100%;
+  width: fit-content;
   height: fit-content;
   padding: 7px;
 

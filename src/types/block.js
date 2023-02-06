@@ -1,28 +1,32 @@
-import { BlockTarget } from './block-target'
+import { BlockProximityDetector } from './block-proximity-detector'
+import { DOMElement } from './dom-element'
 import { Scratch } from './scratch'
+import { uuidv4 } from '../utils'
 import {
   BlockDummyInput,
   BlockInput,
   BlockStatementInput,
   BlockValueInput,
 } from './block-input'
-import { uuidv4 } from '../utils'
 
-export class Block {
+export class Block extends DOMElement {
   /**
    * @param {Scratch} scratch
    * @param {Number} x
    * @param {Number} y
    */
   constructor(scratch, x = 0, y = 0) {
-    this.id = uuidv4()
+    const id = uuidv4()
+    super(id)
+
+    this.id = id
     this.scratch = scratch
 
     this.x = x
     this.y = y
     this.offsetX = 0
     this.offsetY = 0
-    this.target = new BlockTarget()
+    this.proximity = new BlockProximityDetector(this)
 
     this.isDragged = false
     this.hasOutput = false
@@ -88,19 +92,24 @@ export class Block {
     return this
   }
 
-  applyToTarget() {
+  resolveProximity() {
+    if (this.proximity.prev) {
+      this.setPrev(this.proximity.prev)
+    }
+
+    if (this.proximity.next) {
+      this.setNext(this.proximity.next)
+    }
+
+    if (this.proximity.input) {
+      this.setAsOutputOf(this.proximity.input)
+    }
+
+    return
+
     switch (this.target.type) {
       case 'statement':
         this.setAsOutputStatementOf(this.target.input, this.target.index)
-        break
-      case 'input':
-        this.setAsOutputOf(this.target.input)
-        break
-      case 'prev':
-        this.setNext(this.target.block)
-        break
-      case 'next':
-        this.setPrev(this.target.block)
         break
       default:
         break
@@ -200,7 +209,6 @@ export class Block {
     this.yBeforeDrag = this.y
 
     this.isDragged = true
-    this.scratch.setActiveBlock(this)
 
     window.addEventListener('mousemove', this.listeners.drag)
     window.addEventListener('mouseup', this.listeners.dragEnd, { once: true })
@@ -225,6 +233,8 @@ export class Block {
 
     this.x = nextX
     this.y = nextY
+
+    this.proximity.update()
   }
 
   dragEnd() {
@@ -232,11 +242,9 @@ export class Block {
 
     window.removeEventListener('mousemove', this.listeners.drag)
 
-    this.applyToTarget()
-
     this.isDragged = false
-    this.scratch.setActiveBlock(null)
-    this.target.reset()
+    this.resolveProximity()
+    this.proximity.clear()
   }
 
   /** @returns {BlockDummyInput} */
@@ -293,12 +301,6 @@ export class Block {
    */
   setTextColor(cssColor) {
     this.colors.text = cssColor
-    return this
-  }
-
-  /** @returns {Block} */
-  clearInputs() {
-    this.inputs = []
     return this
   }
 }

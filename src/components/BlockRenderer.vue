@@ -30,7 +30,11 @@
       v-bind="{ block, type: 'next' }"
     />
 
-    <BlockRenderer v-else :block="nextBlock" class="stack-offset" />
+    <BlockRenderer
+      v-else-if="nextBlock"
+      :block="nextBlock"
+      class="stack-offset"
+    />
   </div>
 </template>
 

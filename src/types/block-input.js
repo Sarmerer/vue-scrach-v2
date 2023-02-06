@@ -1,5 +1,6 @@
-import { uuidv4 } from '../utils'
+import { DOMElement } from './dom-element'
 import { Block } from './block'
+import { uuidv4 } from '../utils'
 
 export class BlockField {
   /**
@@ -13,16 +14,20 @@ export class BlockField {
   }
 }
 
-export class BlockInput {
+export class BlockInput extends DOMElement {
   /**
    * @param {Block} block
    * @param {'Value' | 'Dummy' | 'Statement'} type
    */
   constructor(block, type) {
-    this.id = uuidv4()
+    const id = uuidv4()
+    super(id)
+
+    this.id = id
     this.block = block
     this.type = type
     this.fields = []
+    this.proximateBlock = null
 
     this.index = block.inputs.length
     this.group = 0

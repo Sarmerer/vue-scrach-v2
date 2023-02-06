@@ -3,25 +3,28 @@
     <BlockRenderer
       v-for="block of scratch.getBlocks()"
       :key="block.id"
-      :block="block"
+      v-bind="{ block }"
     />
   </div>
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { Scratch } from '../types/scratch'
+import { Block } from '../types/block'
 
 import BlockRenderer from './BlockRenderer.vue'
-import { Block } from '../types/block'
 
 export default {
   name: 'Scratch',
 
-  components: { BlockRenderer },
-
-  computed: {
-    ...mapState(['scratch']),
+  props: {
+    scratch: {
+      type: Scratch,
+      required: true,
+    },
   },
+
+  components: { BlockRenderer },
 
   mounted() {
     const b = new Block(null, event?.clientX, event?.clientY)
@@ -40,8 +43,9 @@ export default {
     spawnBlock(event) {
       const b = new Block(null, event?.clientX, event?.clientY)
       b.addValueInput().addTextField('longer name')
-      b.setBackgroundColor('orange').allowNext().allowPrev()
+      b.setBackgroundColor('orange').allowOutput()
       this.scratch.addBlock(b)
+      b.setPrev(this.scratch.blocks[0])
     },
   },
 }
