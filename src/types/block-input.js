@@ -7,10 +7,11 @@ export class BlockField {
    * @param {'TextField'} type
    * @param {String} label
    */
-  constructor(type, label = '') {
+  constructor(type, label = '', placeholder = '') {
     this.type = type
-    this.value = null
     this.label = label
+    this.placeholder = placeholder
+    this.value = null
   }
 }
 

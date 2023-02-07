@@ -5,10 +5,9 @@
       class="block__field__text__label"
       v-text="field.label"
     ></label>
-    <input
-      @mousedown.stop
-      class="block__field__text__input"
+    <DynamicInput
       type="text"
+      :placeholder="field.placeholder"
       v-model="field.value"
     />
   </div>
@@ -16,26 +15,23 @@
 
 <script>
 import { BlockField } from '../../types/block-input'
+import DynamicInput from './DynamicInput.vue'
 
 export default {
   name: 'BlockTextField',
-
   props: {
     field: {
       type: BlockField,
       required: true,
     },
   },
+
+  components: { DynamicInput },
 }
 </script>
 
 <style lang="scss" scoped>
 .block__field__text__label {
   margin-right: 7px;
-}
-
-.block__field__text__input {
-  width: 50px;
-  border-radius: 5px;
 }
 </style>
