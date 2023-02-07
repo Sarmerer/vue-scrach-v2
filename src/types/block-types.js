@@ -31,27 +31,27 @@ export function register() {
       options: ['=', '!=', '<', '<=', '>', '>='],
     })
     b.addValueInput()
-    b.setBackgroundColor('orange').setInline().allowOutput()
+    b.setBackgroundColor('lightblue').setInline().allowOutput()
   })
 
   Scratch.DeclareBlock('logic:operator', function (b) {
     b.addValueInput()
     b.addDummyInput().addSelectField({ value: 'and', options: ['and', 'or'] })
     b.addValueInput()
-    b.setBackgroundColor('orange').setInline().allowOutput()
+    b.setBackgroundColor('lightblue').setInline().allowOutput()
   })
 
   Scratch.DeclareBlock('logic:bool', function (b) {
-    b.addValueInput().addSelectField({
+    b.addDummyInput().addSelectField({
       value: 'true',
       options: ['true', 'false'],
     })
-    b.setBackgroundColor('orange').allowOutput()
+    b.setBackgroundColor('lightblue').allowOutput()
   })
 
   Scratch.DeclareBlock('logic:not', function (b) {
     b.addValueInput().addLabelField('not')
-    b.setBackgroundColor('orange').allowOutput()
+    b.setBackgroundColor('lightblue').allowOutput()
   })
 
   Scratch.DeclareBlock('loops:repeat-n-times', function (b) {
@@ -60,7 +60,7 @@ export function register() {
       .addNumberField({ value: 10 })
       .addLabelField('times')
     b.addStatementInput()
-    b.setBackgroundColor('orange').allowPrev().allowNext()
+    b.setBackgroundColor('orange').setTextColor('black').allowPrev().allowNext()
   })
 
   Scratch.DeclareBlock('loops:for-each', function (b) {
@@ -69,30 +69,35 @@ export function register() {
       .addSelectField({ value: 'item', options: ['item'] })
       .addLabelField('in')
     b.addStatementInput()
-    b.setBackgroundColor('orange').allowPrev().allowNext()
+    b.setBackgroundColor('orange').setTextColor('black').allowPrev().allowNext()
   })
 
   Scratch.DeclareBlock('loops:lifecycle', function (b) {
     b.addValueInput()
       .addSelectField({ value: 'break', options: ['break', 'continue'] })
       .addLabelField('loop')
-    b.setBackgroundColor('orange').allowPrev()
+    b.setBackgroundColor('orange').setTextColor('black').allowPrev()
   })
 
   Scratch.DeclareBlock('lists:from', function (b) {
     b.addValueInput().addLabelField('list with')
-    b.addValueInput().addLabelField('______')
-    b.setBackgroundColor('orange').allowOutput()
+    b.addValueInput()
+    b.setBackgroundColor('purple').allowOutput()
   })
 
   Scratch.DeclareBlock('text:string', function (b) {
-    b.addValueInput().addLabelField('"').addTextField().addLabelField('"')
-    b.setBackgroundColor('orange').allowOutput()
+    b.addDummyInput().addLabelField('"').addTextField().addLabelField('"')
+    b.setBackgroundColor('cyan').setTextColor('black').allowOutput()
   })
 
   Scratch.DeclareBlock('text:print', function (b) {
     b.addValueInput().addLabelField('print')
-    b.setBackgroundColor('orange').allowNext().allowPrev()
+    b.setBackgroundColor('cyan').setTextColor('black').allowNext().allowPrev()
+  })
+
+  Scratch.DeclareBlock('variable:existing', function (b) {
+    b.addDummyInput().addSelectField({ value: 'a', options: ['a'] })
+    b.setBackgroundColor('greenyellow').setTextColor('black').allowOutput()
   })
 }
 

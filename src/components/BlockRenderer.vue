@@ -39,7 +39,6 @@
 import { Block } from '../types/block'
 
 import Value from './block-inputs/Value.vue'
-import Dummy from './block-inputs/Dummy.vue'
 import Statement from './block-inputs/Statement.vue'
 import Dropzone from './Dropzone.vue'
 
@@ -54,8 +53,8 @@ export default {
   },
 
   components: {
+    Dummy: Value,
     Statement,
-    Dummy,
     Value,
     Dropzone,
   },

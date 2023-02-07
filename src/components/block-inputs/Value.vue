@@ -13,7 +13,7 @@
       ></component>
 
       <div
-        v-if="block.isInline"
+        v-if="block.isInline && !isDummy"
         :id="inlineId"
         class="block__value__inline-input"
         :class="{ empty: !inputBlock }"
@@ -54,6 +54,10 @@ export default {
   },
 
   computed: {
+    isDummy() {
+      return this.input.type == 'Dummy'
+    },
+
     externalId() {
       if (this.block.isInline) return null
 
@@ -67,21 +71,23 @@ export default {
     },
 
     inputBlock() {
+      if (this.isDummy) return null
+
       return this.scratch.blocks.find(
         (block) => block.inputOf?.id == this.input.id
       )
     },
 
     classes() {
-      if (this.block.hasOutput) return {}
+      if (this.block.hasOutput || this.block.isInline) return { inline: true }
 
       return {
         'block--border-tl': this.input.isFirst(),
         'block--border-bl': this.input.isLast(),
-        'block--border-tr': this.input.isFirst() && !this.inputBlock,
+        'block--border-tr': this.input.isFirst() && this.isDummy,
         'block--border-br':
           (this.input.isLast() || this.nextInputIs('Statement')) &&
-          !this.inputBlock,
+          this.isDummy,
       }
     },
   },
@@ -101,8 +107,12 @@ export default {
   padding: 7px;
 
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 7px;
+
+  &.inline {
+    align-items: center;
+  }
 }
 
 .block__value__inline-input {
