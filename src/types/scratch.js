@@ -2,6 +2,8 @@ import { BlockProximityDetector } from './block-proximity-detector'
 import { Block } from './block'
 
 export class Scratch {
+  static Blocks = {}
+
   constructor() {
     this.blocks = []
     this.variables = []
@@ -12,6 +14,20 @@ export class Scratch {
   /** @returns {Array<Block>} */
   getBlocks() {
     return this.blocks.filter((b) => !b.isRelative())
+  }
+
+  /**
+   * @param {String} type
+   * @param {Number} x
+   * @param {Number} y
+   */
+  spawnBlock(type, x = 0, y = 0) {
+    const factory = Scratch.Blocks[type]
+    if (!factory) return
+
+    const block = new Block(this, x, y)
+    factory(block)
+    this.addBlock(block)
   }
 
   /** @param {Block} block */
@@ -44,5 +60,22 @@ export class Scratch {
     if (index == -1) return
 
     this.variables.splice(index, 1)
+  }
+
+  /**
+   *  @callback BlockTypeFactory
+   * @param {Block} block
+   */
+
+  /**
+   * @param {String} name
+   * @param {BlockTypeFactory} factory
+   */
+  static DeclareBlock(name, factory) {
+    if (Scratch.Blocks[name]) {
+      console.warn('overriding existing block type with name:', name)
+    }
+
+    Scratch.Blocks[name] = factory
   }
 }

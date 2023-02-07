@@ -27,24 +27,23 @@ export default {
   components: { BlockRenderer },
 
   mounted() {
-    const b = new Block(null, event?.clientX, event?.clientY)
-    b.addValueInput().addTextField('name')
-    b.addValueInput().addTextField('name')
-    b.addValueInput().addTextField('name')
-    b.addDummyInput()
-    b.addValueInput().addTextField('name')
-    b.addStatementInput()
-    b.addStatementInput()
-    b.setBackgroundColor('green').allowNext().allowPrev()
-    this.scratch.addBlock(b)
+    Scratch.DeclareBlock('mess', function (b) {
+      b.addValueInput().addTextField('repeat')
+      b.addStatementInput()
+      b.setBackgroundColor('green').allowNext().allowPrev()
+    })
+
+    Scratch.DeclareBlock('mess2', function (b) {
+      b.addValueInput().addTextField('print')
+      b.setBackgroundColor('lightblue').allowNext().allowPrev()
+    })
+
+    this.scratch.spawnBlock('mess')
   },
 
   methods: {
     spawnBlock(event) {
-      const b = new Block(null, event?.clientX, event?.clientY)
-      b.addValueInput().addTextField('longer name')
-      b.setBackgroundColor('orange').allowNext().allowPrev()
-      this.scratch.addBlock(b)
+      this.scratch.spawnBlock('mess2', event.clientX, event.clientY)
     },
   },
 }
