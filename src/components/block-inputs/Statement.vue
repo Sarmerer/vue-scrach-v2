@@ -3,9 +3,18 @@
     <div class="block__statement__vertical-section">
       <div class="block__statement__bar" :style="style"></div>
       <div :id="input.id" class="block__statement__children">
-        <BlockRenderer v-if="inputBlock" :block="inputBlock" />
+        <BlockRenderer v-if="inputBlock" :block="inputBlock">
+          <template #top-zone>
+            <Dropzone
+              v-bind="{ block, input, type: Block.Connection.Statement }"
+            />
+          </template>
+        </BlockRenderer>
 
-        <Dropzone v-else v-bind="{ block, input, type: 'statement' }" />
+        <Dropzone
+          v-else
+          v-bind="{ block, input, type: Block.Connection.Statement }"
+        />
       </div>
     </div>
     <div

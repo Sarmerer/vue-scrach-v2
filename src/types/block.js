@@ -9,6 +9,13 @@ import {
 } from './block-input'
 
 export class Block extends DOMElement {
+  static Connection = {
+    Prev: 1,
+    Next: 2,
+    Input: 3,
+    Statement: 4,
+  }
+
   /**
    * @param {Scratch} scratch
    * @param {Number} x
@@ -95,6 +102,12 @@ export class Block extends DOMElement {
       input.type == 'Dummy'
     ) {
       return
+    }
+
+    const oldInput = this.scratch.blocks.find((b) => b.inputOf?.id == input.id)
+    if (oldInput) {
+      this.setNext(oldInput)
+      oldInput.inputOf = null
     }
 
     this.inputOf = input
@@ -205,7 +218,7 @@ export class Block extends DOMElement {
     window.removeEventListener('mousemove', this.listeners_.drag)
 
     this.isDragged = false
-    this.scratch.proximity.resolve()
+    this.scratch.proximity.connect(this)
   }
 
   /** @returns {BlockDummyInput} */

@@ -2,220 +2,168 @@ import { Scratch } from './scratch'
 import { Block } from './block'
 import { BlockStatementInput, BlockValueInput } from './block-input'
 
+export class ProximityZone {
+  constructor(type, x, y, options = {}) {
+    this.type = type
+    this.x = x
+    this.y = y
+
+    options = Object.assign({ block: null, input: null }, options)
+    this.block = options.block
+    this.input = options.input
+  }
+}
+
 export class BlockProximityDetector {
   /** @param {Scratch} scratch */
   constructor(scratch) {
     this.scratch = scratch
 
-    this.current = null
     this.next = null
     this.prev = null
     this.input = null
-
-    this.cRect = null
-    this.bRect = null
   }
 
-  /** @param {Block} currentBlock */
-  update(currentBlock) {
-    if (!currentBlock) return
+  getZones(block) {
+    if (!block) return []
 
-    this.current = currentBlock
-    this.cRect = this.current.getBoundingClientRect()
+    const zones = []
+    const rect = block.getBoundingClientRect()
+    if (block.hasPrev) {
+      zones.push(
+        new ProximityZone(Block.Connection.Prev, rect.x, rect.y, { block })
+      )
+    }
 
-    for (const block of this.current.scratch.blocks) {
-      if (block.id == this.current.id) continue
+    if (block.hasNext) {
+      zones.push(
+        new ProximityZone(Block.Connection.Next, rect.x, rect.y + rect.height, {
+          block,
+        })
+      )
+    }
 
-      this.bRect = block.getBoundingClientRect()
-      if (
-        this.cRect.x > this.bRect.x + this.bRect.width + 30 ||
-        this.cRect.x + this.cRect.width < this.bRect.x - 30 ||
-        this.cRect.y > this.bRect.y + this.bRect.height + 30 ||
-        this.cRect.y + this.cRect.height < this.bRect.y - 30
-      ) {
-        this.clear(block)
-        continue
+    for (const input of block.inputs) {
+      let type = null
+      if (input.type == 'Statement') type = Block.Connection.Statement
+      else if (input.type == 'Value') type = Block.Connection.Input
+      if (!type) continue
+
+      const rect = input.getBoundingClientRect()
+      zones.push(new ProximityZone(type, rect.x, rect.y, { block, input }))
+    }
+
+    return zones
+  }
+
+  getNearbyBlocks(block, radius = 30) {
+    const r1 = block.getBoundingClientRect()
+
+    return this.scratch.blocks.filter((b) => {
+      if (b.id == block.id || b.isActive()) return false
+
+      const r2 = b.getBoundingClientRect()
+
+      return !(
+        r1.x > r2.x + r2.width + radius ||
+        r1.x + r1.width < r2.x - radius ||
+        r1.y > r2.y + r2.height + radius ||
+        r1.y + r1.height < r2.y - radius
+      )
+    })
+  }
+
+  /** @param {Block} block */
+  update(block) {
+    this.clear()
+    if (!block) return
+
+    const nearBlocks = this.getNearbyBlocks(block)
+    if (!nearBlocks.length) return
+
+    const zones = nearBlocks
+      .reduce((acc, b) => {
+        acc.push(...this.getZones(b))
+        return acc
+      }, [])
+      .filter((z) => {
+        if (z.type == Block.Connection.Input && block.hasOutput) return true
+        if (z.type == Block.Connection.Statement && block.hasPrev) return true
+        if (z.type == Block.Connection.Prev && block.hasNext) return true
+        if (z.type == Block.Connection.Next && block.hasPrev) return true
+
+        return false
+      })
+
+    const nearbyZones = []
+    const cRect = block.getBoundingClientRect()
+    for (const zone of zones) {
+      let dist = 100
+      if (zone.type == Block.Connection.Prev) {
+        dist = Math.abs(zone.y - (cRect.y + cRect.height))
+      } else {
+        dist = Math.abs(zone.y - cRect.y)
       }
 
-      this.updateStackProximity(block)
-      this.updateInputsProximity(block)
-    }
-  }
+      if (dist >= 50) continue
 
-  /**
-   * @param {Number} proximity
-   * @param {Number} threshold
-   * @returns {Boolean}
-   */
-  isProximate(proximity, threshold = 20) {
-    return !(proximity < -threshold || proximity > threshold)
-  }
-
-  /**
-   * @param {DOMRect} r1
-   * @param {DOMRect} r2
-   * @returns {Boolean}
-   */
-  topBottomDist(r1, r2) {
-    return r1.y - (r2.y + r2.height)
-  }
-
-  /**
-   * @param {DOMRect} r1
-   * @param {DOMRect} r2
-   * @returns {Boolean}
-   */
-  bottomToTopDist(r1, r2) {
-    return r1.y + r1.height - r2.y
-  }
-
-  /** @param {Block} block */
-  updateStackProximity(block) {
-    if (!this.isProximate(this.cRect.x - this.bRect.x, 50)) {
-      this.clear(block)
-      return
+      nearbyZones.push({ zone, dist })
     }
 
-    if (
-      block.hasNext &&
-      this.current.hasPrev &&
-      this.isProximate(this.topBottomDist(this.cRect, this.bRect))
-    ) {
-      this.clear()
-      this.prev = block
-      return
-    }
-
-    if (
-      block.hasPrev &&
-      this.current.hasNext &&
-      this.isProximate(this.bottomToTopDist(this.cRect, this.bRect))
-    ) {
-      this.clear()
-      this.next = block
-      return
-    }
-
-    this.clear(block)
-  }
-
-  /** @param {Block} block */
-  updateInputsProximity(block) {
     let minDist = 100
     let closest = null
-    for (const input of block.inputs) {
-      let values = []
-      switch (input.type) {
-        case 'Value':
-          values = this.getValueProximity(input)
-          break
-        case 'Statement':
-          values = this.getStatementProximity(input)
-          break
-        default:
-          continue
-      }
+    for (const zone of nearbyZones) {
+      if (zone.dist > minDist) continue
 
-      if (!values.length) continue
-
-      const dist = Math.min(...values)
-      if (dist > minDist) continue
-
-      minDist = dist
-      closest = input
+      minDist = zone.dist
+      closest = zone
     }
 
     if (!closest) return
 
-    this.clear()
-    this.input = closest
+    switch (closest.zone.type) {
+      case Block.Connection.Prev:
+        this.prev = closest.zone.block
+        break
+
+      case Block.Connection.Next:
+        this.next = closest.zone.block
+        break
+
+      case Block.Connection.Input:
+      case Block.Connection.Statement:
+        this.input = closest.zone.input
+        break
+
+      default:
+        break
+    }
   }
 
-  /** @param {BlockValueInput} input */
-  getValueProximity(input) {
-    if (!this.current.hasOutput) return []
-
-    const vRect = input.getBoundingClientRect()
-    if (!this.isProximate(vRect.x + vRect.width - this.cRect.x, 30)) {
-      return []
-    }
-
-    const values = []
-    const topHalf = vRect.y - this.cRect.y - 10
-    const bottomHalf =
-      this.cRect.y + this.cRect.height - (vRect.y + vRect.height) - 10
-    if (this.isProximate(topHalf)) {
-      values.push(topHalf)
-    }
-
-    if (this.isProximate(bottomHalf)) {
-      values.push(bottomHalf)
-    }
-
-    return values
-  }
-
-  /** @param {BlockStatementInput} input */
-  getStatementProximity(input) {
-    if (!this.current.hasPrev) return []
-
-    const sRect = input.getBoundingClientRect()
-    if (!this.isProximate(this.cRect.x - sRect.x, 50)) {
-      return []
-    }
-
-    let values = []
-    const topTopDist = this.cRect.y - sRect.y
-    if (this.isProximate(topTopDist)) {
-      values.push(topTopDist)
-    }
-
-    return values
-  }
-
-  resolve() {
-    if (!this.current) {
-      this.reset()
+  connect(block) {
+    if (!block) {
+      this.clear()
       return
     }
 
     if (this.prev) {
-      this.current.setPrev(this.prev)
+      block.setNext(this.prev)
     }
 
     if (this.next) {
-      this.current.setNext(this.next)
+      block.setPrev(this.next)
     }
 
     if (this.input) {
-      this.current.setInputOf(this.input)
+      block.setInputOf(this.input)
     }
 
-    this.reset()
-  }
-
-  clear(relativeTo = null) {
-    if (!relativeTo || relativeTo.id == this.prev?.id) {
-      this.prev = null
-    }
-
-    if (!relativeTo || relativeTo.id == this.next?.id) {
-      this.next = null
-    }
-
-    if (
-      !relativeTo ||
-      relativeTo.id == this.input?.id ||
-      relativeTo.id == this.input?.block?.id
-    ) {
-      this.input = null
-    }
-  }
-
-  reset() {
     this.clear()
-    this.cRect = null
-    this.bRect = null
-    this.current = null
+  }
+
+  clear() {
+    this.prev = null
+    this.next = null
+    this.input = null
   }
 }

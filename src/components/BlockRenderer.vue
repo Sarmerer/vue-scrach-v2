@@ -6,11 +6,12 @@
     :style="{ transform }"
     @mousedown.stop="block.dragStart($event)"
   >
-    <Dropzone
-      v-if="block.hasPrev"
-      v-bind="{ block, type: 'prev' }"
-      :class="{ absolute: !isRelative }"
-    />
+    <slot v-if="block.hasPrev" name="top-zone">
+      <Dropzone
+        v-bind="{ block, type: Block.Connection.Prev }"
+        :class="{ absolute: !isRelative }"
+      />
+    </slot>
 
     <div
       v-for="(group, index) of block.getInputGroups()"
@@ -25,16 +26,11 @@
       ></component>
     </div>
 
-    <Dropzone
-      v-if="block.hasNext && !nextBlock"
-      v-bind="{ block, type: 'next' }"
-    />
+    <slot v-if="block.hasNext && !nextBlock" name="bottom-zone">
+      <Dropzone v-bind="{ block, type: Block.Connection.Next }" />
+    </slot>
 
-    <BlockRenderer
-      v-else-if="nextBlock"
-      :block="nextBlock"
-      class="stack-offset"
-    />
+    <BlockRenderer v-else-if="nextBlock" :block="nextBlock" />
   </div>
 </template>
 
@@ -60,6 +56,11 @@ export default {
     Statement,
     Value,
     Dropzone,
+  },
+
+  data() {
+    this.Block = Block
+    return {}
   },
 
   computed: {
@@ -93,12 +94,7 @@ export default {
   }
 
   &.dragged {
-    opacity: 0.5;
     pointer-events: none;
-  }
-
-  &.stack-offset {
-    margin-top: 3px;
   }
 }
 

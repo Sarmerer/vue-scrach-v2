@@ -10,6 +10,11 @@ export const props = {
 
 export const components = { TextField }
 
+export function data() {
+  this.Block = Block
+  return {}
+}
+
 export const computed = {
   scratch() {
     return this.block.scratch
@@ -33,4 +38,4 @@ export const methods = {
   },
 }
 
-export default { props, components, computed, methods }
+export default { props, components, data, computed, methods }

@@ -10,7 +10,7 @@
 
       <Dropzone
         v-if="!isDummy && !inputBlock"
-        v-bind="{ block, input, type: 'input' }"
+        v-bind="{ block, input, type: Block.Connection.Input }"
         vertical
       />
     </div>

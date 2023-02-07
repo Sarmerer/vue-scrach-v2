@@ -17,7 +17,7 @@ export default {
     block: { type: Block, required: true },
     index: { type: Number, default: -1 },
     input: { type: BlockInput },
-    type: String,
+    type: Number,
   },
 
   computed: {
@@ -26,7 +26,7 @@ export default {
     },
 
     isInput() {
-      return this.type == 'input'
+      return this.type == Block.Connection.Input
     },
 
     isShown() {
@@ -35,10 +35,17 @@ export default {
 
     isSatisfied() {
       const rules = {
-        statement: () => this.scratch.proximity.input?.id == this.input?.id,
-        input: () => this.scratch.proximity.input?.id == this.input?.id,
-        prev: () => this.scratch.proximity.next?.id == this.block.id,
-        next: () => this.scratch.proximity.prev?.id == this.block.id,
+        [Block.Connection.Statement]: () =>
+          this.scratch.proximity.input?.id == this.input?.id,
+
+        [Block.Connection.Input]: () =>
+          this.scratch.proximity.input?.id == this.input?.id,
+
+        [Block.Connection.Prev]: () =>
+          this.scratch.proximity.prev?.id == this.block.id,
+
+        [Block.Connection.Next]: () =>
+          this.scratch.proximity.next?.id == this.block.id,
       }
 
       const rule = rules[this.type]
