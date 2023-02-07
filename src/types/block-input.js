@@ -87,6 +87,7 @@ export class BlockInput extends DOMElement {
   /** @param {Number} align */
   setAlign(align) {
     this.align = align
+    return this
   }
 
   /** @returns {Boolean} */

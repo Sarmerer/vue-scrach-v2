@@ -21,12 +21,13 @@ export class Block extends DOMElement {
    * @param {Number} x
    * @param {Number} y
    */
-  constructor(scratch, x = 0, y = 0) {
+  constructor(scratch, x = 0, y = 0, type = null) {
     const id = uuidv4()
     super(id)
 
     this.id = id
     this.scratch = scratch
+    this.type = type
 
     this.x = x
     this.y = y
@@ -34,6 +35,8 @@ export class Block extends DOMElement {
     this.offsetY = 0
 
     this.isDragged = false
+    this.isFrozen = false
+
     this.isInline = false
     this.hasOutput = false
     this.hasPrev = false
@@ -170,15 +173,16 @@ export class Block extends DOMElement {
 
   /** @param {MouseEvent} event */
   dragStart(event) {
-    if (this.isDragged) return
+    if (this.isDragged || this.isFrozen) return
 
     if (this.isRelative()) {
-      const el = document.getElementById(this.id)
-      const { x, y } = el.getBoundingClientRect()
+      const rect = this.getBoundingClientRect()
+      const { x, y } = this.scratch.normalizePosition(rect.x, rect.y)
       this.x = x
       this.y = y
     }
 
+    event = this.scratch.normalizeMouseEvent(event)
     this.offsetX = this.x - event.clientX
     this.offsetY = this.y - event.clientY
 
@@ -195,6 +199,7 @@ export class Block extends DOMElement {
   drag(event) {
     if (!this.isDragged) return
 
+    event = this.scratch.normalizeMouseEvent(event)
     const nextX = event.clientX + this.offsetX
     const nextY = event.clientY + this.offsetY
 

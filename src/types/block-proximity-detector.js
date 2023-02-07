@@ -1,6 +1,5 @@
 import { Scratch } from './scratch'
 import { Block } from './block'
-import { BlockStatementInput, BlockValueInput } from './block-input'
 
 export class ProximityZone {
   constructor(type, x, y, options = {}) {
