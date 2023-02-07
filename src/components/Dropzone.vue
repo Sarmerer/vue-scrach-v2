@@ -2,7 +2,7 @@
   <div
     v-if="isShown"
     class="block__dropzone"
-    :class="{ vertical: isInput }"
+    :class="{ vertical: isVertical, inline: isInline }"
   ></div>
 </template>
 
@@ -17,6 +17,7 @@ export default {
     block: { type: Block, required: true },
     index: { type: Number, default: -1 },
     input: { type: BlockInput },
+    inline: Boolean,
     type: Number,
   },
 
@@ -27,6 +28,14 @@ export default {
 
     isInput() {
       return this.type == Block.Connection.Input
+    },
+
+    isVertical() {
+      return this.isInput && !this.inline
+    },
+
+    isInline() {
+      return this.isInput && this.inline
     },
 
     isShown() {
@@ -77,7 +86,7 @@ export default {
     display: inline-block;
     border-radius: 2px;
     background-color: black;
-    opacity: 0.2;
+    opacity: 0.35;
     width: 100%;
     height: 6px;
   }
@@ -93,6 +102,18 @@ export default {
   &::after {
     width: 7px;
     height: 90%;
+  }
+}
+
+.block__dropzone.inline {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+
+  &::after {
+    width: 100%;
+    height: 100%;
+    border-radius: 3px;
   }
 }
 </style>

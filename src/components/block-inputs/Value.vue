@@ -1,6 +1,10 @@
 <template>
   <span class="block__value__wrapper">
-    <div :id="input.id" class="block__value" :class="classes" :style="style">
+    <div
+      class="block__value"
+      :class="classes"
+      v-bind="{ style, id: externalId }"
+    >
       <component
         v-for="(field, index) in input.fields"
         :key="index"
@@ -8,14 +12,30 @@
         v-bind="{ field }"
       ></component>
 
+      <div
+        v-if="block.isInline"
+        :id="inlineId"
+        class="block__value__inline-input"
+        :class="{ empty: !inputBlock }"
+      >
+        <BlockRenderer
+          v-if="inputBlock && block.isInline"
+          :block="inputBlock"
+        />
+
+        <Dropzone
+          v-if="!inputBlock && block.isInline"
+          v-bind="{ block, input, type: Block.Connection.Input, inline: true }"
+        />
+      </div>
+
       <Dropzone
-        v-if="!isDummy && !inputBlock"
+        v-if="!inputBlock && !block.isInline"
         v-bind="{ block, input, type: Block.Connection.Input }"
-        vertical
       />
     </div>
 
-    <BlockRenderer v-if="inputBlock" :block="inputBlock" />
+    <BlockRenderer v-if="inputBlock && !block.isInline" :block="inputBlock" />
   </span>
 </template>
 
@@ -34,8 +54,16 @@ export default {
   },
 
   computed: {
-    isDummy() {
-      return this.input.type == 'Dummy'
+    externalId() {
+      if (this.block.isInline) return null
+
+      return this.input.id
+    },
+
+    inlineId() {
+      if (!this.block.isInline) return null
+
+      return this.input.id
     },
 
     inputBlock() {
@@ -66,11 +94,23 @@ export default {
   min-width: 70px;
   min-height: 20px;
   width: fit-content;
-  height: fit-content;
   padding: 7px;
 
   display: flex;
+  align-items: center;
   gap: 7px;
+}
+
+.block__value__inline-input {
+  position: relative;
+  min-width: 15px;
+  min-height: 25px;
+  border-radius: 7px;
+  background-color: white;
+
+  &.empty {
+    border-radius: 3px;
+  }
 }
 
 .block--border-first {

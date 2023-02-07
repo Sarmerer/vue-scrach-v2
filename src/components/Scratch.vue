@@ -35,7 +35,7 @@ export default {
 
     Scratch.DeclareBlock('mess2', function (b) {
       b.addValueInput().addTextField('print')
-      b.setBackgroundColor('lightblue').allowNext().allowPrev()
+      b.setBackgroundColor('lightblue').allowOutput()
     })
 
     this.scratch.spawnBlock('mess')

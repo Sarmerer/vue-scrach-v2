@@ -17,6 +17,7 @@
       v-for="(group, index) of block.getInputGroups()"
       :key="index"
       class="scratch__block__inputs-group"
+      :class="{ inline: block.isInline }"
     >
       <component
         v-for="input of group"
@@ -38,6 +39,7 @@
 import { Block } from '../types/block'
 
 import Value from './block-inputs/Value.vue'
+import Dummy from './block-inputs/Dummy.vue'
 import Statement from './block-inputs/Statement.vue'
 import Dropzone from './Dropzone.vue'
 
@@ -52,8 +54,8 @@ export default {
   },
 
   components: {
-    Dummy: Value,
     Statement,
+    Dummy,
     Value,
     Dropzone,
   },
@@ -101,5 +103,10 @@ export default {
 .scratch__block__inputs-group {
   position: relative;
   width: fit-content;
+
+  &.inline {
+    display: flex;
+    flex-direction: row;
+  }
 }
 </style>

@@ -34,6 +34,7 @@ export class Block extends DOMElement {
     this.offsetY = 0
 
     this.isDragged = false
+    this.isInline = false
     this.hasOutput = false
     this.hasPrev = false
     this.hasNext = false
@@ -262,6 +263,10 @@ export class Block extends DOMElement {
     this.hasNext = true
     this.hasOutput = false
     return this
+  }
+
+  setInline() {
+    this.isInline = true
   }
 
   /** @returns {Block} */
