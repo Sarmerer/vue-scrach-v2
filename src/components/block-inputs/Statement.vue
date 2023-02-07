@@ -84,7 +84,7 @@ export default {
 
 .block__statement__footer {
   height: 15px;
-  width: 70px;
+  width: 45px;
   border-top-right-radius: 6px;
   border-bottom-right-radius: 6px;
 }

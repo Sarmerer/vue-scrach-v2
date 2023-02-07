@@ -1,5 +1,9 @@
 <template>
-  <div class="block__dummy" :class="classes" :style="style">
+  <div
+    class="block__dummy"
+    :class="classes"
+    :style="{ ...style, ...fieldsStyle }"
+  >
     <component
       v-for="(field, index) in input.fields"
       :key="index"
@@ -33,13 +37,13 @@ export default {
 <style lang="scss" scoped>
 .block__dummy {
   position: relative;
-  min-width: 70px;
+  min-width: 15px;
   min-height: 20px;
   width: fit-content;
-  height: fit-content;
   padding: 7px;
 
   display: flex;
+  align-items: center;
   gap: 7px;
 }
 

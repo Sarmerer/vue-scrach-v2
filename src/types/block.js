@@ -267,6 +267,7 @@ export class Block extends DOMElement {
 
   setInline() {
     this.isInline = true
+    return this
   }
 
   /** @returns {Block} */

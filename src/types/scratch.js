@@ -1,5 +1,6 @@
 import { BlockProximityDetector } from './block-proximity-detector'
 import { Block } from './block'
+import blockTypes from './block-types'
 
 export class Scratch {
   static Blocks = {}
@@ -79,3 +80,5 @@ export class Scratch {
     Scratch.Blocks[name] = factory
   }
 }
+
+blockTypes.register()

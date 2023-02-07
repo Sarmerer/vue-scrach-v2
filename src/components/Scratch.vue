@@ -27,23 +27,12 @@ export default {
   components: { BlockRenderer },
 
   mounted() {
-    Scratch.DeclareBlock('mess', function (b) {
-      b.addValueInput().addTextField('repeat')
-      b.addStatementInput()
-      b.setBackgroundColor('green').allowNext().allowPrev()
-    })
-
-    Scratch.DeclareBlock('mess2', function (b) {
-      b.addValueInput().addTextField('print')
-      b.setBackgroundColor('lightblue').allowOutput()
-    })
-
-    this.scratch.spawnBlock('mess')
+    this.scratch.spawnBlock('latest')
   },
 
   methods: {
     spawnBlock(event) {
-      this.scratch.spawnBlock('mess2', event.clientX, event.clientY)
+      this.scratch.spawnBlock('latest', event.clientX, event.clientY)
     },
   },
 }

@@ -3,7 +3,7 @@
     <div
       class="block__value"
       :class="classes"
-      v-bind="{ style, id: externalId }"
+      v-bind="{ id: externalId, style: { ...style, ...fieldsStyle } }"
     >
       <component
         v-for="(field, index) in input.fields"
@@ -73,11 +73,15 @@ export default {
     },
 
     classes() {
+      if (this.block.hasOutput) return {}
+
       return {
-        'block--border-first': this.input.isFirst(),
-        'block--border-last': this.input.isLast(),
-        'block--border-before-statement': this.nextInputIs('Statement'),
-        'block--border-after-statement': this.prevInputIs('Statement'),
+        'block--border-tl': this.input.isFirst(),
+        'block--border-bl': this.input.isLast(),
+        'block--border-tr': this.input.isFirst() && !this.inputBlock,
+        'block--border-br':
+          (this.input.isLast() || this.nextInputIs('Statement')) &&
+          !this.inputBlock,
       }
     },
   },
@@ -91,7 +95,7 @@ export default {
 
 .block__value {
   position: relative;
-  min-width: 70px;
+  min-width: 15px;
   min-height: 20px;
   width: fit-content;
   padding: 7px;
@@ -105,29 +109,22 @@ export default {
   position: relative;
   min-width: 15px;
   min-height: 25px;
-  border-radius: 7px;
   background-color: white;
-
-  &.empty {
-    border-radius: 3px;
-  }
 }
 
-.block--border-first {
+.block--border-tl {
   border-top-left-radius: 6px;
+}
+
+.block--border-tr {
   border-top-right-radius: 6px;
 }
 
-.block--border-last {
+.block--border-br {
+  border-bottom-right-radius: 6px;
+}
+
+.block--border-bl {
   border-bottom-left-radius: 6px;
-  border-bottom-right-radius: 6px;
-}
-
-.block--border-before-statement {
-  border-bottom-right-radius: 6px;
-}
-
-.block--border-after-statement {
-  border-top-right-radius: 6px;
 }
 </style>

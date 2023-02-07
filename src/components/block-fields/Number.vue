@@ -1,6 +1,6 @@
 <template>
   <DynamicInput
-    type="text"
+    type="number"
     class="block__field__text"
     :placeholder="field.placeholder"
     v-model="field.value"
@@ -11,7 +11,7 @@
 import mixins from './mixins'
 
 export default {
-  name: 'BlockTextField',
+  name: 'BlockNumberField',
 
   mixins: [mixins],
 }
