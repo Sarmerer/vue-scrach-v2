@@ -1,6 +1,7 @@
 import { DOMElement } from './dom-element'
 import { Block } from './block'
 import { uuidv4 } from '../utils'
+import { Connection } from './connection'
 
 /**
  * @typedef {Object} BlockFieldOptions
@@ -49,6 +50,7 @@ export class BlockInput extends DOMElement {
     this.type = type
     this.fields = []
 
+    this.connection = null
     this.align = BlockInput.Alignment.Left
 
     this.index = block.inputs.length
@@ -58,6 +60,10 @@ export class BlockInput extends DOMElement {
     if (prev) {
       this.group = prev.group
     }
+  }
+
+  hasValue() {
+    return this.connection !== null
   }
 
   /** @param {String} label */
@@ -117,6 +123,7 @@ export class BlockValueInput extends BlockInput {
   /** @param {Block} block */
   constructor(block) {
     super(block, 'Value')
+    this.connection = new Connection(Connection.Input, block, this)
   }
 }
 
@@ -124,6 +131,7 @@ export class BlockStatementInput extends BlockInput {
   /** @param {Block} block */
   constructor(block) {
     super(block, 'Statement')
+    this.connection = new Connection(Connection.Statement, block, this)
     this.group++
   }
 }

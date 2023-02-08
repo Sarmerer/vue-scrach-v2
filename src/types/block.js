@@ -7,15 +7,9 @@ import {
   BlockStatementInput,
   BlockValueInput,
 } from './block-input'
+import { Connection } from './connection'
 
 export class Block extends DOMElement {
-  static Connection = {
-    Prev: 1,
-    Next: 2,
-    Input: 3,
-    Statement: 4,
-  }
-
   /**
    * @param {Scratch} scratch
    * @param {Number} x
@@ -38,14 +32,11 @@ export class Block extends DOMElement {
     this.isFrozen = false
 
     this.isInline = false
-    this.hasOutput = false
-    this.hasPrev = false
-    this.hasNext = false
 
-    this.inputOf = null
+    this.inputs = []
+    this.outputBlock = null
     this.prevBlock = null
     this.nextBlock = null
-    this.inputs = []
 
     this.colors = {
       background: 'cyan',
@@ -60,16 +51,28 @@ export class Block extends DOMElement {
 
   /** @returns {Boolean} */
   isRelative() {
-    return this.prevBlock || this.inputOf
+    return this.prevBlock?.isConnected() || this.outputBlock?.isConnected()
   }
 
   /** @returns {Boolean} */
   isActive() {
     return (
       this.isDragged ||
-      this.prevBlock?.isActive() ||
-      this.inputOf?.block.isActive()
+      this.prevBlock?.getTargetBlock()?.isActive() ||
+      this.outputBlock?.getTargetBlock()?.isActive()
     )
+  }
+
+  hasPrev() {
+    return this.prevBlock !== null
+  }
+
+  hasNext() {
+    return this.nextBlock !== null
+  }
+
+  hasOutput() {
+    return this.outputBlock !== null
   }
 
   /** @returns {Array<Array<BlockInput>>} */
@@ -79,96 +82,6 @@ export class Block extends DOMElement {
       acc[acc.length - 1].push(input)
       return acc
     }, [])
-  }
-
-  /** @returns {Block} */
-  getHead() {
-    if (this.prevBlock) {
-      return this.prevBlock.getHead()
-    }
-
-    return this
-  }
-
-  /** @returns {Block} */
-  getTail() {
-    if (this.nextBlock) {
-      return this.nextBlock.getTail()
-    }
-
-    return this
-  }
-
-  /** @param {BlockInput} input */
-  setInputOf(input) {
-    if (
-      !(this.hasOutput || (this.hasPrev && input.type == 'Statement')) ||
-      input.type == 'Dummy'
-    ) {
-      return
-    }
-
-    const oldInput = this.scratch.blocks.find((b) => b.inputOf?.id == input.id)
-    if (oldInput) {
-      this.setNext(oldInput)
-      oldInput.inputOf = null
-    }
-
-    this.inputOf = input
-  }
-
-  /** @param {Block} block */
-  setPrev(block) {
-    if (!this.hasPrev || !block.hasNext) return
-
-    if (block.nextBlock) {
-      const tail = this.getTail()
-      tail.nextBlock = block.nextBlock
-      block.nextBlock.prevBlock = tail
-    }
-
-    this.prevBlock = block
-    block.nextBlock = this
-  }
-
-  /** @param {Block} block */
-  setNext(block) {
-    if (!this.hasNext || !block.hasPrev) return
-
-    if (block.prevBlock) {
-      block.prevBlock.nextBlock = this
-      this.prevBlock = block.prevBlock
-    }
-
-    if (block.inputOf) {
-      this.inputOf = block.inputOf
-      block.inputOf = null
-    }
-
-    const tail = this.getTail()
-    tail.nextBlock = block
-    block.prevBlock = tail
-  }
-
-  detachPrev() {
-    if (!this.prevBlock) return
-
-    this.prevBlock.nextBlock = null
-    this.prevBlock = null
-  }
-
-  detachNext() {
-    if (!this.nextBlock) return
-
-    this.nextBlock.prevBlock = null
-    this.nextBlock = null
-  }
-
-  detachAll() {
-    this.inputOf = null
-
-    this.detachPrev()
-    this.detachNext()
   }
 
   /** @param {MouseEvent} event */
@@ -190,6 +103,7 @@ export class Block extends DOMElement {
     this.yBeforeDrag = this.y
 
     this.isDragged = true
+    this.scratch.proximity.prepare(this)
 
     window.addEventListener('mousemove', this.listeners_.drag)
     window.addEventListener('mouseup', this.listeners_.dragEnd, { once: true })
@@ -208,8 +122,8 @@ export class Block extends DOMElement {
       const dy = Math.abs(this.yBeforeDrag - nextY)
       if (dx < 15 && dy < 15) return
 
-      this.inputOf = null
-      this.detachPrev()
+      this.outputBlock?.disconnect()
+      this.prevBlock?.disconnect()
     }
 
     this.x = nextX
@@ -224,12 +138,13 @@ export class Block extends DOMElement {
     window.removeEventListener('mousemove', this.listeners_.drag)
 
     this.isDragged = false
-    this.scratch.proximity.connect(this)
+    this.scratch.proximity.reset(this)
   }
 
   /** @returns {BlockDummyInput} */
   addValueInput() {
     const input = new BlockValueInput(this)
+    this.scratch.proximity.addConnection(input.connection)
     this.inputs.push(input)
     return input
   }
@@ -244,29 +159,49 @@ export class Block extends DOMElement {
   /** @returns {BlockDummyInput} */
   addStatementInput() {
     const input = new BlockStatementInput(this)
+    this.scratch.proximity.addConnection(input.connection)
     this.inputs.push(input)
     return input
   }
 
   /** @returns {Block} */
   allowOutput() {
-    this.hasOutput = true
-    this.hasNext = false
-    this.hasPrev = false
+    if (this.hasPrev()) {
+      this.prevBlock.delete()
+      this.prevBlock = null
+    }
+
+    if (this.hasNext()) {
+      this.nextBlock.delete()
+      this.nextBlock = null
+    }
+
+    this.outputBlock = new Connection(Connection.Output, this)
+    this.scratch.proximity.addConnection(this.outputBlock)
     return this
   }
 
   /** @returns {Block} */
   allowPrev() {
-    this.hasPrev = true
-    this.hasOutput = false
+    if (this.hasOutput()) {
+      this.outputBlock.delete()
+      this.outputBlock = null
+    }
+
+    this.prevBlock = new Connection(Connection.Prev, this)
+    this.scratch.proximity.addConnection(this.prevBlock)
     return this
   }
 
   /** @returns {Block} */
   allowNext() {
-    this.hasNext = true
-    this.hasOutput = false
+    if (this.hasOutput()) {
+      this.outputBlock.delete()
+      this.outputBlock = null
+    }
+
+    this.nextBlock = new Connection(Connection.Next, this)
+    this.scratch.proximity.addConnection(this.nextBlock)
     return this
   }
 

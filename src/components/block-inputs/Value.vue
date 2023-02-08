@@ -19,23 +19,24 @@
         :class="{ empty: !inputBlock }"
       >
         <BlockRenderer
-          v-if="inputBlock && block.isInline"
+          v-if="block.isInline && inputBlock"
           :block="inputBlock"
         />
 
         <Dropzone
-          v-if="!inputBlock && block.isInline"
-          v-bind="{ block, input, type: Block.Connection.Input, inline: true }"
+          v-if="input.hasValue() && block.isInline"
+          :connection="input.connection"
+          inline
         />
       </div>
-
-      <Dropzone
-        v-if="!inputBlock && !block.isInline"
-        v-bind="{ block, input, type: Block.Connection.Input }"
-      />
     </div>
 
-    <BlockRenderer v-if="inputBlock && !block.isInline" :block="inputBlock" />
+    <Dropzone
+      v-if="input.hasValue() && !block.isInline"
+      :connection="input.connection"
+    />
+
+    <BlockRenderer v-if="!block.isInline && inputBlock" :block="inputBlock" />
   </span>
 </template>
 
@@ -70,16 +71,8 @@ export default {
       return this.input.id
     },
 
-    inputBlock() {
-      if (this.isDummy) return null
-
-      return this.scratch.blocks.find(
-        (block) => block.inputOf?.id == this.input.id
-      )
-    },
-
     classes() {
-      if (this.block.hasOutput || this.block.isInline) return { inline: true }
+      if (this.block.hasOutput() || this.block.isInline) return { inline: true }
 
       return {
         'block--border-tl': this.input.isFirst(),

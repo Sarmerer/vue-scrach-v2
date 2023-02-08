@@ -1,66 +1,38 @@
 <template>
   <div
-    v-if="isShown"
+    v-if="connection.isHighlighted"
     class="block__dropzone"
-    :class="{ vertical: isVertical, inline: isInline }"
+    :class="{ vertical: isVertical, inline: isInline, absolute }"
   ></div>
 </template>
 
 <script>
-import { Block } from '../types/block'
-import { BlockInput } from '../types/block-input'
+import { Connection } from '../types/connection'
 
 export default {
   name: 'BlockDropzone',
 
   props: {
-    block: { type: Block, required: true },
-    index: { type: Number, default: -1 },
-    input: { type: BlockInput },
+    connection: { type: Connection, required: true },
+    absolute: Boolean,
     inline: Boolean,
-    type: Number,
   },
 
   computed: {
-    scratch() {
-      return this.block.scratch
+    block() {
+      return this.connection.block
     },
 
     isInput() {
-      return this.type == Block.Connection.Input
+      return this.connection.type == Connection.Input
     },
 
     isVertical() {
-      return this.isInput && !this.inline
+      return this.isInput && !this.block.isInline
     },
 
     isInline() {
-      return this.isInput && this.inline
-    },
-
-    isShown() {
-      return this.isSatisfied && !this.block.isActive()
-    },
-
-    isSatisfied() {
-      const rules = {
-        [Block.Connection.Statement]: () =>
-          this.scratch.proximity.input?.id == this.input?.id,
-
-        [Block.Connection.Input]: () =>
-          this.scratch.proximity.input?.id == this.input?.id,
-
-        [Block.Connection.Prev]: () =>
-          this.scratch.proximity.prev?.id == this.block.id,
-
-        [Block.Connection.Next]: () =>
-          this.scratch.proximity.next?.id == this.block.id,
-      }
-
-      const rule = rules[this.type]
-      if (!rule) return false
-
-      return rule()
+      return this.isInput && this.block.isInline
     },
   },
 }
@@ -76,11 +48,6 @@ export default {
   flex-direction: column;
   justify-content: center;
 
-  &.absolute {
-    position: absolute;
-    top: -10px;
-  }
-
   &::after {
     content: '';
     display: inline-block;
@@ -90,6 +57,11 @@ export default {
     width: 100%;
     height: 6px;
   }
+}
+
+.block__dropzone.absolute {
+  position: absolute;
+  top: -10px;
 }
 
 .block__dropzone.vertical {

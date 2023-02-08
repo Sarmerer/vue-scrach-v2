@@ -18,14 +18,13 @@ export const components = {
   SelectField,
 }
 
-export function data() {
-  this.Block = Block
-  return {}
-}
-
 export const computed = {
   scratch() {
     return this.block.scratch
+  },
+
+  inputBlock() {
+    return this.input.connection?.getTargetBlock()
   },
 
   style() {
@@ -56,4 +55,4 @@ export const methods = {
   },
 }
 
-export default { props, components, data, computed, methods }
+export default { props, components, computed, methods }

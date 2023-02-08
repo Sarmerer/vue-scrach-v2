@@ -1,37 +1,38 @@
 <template>
   <div
-    :id="block.id"
-    class="scratch__block"
+    class="scratch__block__overlay"
     :class="{ relative: isRelative, dragged: block.isDragged }"
     :style="{ transform }"
-    @mousedown.stop="block.dragStart($event)"
   >
-    <slot v-if="block.hasPrev" name="top-zone">
-      <Dropzone
-        v-bind="{ block, type: Block.Connection.Prev }"
-        :class="{ absolute: !isRelative }"
-      />
-    </slot>
-
     <div
-      v-for="(group, index) of block.getInputGroups()"
-      :key="index"
-      class="scratch__block__inputs-group"
-      :class="{ inline: block.isInline }"
+      :id="block.id"
+      class="scratch__block"
+      @mousedown.stop="block.dragStart($event)"
     >
-      <component
-        v-for="input of group"
-        :key="input.id"
-        :is="input.type"
-        v-bind="{ block, input }"
-      ></component>
+      <slot v-if="block.hasPrev()" name="top-zone">
+        <Dropzone :connection="block.prevBlock" :absolute="!isRelative" />
+      </slot>
+
+      <div
+        v-for="(group, index) of block.getInputGroups()"
+        :key="index"
+        class="scratch__block__inputs-group"
+        :class="{ inline: block.isInline }"
+      >
+        <component
+          v-for="input of group"
+          :key="input.id"
+          :is="input.type"
+          v-bind="{ block, input }"
+        ></component>
+      </div>
+
+      <slot v-if="block.hasNext()" name="bottom-zone">
+        <Dropzone :connection="block.nextBlock" />
+      </slot>
     </div>
 
-    <slot v-if="block.hasNext && !nextBlock" name="bottom-zone">
-      <Dropzone v-bind="{ block, type: Block.Connection.Next }" />
-    </slot>
-
-    <BlockRenderer v-else-if="nextBlock" :block="nextBlock" />
+    <BlockRenderer v-if="nextBlock" :block="nextBlock" />
   </div>
 </template>
 
@@ -59,11 +60,6 @@ export default {
     Dropzone,
   },
 
-  data() {
-    this.Block = Block
-    return {}
-  },
-
   computed: {
     isRelative() {
       return this.block.isRelative()
@@ -76,18 +72,17 @@ export default {
     },
 
     nextBlock() {
-      return this.block.nextBlock
+      return this.block.nextBlock?.getTargetBlock()
     },
   },
 }
 </script>
 
 <style lang="scss" scoped>
-.scratch__block {
+.scratch__block__overlay {
   position: absolute;
   transform-origin: 0 0;
   user-select: none;
-  width: fit-content;
   z-index: 1;
 
   &.relative {
@@ -97,6 +92,11 @@ export default {
   &.dragged {
     pointer-events: none;
   }
+}
+
+.scratch__block {
+  position: relative;
+  width: fit-content;
 }
 
 .scratch__block__inputs-group {

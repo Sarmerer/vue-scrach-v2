@@ -1,4 +1,4 @@
-import { BlockProximityDetector } from './block-proximity-detector'
+import { Proximity } from './proximity'
 import { DOMElement } from './dom-element'
 import { Block } from './block'
 import { uuidv4 } from '../utils'
@@ -15,7 +15,7 @@ export class Scratch extends DOMElement {
     this.blocks = []
     this.variables = []
 
-    this.proximity = new BlockProximityDetector(this)
+    this.proximity = new Proximity(this)
   }
 
   /** @returns {Array<Block>} */

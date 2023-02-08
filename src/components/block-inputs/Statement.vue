@@ -5,16 +5,11 @@
       <div :id="input.id" class="block__statement__children">
         <BlockRenderer v-if="inputBlock" :block="inputBlock">
           <template #top-zone>
-            <Dropzone
-              v-bind="{ block, input, type: Block.Connection.Statement }"
-            />
+            <Dropzone v-if="input.hasValue()" :connection="input.connection" />
           </template>
         </BlockRenderer>
 
-        <Dropzone
-          v-else
-          v-bind="{ block, input, type: Block.Connection.Statement }"
-        />
+        <Dropzone v-else-if="input.hasValue()" :connection="input.connection" />
       </div>
     </div>
     <div
@@ -42,12 +37,6 @@ export default {
   },
 
   computed: {
-    inputBlock() {
-      return this.scratch.blocks.find((block) => {
-        return block.inputOf?.id == this.input.id
-      })
-    },
-
     borderClasses() {
       return { 'block--border-last': this.input.isLast() }
     },
