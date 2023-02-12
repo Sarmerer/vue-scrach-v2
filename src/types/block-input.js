@@ -16,13 +16,14 @@ export class BlockField {
    * @param {String} type
    * @param {BlockFieldOptions} options
    */
-  constructor(type, options = null) {
+  constructor(name, type, options = null) {
     this.type = type
 
     options = Object.assign(
       { value: null, label: null, placeholder: null, options: [] },
       options
     )
+    this.name = name
     this.value = options.value
     this.label = options.label
     this.options = options.options
@@ -39,13 +40,15 @@ export class BlockInput extends DOMElement {
 
   /**
    * @param {Block} block
+   * @param {String} name
    * @param {'Value' | 'Dummy' | 'Statement'} type
    */
-  constructor(block, type) {
+  constructor(block, name, type) {
     const id = uuidv4()
     super(id)
 
     this.id = id
+    this.name = name
     this.block = block
     this.type = type
     this.fields = []
@@ -62,38 +65,9 @@ export class BlockInput extends DOMElement {
     }
   }
 
+  /** @returns {Boolean} */
   hasValue() {
     return this.connection !== null
-  }
-
-  /** @param {String} label */
-  addLabelField(label) {
-    this.fields.push(new BlockField('LabelField', { label }))
-    return this
-  }
-
-  /** @param {BlockFieldOptions} options */
-  addTextField(options) {
-    this.fields.push(new BlockField('TextField', options))
-    return this
-  }
-
-  /** @param {BlockFieldOptions} options */
-  addNumberField(options) {
-    this.fields.push(new BlockField('NumberField', options))
-    return this
-  }
-
-  /** @param {BlockFieldOptions} options */
-  addSelectField(options) {
-    this.fields.push(new BlockField('SelectField', options))
-    return this
-  }
-
-  /** @param {Number} align */
-  setAlign(align) {
-    this.align = align
-    return this
   }
 
   /** @returns {Boolean} */
@@ -117,20 +91,65 @@ export class BlockInput extends DOMElement {
     if (this.isLast()) return null
     return this.block.inputs[this.index + 1]
   }
+
+  /** @param {String} label */
+  addLabelField(label = '') {
+    this.fields.push(new BlockField(null, 'LabelField', { label }))
+    return this
+  }
+
+  /**
+   * @param {String} name
+   * @param {BlockFieldOptions} options
+   */
+  addTextField(name, options) {
+    this.fields.push(new BlockField(name, 'TextField', options))
+    return this
+  }
+
+  /**
+   * @param {String} name
+   * @param {BlockFieldOptions} options
+   */
+  addNumberField(name, options) {
+    this.fields.push(new BlockField(name, 'NumberField', options))
+    return this
+  }
+
+  /**
+   * @param {String} name
+   * @param {BlockFieldOptions} options
+   */
+  addSelectField(name, options) {
+    this.fields.push(new BlockField(name, 'SelectField', options))
+    return this
+  }
+
+  /** @param {Number} align */
+  setAlign(align) {
+    this.align = align
+    return this
+  }
 }
 
 export class BlockValueInput extends BlockInput {
-  /** @param {Block} block */
-  constructor(block) {
-    super(block, 'Value')
+  /**
+   * @param {Block} block
+   * @param {String} name
+   */
+  constructor(block, name) {
+    super(block, name, 'Value')
     this.connection = new Connection(Connection.Input, block, this)
   }
 }
 
 export class BlockStatementInput extends BlockInput {
-  /** @param {Block} block */
-  constructor(block) {
-    super(block, 'Statement')
+  /**
+   * @param {Block} block
+   * @param {String} name
+   */
+  constructor(block, name) {
+    super(block, name, 'Statement')
     this.connection = new Connection(Connection.Statement, block, this)
     this.group++
   }
@@ -138,7 +157,7 @@ export class BlockStatementInput extends BlockInput {
 
 export class BlockDummyInput extends BlockInput {
   /** @param {Block} block */
-  constructor(block) {
-    super(block, 'Dummy')
+  constructor(block, name) {
+    super(block, null, 'Dummy')
   }
 }

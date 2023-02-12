@@ -64,11 +64,12 @@ export class Proximity {
 
       const aPos = activeConnection.getPosition()
       const cPos = connection.getPosition()
-      const dist = Math.abs(cPos.y - aPos.y)
+      const yDist = Math.abs(cPos.y - aPos.y)
+      const xDist = Math.abs(cPos.x - aPos.x)
 
-      if (dist >= minDist || dist > 50) continue
+      if (yDist >= minDist || yDist > 50 || xDist > 70) continue
 
-      minDist = dist
+      minDist = yDist
       candidate = connection
       this.activeBlockConnection = activeConnection
     }

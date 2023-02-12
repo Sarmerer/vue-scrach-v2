@@ -3,6 +3,7 @@ import { Scratch } from './scratch'
 import { uuidv4 } from '../utils'
 import {
   BlockDummyInput,
+  BlockField,
   BlockInput,
   BlockStatementInput,
   BlockValueInput,
@@ -84,6 +85,87 @@ export class Block extends DOMElement {
     }, [])
   }
 
+  /**
+   * @param {String} name
+   * @returns {BlockInput}
+   */
+  findInput(name) {
+    for (const input of this.inputs) {
+      if (input.name === name) return input
+    }
+
+    return null
+  }
+
+  /**
+   * @param {String} name
+   * @returns {BlockField}
+   */
+  findField(name) {
+    for (const input of this.inputs) {
+      for (const field of input.fields) {
+        if (field.name === name) return field
+      }
+    }
+
+    return null
+  }
+
+  /**
+   * @param {String} inputName
+   * @returns {Object}
+   */
+  getFieldsValues(inputName = null) {
+    let inputs = this.inputs
+    if (inputName) {
+      const input = this.findInput(inputName)
+      if (!input) return {}
+
+      inputs = [input]
+    }
+
+    const values = {}
+    for (const input of inputs) {
+      for (const field of input.fields) {
+        if (field.name === null) continue
+
+        values[field.name] = field.value
+      }
+    }
+
+    return values
+  }
+
+  /** @returns {Array<BlockStatementInput>} */
+  getStatements() {
+    const statements = {}
+    for (const input of this.inputs) {
+      if (input.type !== 'Statement' || input.name === null) continue
+      if (!input.connection.isConnected()) continue
+
+      statements[input.name] = this.getStatement(input)
+    }
+
+    return statements
+  }
+
+  /**
+   * @param {BlockStatementInput} statementInput
+   * @returns {Block}
+   */
+  getStatement(statementInput) {
+    if (!statementInput.connection.isConnected()) return []
+
+    const statement = []
+    let next = statementInput.connection.getTargetBlock()
+    while (next) {
+      statement.push(next)
+      next = next.nextBlock.getTargetBlock()
+    }
+
+    return statement
+  }
+
   /** @param {MouseEvent} event */
   dragStart(event) {
     if (this.isDragged || this.isFrozen) return
@@ -139,11 +221,26 @@ export class Block extends DOMElement {
 
     this.isDragged = false
     this.scratch.proximity.reset(this)
+    this.scratch.generator.compile()
   }
 
-  /** @returns {BlockDummyInput} */
-  addValueInput() {
-    const input = new BlockValueInput(this)
+  /**
+   * @param {String} name
+   * @returns {BlockValueInput}
+   */
+  addValueInput(name) {
+    const input = new BlockValueInput(this, name)
+    this.scratch.proximity.addConnection(input.connection)
+    this.inputs.push(input)
+    return input
+  }
+
+  /**
+   * @param {String} name
+   * @returns {BlockStatementInput}
+   */
+  addStatementInput(name) {
+    const input = new BlockStatementInput(this, name)
     this.scratch.proximity.addConnection(input.connection)
     this.inputs.push(input)
     return input
@@ -152,14 +249,6 @@ export class Block extends DOMElement {
   /** @returns {BlockDummyInput} */
   addDummyInput() {
     const input = new BlockDummyInput(this)
-    this.inputs.push(input)
-    return input
-  }
-
-  /** @returns {BlockDummyInput} */
-  addStatementInput() {
-    const input = new BlockStatementInput(this)
-    this.scratch.proximity.addConnection(input.connection)
     this.inputs.push(input)
     return input
   }

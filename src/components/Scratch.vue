@@ -1,6 +1,6 @@
 <template>
   <div class="scratch">
-    <ScratchToolbox v-bind="{ scratch }" />
+    <Toolbox v-bind="{ scratch }" />
 
     <div :id="scratch.id" class="scratch__blocks">
       <BlockRenderer
@@ -9,14 +9,17 @@
         v-bind="{ block }"
       />
     </div>
+
+    <CodePreview v-bind="{ scratch }" />
   </div>
 </template>
 
 <script>
 import { Scratch } from '../types/scratch'
-import ScratchToolbox from './Toolbox.vue'
 
+import Toolbox from './Toolbox.vue'
 import BlockRenderer from './BlockRenderer.vue'
+import CodePreview from './CodePreview.vue'
 
 export default {
   name: 'Scratch',
@@ -28,7 +31,7 @@ export default {
     },
   },
 
-  components: { ScratchToolbox, BlockRenderer },
+  components: { Toolbox, BlockRenderer, CodePreview },
 }
 </script>
 

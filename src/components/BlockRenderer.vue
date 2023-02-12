@@ -97,6 +97,7 @@ export default {
 .scratch__block {
   position: relative;
   width: fit-content;
+  font-size: 14px;
 }
 
 .scratch__block__inputs-group {

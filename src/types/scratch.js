@@ -3,6 +3,7 @@ import { DOMElement } from './dom-element'
 import { Block } from './block'
 import { uuidv4 } from '../utils'
 import blockTypes from './block-types'
+import { CodeGenerator } from './generator'
 
 export class Scratch extends DOMElement {
   static Blocks = {}
@@ -16,6 +17,7 @@ export class Scratch extends DOMElement {
     this.variables = []
 
     this.proximity = new Proximity(this)
+    this.generator = new CodeGenerator(this)
   }
 
   /** @returns {Array<Block>} */
