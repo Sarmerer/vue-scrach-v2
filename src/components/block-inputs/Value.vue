@@ -5,12 +5,11 @@
       :class="classes"
       v-bind="{ id: externalId, style: { ...style, ...fieldsStyle } }"
     >
-      <component
+      <BlockField
         v-for="(field, index) in input.fields"
         :key="index"
-        :is="field.type"
         v-bind="{ field }"
-      ></component>
+      />
 
       <div
         v-if="block.isInline && !isDummy"
@@ -18,15 +17,14 @@
         class="block__value__inline-input"
         :class="{ empty: !inputBlock }"
       >
-        <BlockRenderer
-          v-if="block.isInline && inputBlock"
-          :block="inputBlock"
-        />
-
         <Dropzone
           v-if="input.hasValue() && block.isInline"
           :connection="input.connection"
           inline
+        />
+        <BlockRenderer
+          v-if="block.isInline && inputBlock"
+          :block="inputBlock"
         />
       </div>
     </div>
@@ -41,6 +39,8 @@
 </template>
 
 <script>
+import { BlockInput } from '../../types/block-input'
+import BlockField from '../BlockField.vue'
 import Dropzone from '../Dropzone.vue'
 import mixins from './mixins'
 
@@ -51,12 +51,13 @@ export default {
 
   components: {
     BlockRenderer: () => import('../BlockRenderer.vue'),
+    BlockField,
     Dropzone,
   },
 
   computed: {
     isDummy() {
-      return this.input.type == 'Dummy'
+      return this.input.type == BlockInput.Dummy
     },
 
     externalId() {
@@ -79,8 +80,7 @@ export default {
         'block--border-bl': this.input.isLast(),
         'block--border-tr': this.input.isFirst() && this.isDummy,
         'block--border-br':
-          (this.input.isLast() || this.nextInputIs('Statement')) &&
-          this.isDummy,
+          (this.input.isLast() || this.nextInputIsStatement) && this.isDummy,
       }
     },
   },
@@ -90,6 +90,7 @@ export default {
 <style lang="scss" scoped>
 .block__value__wrapper {
   display: flex;
+  align-items: flex-start;
 }
 
 .block__value {

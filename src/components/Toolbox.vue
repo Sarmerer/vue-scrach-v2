@@ -131,6 +131,7 @@ export default {
 .toolbox__option {
   position: relative;
   height: fit-content;
+  user-select: none;
   padding: 10px 10px;
 }
 

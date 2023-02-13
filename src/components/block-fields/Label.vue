@@ -1,21 +1,13 @@
 <template>
-  <label class="block__field__label" v-text="field.label"></label>
+  <label class="block__field__label" v-text="field.value"></label>
 </template>
 
 <script>
-import { BlockField } from '../../types/block-input'
-import DynamicInput from './DynamicInput.vue'
+import mixins from './mixins'
 
 export default {
   name: 'BlockLabelField',
 
-  props: {
-    field: {
-      type: BlockField,
-      required: true,
-    },
-  },
-
-  components: { DynamicInput },
+  mixins: [mixins],
 }
 </script>

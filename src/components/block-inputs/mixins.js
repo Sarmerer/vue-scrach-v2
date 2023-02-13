@@ -1,21 +1,9 @@
 import { Block } from '../../types/block'
 import { BlockInput } from '../../types/block-input'
 
-import TextField from '../block-fields/Text.vue'
-import LabelField from '../block-fields/Label.vue'
-import NumberField from '../block-fields/Number.vue'
-import SelectField from '../block-fields/Select.vue'
-
 export const props = {
   block: { type: Block, required: true },
   input: { type: BlockInput, required: true },
-}
-
-export const components = {
-  TextField,
-  LabelField,
-  NumberField,
-  SelectField,
 }
 
 export const computed = {
@@ -25,6 +13,10 @@ export const computed = {
 
   inputBlock() {
     return this.input.connection?.getTargetBlock()
+  },
+
+  nextInputIsStatement() {
+    return this.input.getNext()?.type == BlockInput.Statement
   },
 
   style() {
@@ -45,14 +37,4 @@ export const computed = {
   },
 }
 
-export const methods = {
-  nextInputIs(type) {
-    return this.input.getNext()?.type == type
-  },
-
-  prevInputIs(type) {
-    return this.input.getPrev()?.type == type
-  },
-}
-
-export default { props, components, computed, methods }
+export default { props, computed }

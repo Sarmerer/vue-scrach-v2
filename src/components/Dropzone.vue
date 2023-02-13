@@ -40,23 +40,15 @@ export default {
 
 <style lang="scss" scoped>
 .block__dropzone {
+  position: relative;
   width: 100%;
-  height: 10px;
+  height: 6px;
+  margin: 2px 0;
   z-index: 10;
 
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-
-  &::after {
-    content: '';
-    display: inline-block;
-    border-radius: 2px;
-    background-color: black;
-    opacity: 0.35;
-    width: 100%;
-    height: 6px;
-  }
+  border-radius: 2px;
+  background-color: black;
+  opacity: 0.35;
 }
 
 .block__dropzone.absolute {
@@ -65,26 +57,17 @@ export default {
 }
 
 .block__dropzone.vertical {
-  position: absolute;
-  width: 10px;
-  height: 100%;
-  right: -13px;
-  top: 0px;
-
-  &::after {
-    width: 7px;
-    height: 90%;
-  }
+  margin: 0 2px;
+  width: 6px;
+  height: unset;
+  align-self: stretch;
 }
 
 .block__dropzone.inline {
   position: absolute;
   width: 100%;
   height: 100%;
-
-  &::after {
-    width: 100%;
-    height: 100%;
-  }
+  margin: 0;
+  border-radius: 0;
 }
 </style>

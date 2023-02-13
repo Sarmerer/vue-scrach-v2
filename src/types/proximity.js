@@ -67,7 +67,7 @@ export class Proximity {
       const yDist = Math.abs(cPos.y - aPos.y)
       const xDist = Math.abs(cPos.x - aPos.x)
 
-      if (yDist >= minDist || yDist > 50 || xDist > 70) continue
+      if (yDist >= minDist || yDist > 30 || xDist > 50) continue
 
       minDist = yDist
       candidate = connection

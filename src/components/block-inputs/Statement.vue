@@ -13,7 +13,7 @@
       </div>
     </div>
     <div
-      v-if="input.isLast() || nextInputIs('Statement')"
+      v-if="input.isLast() || nextInputIsStatement"
       class="block__statement__footer"
       :class="borderClasses"
       :style="style"

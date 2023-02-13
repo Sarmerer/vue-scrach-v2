@@ -19,12 +19,11 @@
         class="scratch__block__inputs-group"
         :class="{ inline: block.isInline }"
       >
-        <component
+        <BlockInput
           v-for="input of group"
           :key="input.id"
-          :is="input.type"
           v-bind="{ block, input }"
-        ></component>
+        />
       </div>
 
       <slot v-if="block.hasNext()" name="bottom-zone">
@@ -39,9 +38,8 @@
 <script>
 import { Block } from '../types/block'
 
-import Value from './block-inputs/Value.vue'
-import Statement from './block-inputs/Statement.vue'
 import Dropzone from './Dropzone.vue'
+import BlockInput from './BlockInput.vue'
 
 export default {
   name: 'BlockRenderer',
@@ -54,10 +52,8 @@ export default {
   },
 
   components: {
-    Dummy: Value,
-    Statement,
-    Value,
     Dropzone,
+    BlockInput,
   },
 
   computed: {
