@@ -59,6 +59,7 @@ export default {
   width: 3ch;
   border-radius: 5px;
   text-align: center;
+  border: 1px solid gray;
 }
 
 .scratch__dynamic-input[type='number'] {

@@ -2,9 +2,11 @@ import { Scratch } from '../types/scratch'
 import builder from './builder'
 import functions from './functions'
 import loops from './loops'
+import math from './math'
 import sql from './sql'
+import strings from './strings'
 
-const enabledModules = [sql, functions, loops]
+const enabledModules = [math, strings, sql, functions, loops]
 
 export function declare() {
   for (const module of enabledModules) {

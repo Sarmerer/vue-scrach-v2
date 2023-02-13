@@ -15,7 +15,7 @@ export class Template {
     return template.replace(/[$]{([^}]+)}/g, function (_, path) {
       const properties = path.split('.')
       return properties.reduce((prev, curr) => {
-        if (!prev[curr]) return ''
+        if (prev[curr] == undefined) return ''
         return prev[curr]
       }, values)
     })

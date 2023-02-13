@@ -3,7 +3,9 @@ import { BlockField, BlockInput } from '../types/block-input'
 import { Connection } from '../types/connection'
 
 export default createModule({
-  name: 'loop',
+  name: 'loops',
+
+  style: { background: 'Orange', text: 'black' },
 
   blocks: [
     {

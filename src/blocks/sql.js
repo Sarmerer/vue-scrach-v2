@@ -7,7 +7,7 @@ export default createModule({
 
   style: {
     background: 'cadetblue',
-    text: 'black',
+    text: 'white',
   },
 
   blocks: [

@@ -63,24 +63,5 @@ export default createModule({
 
       compile: ['function ${name} () {', '${input.body}', '}'],
     },
-
-    {
-      name: 'arg',
-      connections: [Connection.Output],
-      inputs: [
-        {
-          type: BlockInput.Value,
-          fields: [
-            {
-              type: BlockField.Text,
-              name: 'value',
-              value: 'arg',
-            },
-          ],
-        },
-      ],
-
-      compile: ['"${value}"'],
-    },
   ],
 })

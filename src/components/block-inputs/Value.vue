@@ -90,7 +90,6 @@ export default {
 <style lang="scss" scoped>
 .block__value__wrapper {
   display: flex;
-  align-items: flex-start;
 }
 
 .block__value {

@@ -25,3 +25,9 @@ export default {
   mixins: [mixins],
 }
 </script>
+
+<style scoped>
+.block__field__select {
+  border-radius: 5px;
+}
+</style>
