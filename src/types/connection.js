@@ -41,8 +41,7 @@ export class Connection {
   }
 
   isTail() {
-    if (!this.type == Connection.Next || this.type == Connection.Input)
-      return true
+    if (!this.type == Connection.Next) return true
 
     return !this.isConnected()
   }
@@ -101,10 +100,6 @@ export class Connection {
 
   /** @param {Connection} target */
   connectInput(target) {
-    if (this.isConnected()) {
-      console.log(this.input.id)
-    }
-
     this.setTarget(target)
     target.setTarget(this)
   }
@@ -156,9 +151,9 @@ export class Connection {
       case Connection.Output:
         return this.block.hasOutput()
       case Connection.Input:
-        return this.input?.type == 'Value'
+        return this.input?.type == BlockInput.Value
       case Connection.Statement:
-        return this.input?.type == 'Statement'
+        return this.input?.type == BlockInput.Statement
     }
   }
 
@@ -167,7 +162,7 @@ export class Connection {
 
     switch (this.type) {
       case Connection.Input:
-        return block.hasOutput()
+        return !this.isConnected() && block.hasOutput()
       case Connection.Prev:
         return block.hasNext()
       case Connection.Statement:

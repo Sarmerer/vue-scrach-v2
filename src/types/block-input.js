@@ -6,12 +6,16 @@ import { Connection } from './connection'
 /**
  * @typedef {Object} BlockFieldOptions
  * @property {any} BlockFieldOptions.value
- * @property {String} BlockFieldOptions.label
  * @property {String} BlockFieldOptions.placeholder
  * @property {Array<String>} BlockFieldOptions.options
  */
 
 export class BlockField {
+  static Text = 1
+  static Label = 2
+  static Select = 3
+  static Number = 4
+
   /**
    * @param {String} type
    * @param {BlockFieldOptions} options
@@ -20,18 +24,34 @@ export class BlockField {
     this.type = type
 
     options = Object.assign(
-      { value: null, label: null, placeholder: null, options: [] },
+      { value: null, placeholder: null, options: [] },
       options
     )
     this.name = name
     this.value = options.value
-    this.label = options.label
-    this.options = options.options
     this.placeholder = options.placeholder
+
+    this.optionsUpdater = null
+    if (typeof options.options == 'function') {
+      this.optionsUpdater = options.options.bind(this)
+      this.updateOptions()
+    } else {
+      this.options = options.options
+    }
+  }
+
+  updateOptions() {
+    if (typeof this.optionsUpdater !== 'function') return
+
+    this.options = this.optionsUpdater()
   }
 }
 
 export class BlockInput extends DOMElement {
+  static Dummy = 1
+  static Value = 2
+  static Statement = 3
+
   static Alignment = {
     Right: 1,
     Left: 2,
@@ -41,7 +61,7 @@ export class BlockInput extends DOMElement {
   /**
    * @param {Block} block
    * @param {String} name
-   * @param {'Value' | 'Dummy' | 'Statement'} type
+   * @param {Number} type
    */
   constructor(block, name, type) {
     const id = uuidv4()
@@ -92,9 +112,32 @@ export class BlockInput extends DOMElement {
     return this.block.inputs[this.index + 1]
   }
 
-  /** @param {String} label */
-  addLabelField(label = '') {
-    this.fields.push(new BlockField(null, 'LabelField', { label }))
+  /**
+   *
+   * @param {Number} type
+   * @param {String} name
+   * @param {BlockFieldOptions} options
+   */
+  addField(type, name = null, options = null) {
+    const types = [
+      BlockField.Label,
+      BlockField.Text,
+      BlockField.Number,
+      BlockField.Select,
+    ]
+
+    if (!types.includes(type)) {
+      console.error('unknown block field type:', type)
+      return
+    }
+
+    this.fields.push(new BlockField(name, type, options))
+    return this
+  }
+
+  /** @param {BlockFieldOptions} options */
+  addLabelField(options) {
+    this.addField(BlockField.Label, options)
     return this
   }
 
@@ -103,7 +146,7 @@ export class BlockInput extends DOMElement {
    * @param {BlockFieldOptions} options
    */
   addTextField(name, options) {
-    this.fields.push(new BlockField(name, 'TextField', options))
+    this.addField(BlockField.Text, options)
     return this
   }
 
@@ -112,7 +155,7 @@ export class BlockInput extends DOMElement {
    * @param {BlockFieldOptions} options
    */
   addNumberField(name, options) {
-    this.fields.push(new BlockField(name, 'NumberField', options))
+    this.addField(BlockField.Number, options)
     return this
   }
 
@@ -121,7 +164,7 @@ export class BlockInput extends DOMElement {
    * @param {BlockFieldOptions} options
    */
   addSelectField(name, options) {
-    this.fields.push(new BlockField(name, 'SelectField', options))
+    this.addField(BlockField.Select, options)
     return this
   }
 
@@ -138,7 +181,7 @@ export class BlockValueInput extends BlockInput {
    * @param {String} name
    */
   constructor(block, name) {
-    super(block, name, 'Value')
+    super(block, name, BlockInput.Value)
     this.connection = new Connection(Connection.Input, block, this)
   }
 }
@@ -149,7 +192,7 @@ export class BlockStatementInput extends BlockInput {
    * @param {String} name
    */
   constructor(block, name) {
-    super(block, name, 'Statement')
+    super(block, name, BlockInput.Statement)
     this.connection = new Connection(Connection.Statement, block, this)
     this.group++
   }
@@ -157,7 +200,7 @@ export class BlockStatementInput extends BlockInput {
 
 export class BlockDummyInput extends BlockInput {
   /** @param {Block} block */
-  constructor(block, name) {
-    super(block, null, 'Dummy')
+  constructor(block) {
+    super(block, null, BlockDummyInput.Dummy)
   }
 }

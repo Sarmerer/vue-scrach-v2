@@ -2,7 +2,7 @@ import { Proximity } from './proximity'
 import { DOMElement } from './dom-element'
 import { Block } from './block'
 import { uuidv4 } from '../utils'
-import blockTypes from './block-types'
+import blocks from '../blocks'
 import { CodeGenerator } from './generator'
 
 export class Scratch extends DOMElement {
@@ -130,4 +130,4 @@ export class Scratch extends DOMElement {
   }
 }
 
-blockTypes.register()
+blocks.declare()

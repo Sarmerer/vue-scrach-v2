@@ -39,6 +39,7 @@ export class Block extends DOMElement {
     this.prevBlock = null
     this.nextBlock = null
 
+    this.compileTemplate = []
     this.colors = {
       background: 'cyan',
       text: 'white',
@@ -136,34 +137,17 @@ export class Block extends DOMElement {
     return values
   }
 
-  /** @returns {Array<BlockStatementInput>} */
-  getStatements() {
+  /** @returns {Array<BlockValueInput | BlockStatementInput>} */
+  getInputs() {
     const statements = {}
     for (const input of this.inputs) {
-      if (input.type !== 'Statement' || input.name === null) continue
+      if (input.type === BlockInput.Dummy || input.name === null) continue
       if (!input.connection.isConnected()) continue
 
-      statements[input.name] = this.getStatement(input)
+      statements[input.name] = input
     }
 
     return statements
-  }
-
-  /**
-   * @param {BlockStatementInput} statementInput
-   * @returns {Block}
-   */
-  getStatement(statementInput) {
-    if (!statementInput.connection.isConnected()) return []
-
-    const statement = []
-    let next = statementInput.connection.getTargetBlock()
-    while (next) {
-      statement.push(next)
-      next = next.nextBlock.getTargetBlock()
-    }
-
-    return statement
   }
 
   /** @param {MouseEvent} event */
@@ -225,6 +209,27 @@ export class Block extends DOMElement {
   }
 
   /**
+   * @param {Number} type
+   * @param {String} name
+   * @returns {BlockInput}
+   */
+  addInput(type, name = null) {
+    const types = {
+      [BlockInput.Dummy]: this.addDummyInput,
+      [BlockInput.Value]: this.addValueInput,
+      [BlockInput.Statement]: this.addStatementInput,
+    }
+
+    let typeFn = types[type]
+    if (!typeFn) {
+      console.warn('unknown block input type:', type)
+      return
+    }
+
+    return typeFn.bind(this)(name)
+  }
+
+  /**
    * @param {String} name
    * @returns {BlockValueInput}
    */
@@ -251,6 +256,23 @@ export class Block extends DOMElement {
     const input = new BlockDummyInput(this)
     this.inputs.push(input)
     return input
+  }
+
+  /** @param {Number} type */
+  allowConnection(type) {
+    const types = {
+      [Connection.Prev]: this.allowPrev,
+      [Connection.Next]: this.allowNext,
+      [Connection.Output]: this.allowOutput,
+    }
+
+    const typeFn = types[type]
+    if (!type) {
+      console.warn('this connection type cannot be applied to a block:', type)
+      return
+    }
+
+    typeFn.bind(this)()
   }
 
   /** @returns {Block} */
@@ -309,5 +331,10 @@ export class Block extends DOMElement {
   setTextColor(cssColor) {
     this.colors.text = cssColor
     return this
+  }
+
+  /** @returns {Block} */
+  setCompileTemplate(template) {
+    this.compileTemplate = template
   }
 }
