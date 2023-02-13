@@ -17,5 +17,8 @@ export default defineConfig({
   },
   build: {
     brotliSize: false, // unsupported in StackBlitz
+    outDir: 'docs',
   },
+
+  base: '/vue-scrach-v2',
 })
