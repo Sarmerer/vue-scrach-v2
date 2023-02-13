@@ -1,4 +1,5 @@
 import { Scratch } from '../types/scratch'
+import builder from './builder'
 import functions from './functions'
 import loops from './loops'
 import sql from './sql'
@@ -12,23 +13,29 @@ export function declare() {
 }
 
 export function declareModule(module) {
-  let prefix = ''
-  if (typeof module.name == 'string' && module.name.length > 0) {
-    prefix = `${module.name}:`
-  }
-
   for (const source of module.blocks) {
-    const name = prefix + source.name
-
-    function factory(factoryBlock) {
-      addInputs(source.inputs, factoryBlock)
-      addConnections(source.connections, factoryBlock)
-      setMisc(source, factoryBlock)
-      setStyle(module.style, factoryBlock)
+    if (!source.style) {
+      source.style = module.style
     }
 
-    Scratch.DeclareBlock(name, factory)
+    declareBlock(source, module.name)
   }
+}
+
+export function declareBlock(source, prefix) {
+  function factory(factoryBlock) {
+    addInputs(source.inputs, factoryBlock)
+    addConnections(source.connections, factoryBlock)
+    setMisc(source, factoryBlock)
+    setStyle(source.style, factoryBlock)
+  }
+
+  let name = source.name
+  if (typeof prefix == 'string' && prefix.length > 0) {
+    name = `${prefix}:${name}`
+  }
+
+  Scratch.DeclareBlock(name, factory)
 }
 
 function addInputs(inputs, factory) {
@@ -64,7 +71,7 @@ function setMisc(source, factoryBlock) {
   }
 
   if (source.compile) {
-    factoryBlock.setCompileTemplate(source.compile)
+    factoryBlock.setCompiler(source.compile)
   }
 }
 
@@ -83,7 +90,12 @@ function setStyle(style, factoryInput) {
 /**
  * @callback DynamicOptions
  * @returns {Array<String>}
- * 
+ *
+ * @callback BlockCompiler
+ * @param {Object} context
+ * @param {Block} block
+ * @returns {Array<String>}
+ *
  * @typedef {Object} FieldDeclaration
  * @property {Number} FieldDeclaration.type
  * @property {String} FieldDeclaration.name
@@ -99,7 +111,7 @@ function setStyle(style, factoryInput) {
  * @typedef {Object} BlockDeclaration
  * @property {String} BlockDeclaration.name
  * @property {Boolean} BlockDeclaration.inline
- * @property {Array<String>} BlockDeclaration.compile
+ * @property {Array<String> | BlockCompiler} BlockDeclaration.compile
  * @property {Array<Number>} BlockDeclaration.connections
  * @property {Array<InputDeclaration>} BlockDeclaration.inputs
  *
@@ -108,15 +120,23 @@ function setStyle(style, factoryInput) {
  * @property {string} BlocksModuleStyle.text
  *
  * @typedef {Object} BlocksModule
- * @property {String} BlockTypesModule.name
- * @property {Array<BlockDeclaration>} BlockTypesModule.blocks
- * @property {BlocksModuleStyle} BlockTypesModule.style
+ * @property {String} BlocksModule.name
+ * @property {Array<BlockDeclaration>} BlocksModule.blocks
+ * @property {BlocksModuleStyle} BlocksModule.style
  *
  * @param {BlocksModule} module
  * @returns {BlocksModule}
  */
 export function createModule(module) {
   return module
+}
+
+/**
+ * @param {BlockDeclaration} block
+ * @returns {BlockDeclaration}
+ */
+export function createBlockType(block) {
+  return block
 }
 
 export default { declare, declareModule }

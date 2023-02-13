@@ -39,7 +39,7 @@ export class Block extends DOMElement {
     this.prevBlock = null
     this.nextBlock = null
 
-    this.compileTemplate = []
+    this.compiler = null
     this.colors = {
       background: 'cyan',
       text: 'white',
@@ -112,21 +112,10 @@ export class Block extends DOMElement {
     return null
   }
 
-  /**
-   * @param {String} inputName
-   * @returns {Object}
-   */
-  getFieldsValues(inputName = null) {
-    let inputs = this.inputs
-    if (inputName) {
-      const input = this.findInput(inputName)
-      if (!input) return {}
-
-      inputs = [input]
-    }
-
+  /** @returns {Object} */
+  getFieldsValues() {
     const values = {}
-    for (const input of inputs) {
+    for (const input of this.inputs) {
       for (const field of input.fields) {
         if (field.name === null) continue
 
@@ -334,7 +323,7 @@ export class Block extends DOMElement {
   }
 
   /** @returns {Block} */
-  setCompileTemplate(template) {
-    this.compileTemplate = template
+  setCompiler(compiler) {
+    this.compiler = compiler
   }
 }

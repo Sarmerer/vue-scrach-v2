@@ -61,28 +61,35 @@ export default {
     }
   },
 
+  watch: {
+    'Scratch.Blocks': {
+      immediate: true,
+      handler: 'updateOptions',
+    },
+  },
+
   computed: {
     showTrash() {
       return this.hovering && this.scratch.getActiveBlock()
     },
   },
 
-  mounted() {
-    Object.keys(Scratch.Blocks).map((type) => {
-      const block = this.toolbox.spawnBlock(type)
-      block.isFrozen = true
-    })
-
-    this.blockCategories = this.toolbox.blocks.reduce((acc, b) => {
-      const category = b.type.split(':')[0]
-      if (!acc[category]) acc[category] = { blocks: [], collapsed: false }
-
-      acc[category].blocks.push(b)
-      return acc
-    }, {})
-  },
-
   methods: {
+    updateOptions() {
+      Object.keys(Scratch.Blocks).map((type) => {
+        const block = this.toolbox.spawnBlock(type)
+        block.isFrozen = true
+      })
+
+      this.blockCategories = this.toolbox.blocks.reduce((acc, b) => {
+        const category = b.type.split(':')[0]
+        if (!acc[category]) acc[category] = { blocks: [], collapsed: false }
+
+        acc[category].blocks.push(b)
+        return acc
+      }, {})
+    },
+
     spawnBlock(typeInstance, event) {
       this.hoveringAfterSpawn = true
 

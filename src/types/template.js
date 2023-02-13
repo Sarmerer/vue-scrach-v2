@@ -14,7 +14,10 @@ export class Template {
   static interpolate(template, values) {
     return template.replace(/[$]{([^}]+)}/g, function (_, path) {
       const properties = path.split('.')
-      return properties.reduce((prev, curr) => prev && prev[curr], values)
+      return properties.reduce((prev, curr) => {
+        if (!prev[curr]) return ''
+        return prev[curr]
+      }, values)
     })
   }
 }
