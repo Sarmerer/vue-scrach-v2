@@ -1,5 +1,10 @@
 <template>
-  <select class="block__field__select" v-model="field.value">
+  <select
+    ref="select"
+    class="block__field__select"
+    v-model="field.value"
+    @mousedown="updateOptions"
+  >
     <option
       selected
       disabled
@@ -23,6 +28,12 @@ export default {
   name: 'BlockSelectField',
 
   mixins: [mixins],
+
+  methods: {
+    updateOptions() {
+      this.field.updateOptions()
+    },
+  },
 }
 </script>
 

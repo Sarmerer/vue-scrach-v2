@@ -83,9 +83,18 @@ export class CodeGenerator extends Generator {
 
   compile() {
     const lines = []
+
+    lines.push(
+      this.scratch
+        .getVariables()
+        .map((v) => `var ${v.name}`)
+        .join(', '),
+      ''
+    )
+
     const blocks = this.scratch.getBlocks().sort((a, b) => a.y - b.y)
     for (const block of blocks) {
-      lines.push(...CodeGenerator.CompileBlock(block))
+      lines.push(...CodeGenerator.CompileBlock(block), '')
     }
 
     this.code = lines.join('\n')

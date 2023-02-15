@@ -3,11 +3,11 @@ import { Scratch } from './scratch'
 import { uuidv4 } from '../utils'
 import {
   BlockDummyInput,
-  BlockField,
   BlockInput,
   BlockStatementInput,
   BlockValueInput,
 } from './block-input'
+import { BlockField } from '../types/block-field'
 import { Connection } from './connection'
 
 export class Block extends DOMElement {
@@ -131,7 +131,7 @@ export class Block extends DOMElement {
     const statements = {}
     for (const input of this.inputs) {
       if (input.type === BlockInput.Dummy || input.name === null) continue
-      if (!input.connection.isConnected()) continue
+      if (!input.connection?.isConnected()) continue
 
       statements[input.name] = input
     }
@@ -204,45 +204,17 @@ export class Block extends DOMElement {
    */
   addInput(type, name = null) {
     const types = {
-      [BlockInput.Dummy]: this.addDummyInput,
-      [BlockInput.Value]: this.addValueInput,
-      [BlockInput.Statement]: this.addStatementInput,
+      [BlockInput.Dummy]: BlockDummyInput,
+      [BlockInput.Value]: BlockValueInput,
+      [BlockInput.Statement]: BlockStatementInput,
     }
 
-    let typeFn = types[type]
-    if (!typeFn) {
-      console.warn('unknown block input type:', type)
-      return
+    const typedClass = types[type]
+    if (!typedClass) {
+      console.error('unknown input type:', type)
     }
 
-    return typeFn.bind(this)(name)
-  }
-
-  /**
-   * @param {String} name
-   * @returns {BlockValueInput}
-   */
-  addValueInput(name) {
-    const input = new BlockValueInput(this, name)
-    this.scratch.proximity.addConnection(input.connection)
-    this.inputs.push(input)
-    return input
-  }
-
-  /**
-   * @param {String} name
-   * @returns {BlockStatementInput}
-   */
-  addStatementInput(name) {
-    const input = new BlockStatementInput(this, name)
-    this.scratch.proximity.addConnection(input.connection)
-    this.inputs.push(input)
-    return input
-  }
-
-  /** @returns {BlockDummyInput} */
-  addDummyInput() {
-    const input = new BlockDummyInput(this)
+    const input = new typedClass(this, name, type)
     this.inputs.push(input)
     return input
   }

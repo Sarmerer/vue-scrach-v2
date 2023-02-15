@@ -19,6 +19,14 @@
       </div>
 
       <div v-show="!category.collapsed" class="toolbox__category__options">
+        <button
+          class="scratch__add-variable"
+          v-if="name == 'variables'"
+          @click="addVariable"
+        >
+          Add variable
+        </button>
+
         <div
           class="toolbox__option"
           v-for="block in category.blocks"
@@ -103,6 +111,13 @@ export default {
       block.dragStart(event)
     },
 
+    addVariable() {
+      const name = prompt('Enter a name for a variable')
+      if (!name?.length) return
+
+      this.scratch.addVariable(name)
+    },
+
     mouseEnter() {
       if (this.hoveringAfterSpawn) return
 
@@ -127,6 +142,10 @@ export default {
   flex: 0 0 auto;
   border-right: 1px solid grey;
   overflow-y: auto;
+}
+
+.scratch__add-variable {
+  margin: 10px 10px 0 10px;
 }
 
 .toolbox__category__name {

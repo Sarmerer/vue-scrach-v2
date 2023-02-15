@@ -14,7 +14,7 @@ export class Scratch extends DOMElement {
     this.id = id
 
     this.blocks = []
-    this.variables = []
+    this.variables = [{ name: 'i', value: 0 }]
 
     this.proximity = new Proximity(this)
     this.generator = new CodeGenerator(this)
@@ -68,17 +68,12 @@ export class Scratch extends DOMElement {
     this.blocks.splice(index, 1)
   }
 
-  addVariable(variable) {
-    this.variables.push(variable)
+  getVariables() {
+    return this.variables
   }
 
-  removeVariable(variable) {
-    if (!variable) return
-
-    const index = this.variables.indexOf(variable)
-    if (index == -1) return
-
-    this.variables.splice(index, 1)
+  addVariable(name, value) {
+    this.variables.push({ name, value })
   }
 
   /**

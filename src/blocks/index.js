@@ -1,12 +1,14 @@
+import { Block } from '../types/block'
+import { BlockInput } from '../types/block-input'
 import { Scratch } from '../types/scratch'
-import builder from './builder'
 import functions from './functions'
 import loops from './loops'
 import math from './math'
 import sql from './sql'
 import strings from './strings'
+import variables from './variables'
 
-const enabledModules = [math, strings, sql, functions, loops]
+const enabledModules = [math, variables, strings, sql, functions, loops]
 
 export function declare() {
   for (const module of enabledModules) {
@@ -91,6 +93,10 @@ function setStyle(style, factoryInput) {
 
 /**
  * @callback DynamicOptions
+ * @param {Object} context
+ * @param {Scratch} context.scratch
+ * @param {Block} context.block
+ * @param {BlockInput} context.input
  * @returns {Array<String>}
  *
  * @callback BlockCompiler
