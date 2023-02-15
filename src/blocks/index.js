@@ -2,13 +2,14 @@ import { Block } from '../types/block'
 import { BlockInput } from '../types/block-input'
 import { Scratch } from '../types/scratch'
 import functions from './functions'
+import lists from './lists'
 import loops from './loops'
 import math from './math'
 import sql from './sql'
 import strings from './strings'
 import variables from './variables'
 
-const enabledModules = [math, variables, strings, sql, functions, loops]
+const enabledModules = [loops, math, lists, strings, variables, functions, sql]
 
 export function declare() {
   for (const module of enabledModules) {
