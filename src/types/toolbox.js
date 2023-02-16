@@ -7,16 +7,19 @@ import sql from '../blocks/sql'
 import strings from '../blocks/strings'
 import variables from '../blocks/variables'
 import builder from '../blocks/builder'
-import all from '../blocks/all'
 import { Scratch } from './scratch'
 import logic from '../blocks/logic'
+import { CodeGenerator } from './generator/code'
+import { JSONGenerator } from './generator/json'
 
 export class Toolbox {
   static Presets = {
-    All: all,
-    Scripting: [functions, loops, math, strings, logic, lists, variables],
-    SQL: [sql],
-    Factory: [builder],
+    Scripting: {
+      generator: CodeGenerator,
+      modules: [functions, loops, math, strings, logic, lists, variables],
+    },
+    SQL: { generator: CodeGenerator, modules: [sql] },
+    Factory: { generator: JSONGenerator, modules: [builder] },
   }
 
   constructor(scratch) {
@@ -35,15 +38,32 @@ export class Toolbox {
     })
   }
 
+  getPreset() {
+    return Toolbox.Presets[this.preset]
+  }
+
   getPresetModules() {
-    return Toolbox.Presets[this.preset] || []
+    const preset = this.getPreset()
+    if (!preset) return []
+    return preset.modules
+  }
+
+  gerPresetGenerator() {
+    const preset = this.getPreset()
+    if (!preset) return CodeGenerator
+    return preset.generator || CodeGenerator
   }
 
   setPreset(preset) {
     if (!Toolbox.Presets[preset]) return
 
     this.preset = preset
+    this.updateGenerator()
     this.updateCategories()
+  }
+
+  updateGenerator() {
+    this.scratch.setGenerator(this.gerPresetGenerator())
   }
 
   updateCategories() {

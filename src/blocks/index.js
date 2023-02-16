@@ -86,7 +86,7 @@ function setStyle(style, factoryInput) {
  * @callback BlockCompiler
  * @param {Object} context
  * @param {Block} block
- * @returns {Array<String>}
+ * @returns {Array<String> | Object}
  *
  * @typedef {Object} FieldDeclaration
  * @property {Number} FieldDeclaration.type

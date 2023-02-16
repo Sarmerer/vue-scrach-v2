@@ -65,7 +65,7 @@ export default createModule({
         },
       ],
 
-      compile(context, block) {
+      compile(context) {
         const connections = {
           'has output': [Connection.Output],
           'has prev': [Connection.Prev],
@@ -73,25 +73,16 @@ export default createModule({
           'has prev+next': [Connection.Prev, Connection.Next],
         }
 
-        let inputs = []
-        const input = block.findInput('inputs')
-        if (input) {
-          const json = JSONGenerator.CompileBlock(input).join('')
-          inputs = JSON.parse(json)
-        }
-
-        const type = {
+        return {
           name: context.name,
           inline: context.display == 'inline',
           connections: connections[context.connections],
-          inputs,
+          inputs: context.input.inputs || [],
           style: {
             background: context.background_color,
             text: context.text_color,
           },
         }
-
-        return JSON.stringify(type, null, 2).split('\n')
       },
     },
 
@@ -115,13 +106,61 @@ export default createModule({
       compile(context) {
         const fields = []
 
-        const input = {
+        return {
           type: BlockInput.Value,
           name: context.name,
-          fields,
+          fields: context.input.fields || [],
         }
+      },
+    },
 
-        return JSON.stringify(input, null, 2).split('\n')
+    {
+      name: 'input:statement',
+      connections: [Connection.Prev, Connection.Next],
+      inputs: [
+        {
+          type: BlockInput.Dummy,
+          fields: [
+            { type: BlockField.Label, value: 'statement input' },
+            { type: BlockField.Text, name: 'name', value: 'name' },
+          ],
+        },
+        {
+          type: BlockInput.Statement,
+          name: 'fields',
+        },
+      ],
+
+      compile(context) {
+        const fields = []
+
+        return {
+          type: BlockInput.Statement,
+          name: context.name,
+          fields: context.input.fields || [],
+        }
+      },
+    },
+
+    {
+      name: 'input:dummy',
+      connections: [Connection.Prev, Connection.Next],
+      inputs: [
+        {
+          type: BlockInput.Dummy,
+          fields: [{ type: BlockField.Label, value: 'dummy input' }],
+        },
+        {
+          type: BlockInput.Statement,
+          name: 'fields',
+        },
+      ],
+
+      compile(context) {
+        return {
+          type: BlockInput.Dummy,
+          fields: context.input.fields || [],
+        }
       },
     },
 
@@ -136,12 +175,10 @@ export default createModule({
       ],
 
       compile(context) {
-        const field = {
+        return {
           type: BlockField.Label,
-          value: context.Label,
+          value: context.label,
         }
-
-        return JSON.stringify(field, null, 2).split('\n')
       },
     },
   ],

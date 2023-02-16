@@ -7,7 +7,7 @@ export class JSONGenerator extends Generator {
   constructor(scratch) {
     super(scratch)
 
-    this.json = {}
+    this.code = ''
   }
 
   /**
@@ -16,86 +16,46 @@ export class JSONGenerator extends Generator {
    */
   static CompileBlock(block) {
     const compiler = block?.compiler
-    if (typeof compiler !== 'function') return []
+    if (typeof compiler !== 'function') {
+      console.error('block compiler must be a function:', block)
+      return null
+    }
 
     const context = block.getFieldsValues()
-    context._indentation = indentation
     context.input = {}
-
     for (const [name, input] of Object.entries(block.getInputs())) {
-      context.input[name] = CodeGenerator.CompileInput(input, indentation).join(
-        '\n'
-      )
+      context.input[name] = JSONGenerator.CompileInput(input)
     }
 
     const objects = []
-    objects.push(compiler(context, block))
+    objects.push(compiler(context))
 
     if (block.hasNext() && block.nextBlock.isConnected()) {
-      lines.push(
-        ...CodeGenerator.CompileBlock(
-          block.nextBlock.getTargetBlock(),
-          indentation
-        )
+      objects.push(
+        ...JSONGenerator.CompileBlock(block.nextBlock.getTargetBlock())
       )
     }
 
-    return lines
-  }
-
-  /**
-   * @param {Block} input
-   * @param {String} indentation
-   * @returns {Array<String>}
-   */
-  static CompileInput(input, indentation = '') {
-    switch (input.type) {
-      case BlockInput.Value:
-        return CodeGenerator.CompileValue(input)
-      case BlockInput.Statement:
-        return CodeGenerator.CompileStatement(input, indentation)
-      default:
-        return []
-    }
+    return objects
   }
 
   /**
    * @param {Block} input
    * @returns {Array<String>}
    */
-  static CompileValue(input) {
-    return CodeGenerator.CompileBlock(input)
-  }
+  static CompileInput(input) {
+    if (input.type == BlockInput.Dummy) return null
 
-  /**
-   * @param {Block} input
-   * @param {String} indentation
-   * @returns {Array<String>}
-   */
-  static CompileStatement(input, indentation) {
-    return CodeGenerator.CompileBlock(input, indentation + '  ')
+    return JSONGenerator.CompileBlock(input.connection.getTargetBlock())
   }
 
   compile() {
-    const lines = []
+    const objects = []
     const blocks = this.scratch.getBlocks().sort((a, b) => a.y - b.y)
     for (const block of blocks) {
-      lines.push(...CodeGenerator.CompileBlock(block))
+      objects.push(...JSONGenerator.CompileBlock(block))
     }
 
-    this.code = lines.join('\n')
-  }
-
-  static DefaultCompiler(lines) {
-    return function (context) {
-      return lines.map((line) => {
-        let baked = Template.interpolate(line, context)
-        if (!baked.startsWith(context._indentation)) {
-          baked = context._indentation + baked
-        }
-
-        return baked
-      })
-    }
+    this.code = JSON.stringify(objects, null, 2)
   }
 }

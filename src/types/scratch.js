@@ -3,6 +3,7 @@ import { DOMElement } from './dom-element'
 import { Block } from './block'
 import { uuidv4 } from '../utils'
 import { CodeGenerator } from './generator/code'
+import { Generator } from './generator'
 
 export class Scratch extends DOMElement {
   static Blocks = {}
@@ -17,6 +18,15 @@ export class Scratch extends DOMElement {
 
     this.proximity = new Proximity(this)
     this.generator = new CodeGenerator(this)
+  }
+
+  setGenerator(generator) {
+    if (!(generator?.prototype instanceof Generator)) {
+      console.error('generator must extend Generator class:', generator)
+      return
+    }
+
+    this.generator = new generator(this)
   }
 
   /** @returns {Array<Block>} */
