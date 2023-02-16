@@ -2,7 +2,6 @@ import { Proximity } from './proximity'
 import { DOMElement } from './dom-element'
 import { Block } from './block'
 import { uuidv4 } from '../utils'
-import blocks from '../blocks'
 import { CodeGenerator } from './generator/code'
 
 export class Scratch extends DOMElement {
@@ -14,7 +13,7 @@ export class Scratch extends DOMElement {
     this.id = id
 
     this.blocks = []
-    this.variables = [{ name: 'i', value: 0 }]
+    this.variables = []
 
     this.proximity = new Proximity(this)
     this.generator = new CodeGenerator(this)
@@ -124,5 +123,3 @@ export class Scratch extends DOMElement {
     Scratch.Blocks[name] = factory
   }
 }
-
-blocks.declare()

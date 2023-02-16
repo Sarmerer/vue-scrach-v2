@@ -3,24 +3,20 @@ import { Block } from '../block'
 import { BlockInput } from '../block-input'
 import { Generator } from '.'
 
-export class CodeGenerator extends Generator {
+export class JSONGenerator extends Generator {
   constructor(scratch) {
     super(scratch)
 
-    this.code = ''
+    this.json = {}
   }
 
   /**
    * @param {Block} block
-   * @param {String} indentation
-   * @returns {Array<String>}
+   * @returns {Array<Object>}
    */
-  static CompileBlock(block, indentation = '') {
-    let compiler = block?.compiler
-    if (typeof compiler !== 'function' && !Array.isArray(compiler)) return []
-    if (Array.isArray(compiler)) {
-      compiler = this.DefaultCompiler(compiler)
-    }
+  static CompileBlock(block) {
+    const compiler = block?.compiler
+    if (typeof compiler !== 'function') return []
 
     const context = block.getFieldsValues()
     context._indentation = indentation
@@ -32,15 +28,8 @@ export class CodeGenerator extends Generator {
       )
     }
 
-    const compiled = compiler(context, block)
-    if (!Array.isArray(compiled)) {
-      console.error('compiler must return an array of strings:', block.type)
-      return []
-    }
-
-    const lines = compiled.map((l) =>
-      CodeGenerator.Indent(l, context._indentation)
-    )
+    const objects = []
+    objects.push(compiler(context, block))
 
     if (block.hasNext() && block.nextBlock.isConnected()) {
       lines.push(
@@ -75,8 +64,7 @@ export class CodeGenerator extends Generator {
    * @returns {Array<String>}
    */
   static CompileValue(input) {
-    const block = input.connection.getTargetBlock()
-    return CodeGenerator.CompileBlock(block)
+    return CodeGenerator.CompileBlock(input)
   }
 
   /**
@@ -85,41 +73,28 @@ export class CodeGenerator extends Generator {
    * @returns {Array<String>}
    */
   static CompileStatement(input, indentation) {
-    const block = input.connection.getTargetBlock()
-    return CodeGenerator.CompileBlock(block, indentation + '  ')
+    return CodeGenerator.CompileBlock(input, indentation + '  ')
   }
 
   compile() {
     const lines = []
-
-    const variables = this.scratch.getVariables()
-    if (variables.length) {
-      lines.push('var ' + variables.map((v) => v.name).join(', '), '')
-    }
-
     const blocks = this.scratch.getBlocks().sort((a, b) => a.y - b.y)
     for (const block of blocks) {
-      lines.push(...CodeGenerator.CompileBlock(block), '')
+      lines.push(...CodeGenerator.CompileBlock(block))
     }
 
     this.code = lines.join('\n')
   }
 
-  static Indent(line, indentation) {
-    if (!line.startsWith(indentation)) {
-      line = indentation + line
-    }
-
-    return line
-  }
-
   static DefaultCompiler(lines) {
     return function (context) {
       return lines.map((line) => {
-        return CodeGenerator.Indent(
-          Template.interpolate(line, context),
-          context._indentation
-        )
+        let baked = Template.interpolate(line, context)
+        if (!baked.startsWith(context._indentation)) {
+          baked = context._indentation + baked
+        }
+
+        return baked
       })
     }
   }

@@ -53,11 +53,31 @@ export default createModule({
 
       compile(context) {
         const item = context.item?.name || 'i'
-        const list = context.input.list || []
+        const list = context.input.list || '[]'
         const body = context.input.body || ''
 
-        return [`for (var ${item} in ${list}) {}`, body, '}']
+        return [`for (var ${item} in ${list}) {`, body, '}']
       },
+    },
+
+    {
+      name: 'lifecycle',
+      connections: [Connection.Prev],
+      inputs: [
+        {
+          type: BlockInput.Dummy,
+          fields: [
+            {
+              type: BlockField.Select,
+              name: 'action',
+              value: 'break',
+              options: ['break', 'continue'],
+            },
+          ],
+        },
+      ],
+
+      compile: ['${action}'],
     },
   ],
 })

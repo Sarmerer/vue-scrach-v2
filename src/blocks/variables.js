@@ -21,7 +21,6 @@ export default createModule({
             {
               type: BlockField.Variable,
               name: 'variable',
-              value: { name: 'i', value: 0 },
             },
           ],
         },
@@ -45,7 +44,6 @@ export default createModule({
             {
               type: BlockField.Variable,
               name: 'variable',
-              value: { name: 'i', value: 0 },
             },
             {
               type: BlockField.Label,
