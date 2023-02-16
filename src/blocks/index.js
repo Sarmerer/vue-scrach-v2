@@ -11,19 +11,21 @@ export function declareModule(module) {
 }
 
 export function declareBlock(source, prefix) {
-  function factory(factoryBlock) {
-    addInputs(source.inputs, factoryBlock)
-    addConnections(source.connections, factoryBlock)
-    setMisc(source, factoryBlock)
-    setStyle(source.style, factoryBlock)
-  }
-
   let name = source.name
   if (typeof prefix == 'string' && prefix.length > 0) {
     name = `${prefix}:${name}`
   }
 
-  Scratch.DeclareBlock(name, factory)
+  Scratch.DeclareBlock(name, newFactory(source))
+}
+
+export function newFactory(source) {
+  return function (factoryBlock) {
+    addInputs(source.inputs, factoryBlock)
+    addConnections(source.connections, factoryBlock)
+    setMisc(source, factoryBlock)
+    setStyle(source.style, factoryBlock)
+  }
 }
 
 function addInputs(inputs, factory) {

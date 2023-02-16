@@ -1,4 +1,8 @@
 import { declareModule } from '../blocks'
+import { Scratch } from './scratch'
+import { JSONGenerator } from './generator/json'
+import { CodeGenerator } from './generator/code'
+
 import functions from '../blocks/functions'
 import lists from '../blocks/lists'
 import loops from '../blocks/loops'
@@ -6,11 +10,10 @@ import math from '../blocks/math'
 import sql from '../blocks/sql'
 import strings from '../blocks/strings'
 import variables from '../blocks/variables'
-import builder from '../blocks/builder'
-import { Scratch } from './scratch'
 import logic from '../blocks/logic'
-import { CodeGenerator } from './generator/code'
-import { JSONGenerator } from './generator/json'
+import base from '../blocks/builder/base'
+import inputs from '../blocks/builder/inputs'
+import fields from '../blocks/builder/fields'
 
 export class Toolbox {
   static Presets = {
@@ -19,7 +22,7 @@ export class Toolbox {
       modules: [functions, loops, math, strings, logic, lists, variables],
     },
     SQL: { generator: CodeGenerator, modules: [sql] },
-    Factory: { generator: JSONGenerator, modules: [builder] },
+    Factory: { generator: JSONGenerator, modules: [base, inputs, fields] },
   }
 
   constructor(scratch) {
