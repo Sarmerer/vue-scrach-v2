@@ -5,6 +5,9 @@
  * @property {Array<String>} BlockFieldOptions.options
  */
 
+import { uuidv4 } from '../utils'
+import { Scratch } from './scratch'
+
 export class BlockField {
   static Text = 1
   static Label = 2
@@ -17,6 +20,7 @@ export class BlockField {
    * @param {BlockFieldOptions} options
    */
   constructor(name, type, block, input, options = null) {
+    this.id = uuidv4()
     this.type = type
     this.block = block
     this.input = input
@@ -26,7 +30,7 @@ export class BlockField {
       options
     )
     this.name = name
-    this.value = options.value
+    this.value_ = options.value
     this.placeholder = options.placeholder
 
     this.optionsUpdater = null
@@ -38,6 +42,19 @@ export class BlockField {
     }
   }
 
+  get value() {
+    return this.value_
+  }
+
+  set value(value) {
+    this.value_ = value
+    this.block.scratch.events.dispatch(Scratch.Events.BLOCK_CHANGE, {
+      type: 'field',
+      block: this.block,
+      value,
+    })
+  }
+
   updateOptions() {
     if (typeof this.optionsUpdater !== 'function') return
 
@@ -46,5 +63,12 @@ export class BlockField {
       block: this.block,
       input: this.input,
     })
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      value: this.value_,
+    }
   }
 }

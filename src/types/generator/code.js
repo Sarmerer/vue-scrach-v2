@@ -42,10 +42,10 @@ export class CodeGenerator extends Generator {
       CodeGenerator.Indent(l, context._indentation)
     )
 
-    if (block.hasNext() && block.nextBlock.isConnected()) {
+    if (block.hasNext() && block.nextConnection.isConnected()) {
       lines.push(
         ...CodeGenerator.CompileBlock(
-          block.nextBlock.getTargetBlock(),
+          block.nextConnection.getTargetBlock(),
           indentation
         )
       )

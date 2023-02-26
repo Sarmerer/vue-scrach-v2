@@ -10,7 +10,10 @@
       @mousedown.stop="block.dragStart($event)"
     >
       <slot v-if="block.hasPrev()" name="top-zone">
-        <Dropzone :connection="block.prevBlock" :absolute="!isRelative" />
+        <Dropzone
+          :connection="block.previousConnection"
+          :absolute="!isRelative"
+        />
       </slot>
 
       <div
@@ -27,7 +30,7 @@
       </div>
 
       <slot v-if="block.hasNext()" name="bottom-zone">
-        <Dropzone :connection="block.nextBlock" />
+        <Dropzone :connection="block.nextConnection" />
       </slot>
     </div>
 
@@ -68,7 +71,7 @@ export default {
     },
 
     nextBlock() {
-      return this.block.nextBlock?.getTargetBlock()
+      return this.block.nextConnection?.getTargetBlock()
     },
   },
 }

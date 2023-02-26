@@ -85,6 +85,14 @@ export class BlockInput extends DOMElement {
     this.align = align
     return this
   }
+
+  toJSON() {
+    return {
+      id: this.id,
+      fields: this.fields.map((f) => f.toJSON()),
+      connection: this.connection?.toJSON(),
+    }
+  }
 }
 
 export class BlockValueInput extends BlockInput {

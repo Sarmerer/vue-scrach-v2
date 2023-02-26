@@ -1,8 +1,14 @@
 import { Block } from '../block'
+import { Scratch } from '../scratch'
 
 export class Generator {
+  /** @param {Scratch} scratch */
   constructor(scratch) {
     this.scratch = scratch
+
+    const compile = this.compile.bind(this)
+    this.scratch.events.addEventListener(Scratch.Events.BLOCK_CHANGE, compile)
+    this.scratch.events.addEventListener(Scratch.Events.BLOCK_MOVE, compile)
   }
 
   /**

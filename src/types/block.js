@@ -35,9 +35,9 @@ export class Block extends DOMElement {
     this.isInline = false
 
     this.inputs = []
-    this.outputBlock = null
-    this.prevBlock = null
-    this.nextBlock = null
+    this.outputConnection = null
+    this.previousConnection = null
+    this.nextConnection = null
 
     this.compiler = null
     this.colors = {
@@ -53,28 +53,31 @@ export class Block extends DOMElement {
 
   /** @returns {Boolean} */
   isRelative() {
-    return this.prevBlock?.isConnected() || this.outputBlock?.isConnected()
+    return (
+      this.previousConnection?.isConnected() ||
+      this.outputConnection?.isConnected()
+    )
   }
 
   /** @returns {Boolean} */
   isActive() {
     return (
       this.isDragged ||
-      this.prevBlock?.getTargetBlock()?.isActive() ||
-      this.outputBlock?.getTargetBlock()?.isActive()
+      this.previousConnection?.getTargetBlock()?.isActive() ||
+      this.outputConnection?.getTargetBlock()?.isActive()
     )
   }
 
   hasPrev() {
-    return this.prevBlock !== null
+    return this.previousConnection !== null
   }
 
   hasNext() {
-    return this.nextBlock !== null
+    return this.nextConnection !== null
   }
 
   hasOutput() {
-    return this.outputBlock !== null
+    return this.outputConnection !== null
   }
 
   /** @returns {Array<Array<BlockInput>>} */
@@ -177,8 +180,8 @@ export class Block extends DOMElement {
       const dy = Math.abs(this.yBeforeDrag - nextY)
       if (dx < 15 && dy < 15) return
 
-      this.outputBlock?.disconnect()
-      this.prevBlock?.disconnect()
+      this.outputConnection?.disconnect()
+      this.previousConnection?.disconnect()
     }
 
     this.x = nextX
@@ -194,7 +197,11 @@ export class Block extends DOMElement {
 
     this.isDragged = false
     this.scratch.proximity.reset(this)
-    this.scratch.generator.compile()
+    this.scratch.events.dispatch(Scratch.Events.BLOCK_MOVE, {
+      x: this.x,
+      y: this.y,
+      block: this,
+    })
   }
 
   /**
@@ -239,41 +246,41 @@ export class Block extends DOMElement {
   /** @returns {Block} */
   allowOutput() {
     if (this.hasPrev()) {
-      this.prevBlock.delete()
-      this.prevBlock = null
+      this.previousConnection.delete()
+      this.previousConnection = null
     }
 
     if (this.hasNext()) {
-      this.nextBlock.delete()
-      this.nextBlock = null
+      this.nextConnection.delete()
+      this.nextConnection = null
     }
 
-    this.outputBlock = new Connection(Connection.Output, this)
-    this.scratch.proximity.addConnection(this.outputBlock)
+    this.outputConnection = new Connection(Connection.Output, this)
+    this.scratch.proximity.addConnection(this.outputConnection)
     return this
   }
 
   /** @returns {Block} */
   allowPrev() {
     if (this.hasOutput()) {
-      this.outputBlock.delete()
-      this.outputBlock = null
+      this.outputConnection.delete()
+      this.outputConnection = null
     }
 
-    this.prevBlock = new Connection(Connection.Prev, this)
-    this.scratch.proximity.addConnection(this.prevBlock)
+    this.previousConnection = new Connection(Connection.Prev, this)
+    this.scratch.proximity.addConnection(this.previousConnection)
     return this
   }
 
   /** @returns {Block} */
   allowNext() {
     if (this.hasOutput()) {
-      this.outputBlock.delete()
-      this.outputBlock = null
+      this.outputConnection.delete()
+      this.outputConnection = null
     }
 
-    this.nextBlock = new Connection(Connection.Next, this)
-    this.scratch.proximity.addConnection(this.nextBlock)
+    this.nextConnection = new Connection(Connection.Next, this)
+    this.scratch.proximity.addConnection(this.nextConnection)
     return this
   }
 
@@ -297,5 +304,20 @@ export class Block extends DOMElement {
   /** @returns {Block} */
   setCompiler(compiler) {
     this.compiler = compiler
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      type: this.type,
+
+      x: this.x,
+      y: this.y,
+
+      inputs: this.inputs.map((i) => i.toJSON()),
+      outputConnection: this.outputConnection?.toJSON(),
+      previousConnection: this.previousConnection?.toJSON(),
+      nextConnection: this.nextConnection?.toJSON(),
+    }
   }
 }

@@ -1,9 +1,10 @@
 <template>
   <span class="block__value__wrapper">
     <div
+      :id="externalId"
       class="block__value"
       :class="classes"
-      v-bind="{ id: externalId, style: { ...style, ...fieldsStyle } }"
+      :style="{ ...style, ...fieldsStyle }"
     >
       <BlockField
         v-for="(field, index) in input.fields"

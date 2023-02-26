@@ -50,14 +50,14 @@ export class Proximity {
       let activeConnection = null
 
       if (connection.type == Connection.Prev && !connection.isConnected()) {
-        activeConnection = this.activeBlock.nextBlock.getTailConnection()
+        activeConnection = this.activeBlock.nextConnection.getTailConnection()
       } else if (
         connection.type == Connection.Next ||
         connection.type == Connection.Statement
       ) {
-        activeConnection = this.activeBlock.prevBlock
+        activeConnection = this.activeBlock.previousConnection
       } else if (connection.type == Connection.Input) {
-        activeConnection = this.activeBlock.outputBlock
+        activeConnection = this.activeBlock.outputConnection
       }
 
       if (!activeConnection) continue

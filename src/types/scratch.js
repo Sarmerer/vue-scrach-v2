@@ -4,9 +4,12 @@ import { Block } from './block'
 import { uuidv4 } from '../utils'
 import { CodeGenerator } from './generator/code'
 import { Generator } from './generator'
+import { EventBus } from './event-bus'
+import { Events } from './events'
 
 export class Scratch extends DOMElement {
   static Blocks = {}
+  static Events = Events
 
   constructor() {
     const id = uuidv4()
@@ -16,6 +19,7 @@ export class Scratch extends DOMElement {
     this.blocks = []
     this.variables = []
 
+    this.events = new EventBus()
     this.proximity = new Proximity(this)
     this.generator = new CodeGenerator(this)
   }
@@ -65,6 +69,7 @@ export class Scratch extends DOMElement {
     }
 
     this.blocks.push(block)
+    this.events.dispatch(Scratch.Events.BLOCK_CREATE, { block })
   }
 
   /** @param {Block} block */
@@ -75,6 +80,7 @@ export class Scratch extends DOMElement {
     if (index === -1) return
 
     this.blocks.splice(index, 1)
+    this.events.dispatch(Scratch.Events.BLOCK_DELETE, { block })
   }
 
   getVariables() {
@@ -83,6 +89,7 @@ export class Scratch extends DOMElement {
 
   addVariable(name, value) {
     this.variables.push({ name, value })
+    this.events.dispatch(Scratch.Events.VARIABLE_CREATE, { name })
   }
 
   /**
@@ -116,12 +123,18 @@ export class Scratch extends DOMElement {
     return { x: x - rect.x, y: y - rect.y }
   }
 
+  toJSON() {
+    return {
+      id: this.id,
+      blocks: this.blocks.map((b) => b.toJSON()),
+      variables: this.variables.map((v) => ({ name: v.name, value: v.value })),
+    }
+  }
+
   /**
    *  @callback BlockTypeFactory
    * @param {Block} block
-   */
-
-  /**
+   *
    * @param {String} name
    * @param {BlockTypeFactory} factory
    */

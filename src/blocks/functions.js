@@ -3,7 +3,7 @@ import { BlockInput } from '../types/block-input'
 import { BlockField } from '../types/block-field'
 
 export default createModule({
-  name: 'function',
+  name: 'functions',
 
   style: {
     background: 'green',

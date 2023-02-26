@@ -20,19 +20,16 @@ export class Connection {
     this.input = input
     this.target = null
 
-    this.isCached = false
     this.isHighlighted = false
-  }
-
-  cache() {
-    if (this.isCached || !this.shouldProcess()) return
-
-    this.block.scratch.proximity.addConnection(this)
-    this.isCached = true
   }
 
   setTarget(connection) {
     this.target = connection
+  }
+
+  setTargetsMutual(connection) {
+    connection.setTarget(this)
+    this.setTarget(connection)
   }
 
   getTargetBlock() {
@@ -51,8 +48,8 @@ export class Connection {
 
     const next =
       this.type == Connection.Input
-        ? this.target.block.outputBlock
-        : this.target.block.nextBlock
+        ? this.target.block.outputConnection
+        : this.target.block.nextConnection
     return next.getTailConnection()
   }
 
@@ -62,46 +59,45 @@ export class Connection {
 
   /** @param {Connection} target */
   connect(target) {
-    if (this.type == Connection.Prev) {
-      this.connectPrev(target)
-    } else if (
-      this.type == Connection.Next ||
-      this.type == Connection.Statement
-    ) {
-      this.connectNext(target)
-    } else if (this.type == Connection.Input) {
-      this.connectInput(target)
+    switch (this.type) {
+      case Connection.Prev:
+        this.connectPrev(target)
+        break
+      case Connection.Next:
+      case Connection.Statement:
+        this.connectNext(target)
+        break
+      case Connection.Input:
+        this.connectInput(target)
+        break
     }
   }
 
   /** @param {Connection} target */
   connectPrev(target) {
     if (this.isConnected()) {
-      target.block.prevBlock.setTarget(this.target)
+      target.block.previousConnection.setTarget(this.target)
       this.target.setTarget(target)
     }
 
     target = target.getTailConnection()
-    this.setTarget(target)
-    target.setTarget(this)
+    this.setTargetsMutual(target)
   }
 
   /** @param {Connection} target */
   connectNext(target) {
     if (this.isConnected()) {
-      const tail = target.block.nextBlock.getTailConnection()
+      const tail = target.block.nextConnection.getTailConnection()
       tail.setTarget(this.target)
       this.target.setTarget(tail)
     }
 
-    this.setTarget(target)
-    target.setTarget(this)
+    this.setTargetsMutual(target)
   }
 
   /** @param {Connection} target */
   connectInput(target) {
-    this.setTarget(target)
-    target.setTarget(this)
+    this.setTargetsMutual(target)
   }
 
   disconnect() {
@@ -140,23 +136,6 @@ export class Connection {
     return { x, y }
   }
 
-  shouldProcess() {
-    switch (this.type) {
-      case Connection.None:
-        return false
-      case Connection.Prev:
-        return this.block.hasPrev()
-      case Connection.Next:
-        return this.block.hasNext()
-      case Connection.Output:
-        return this.block.hasOutput()
-      case Connection.Input:
-        return this.input?.type == BlockInput.Value
-      case Connection.Statement:
-        return this.input?.type == BlockInput.Statement
-    }
-  }
-
   canConnectTo(block) {
     if (this.block.isActive()) return false
 
@@ -165,11 +144,16 @@ export class Connection {
         return !this.isConnected() && block.hasOutput()
       case Connection.Prev:
         return block.hasNext()
-      case Connection.Statement:
       case Connection.Next:
+      case Connection.Statement:
         return block.hasPrev()
       default:
         return false
     }
+  }
+
+  toJSON() {
+    if (!this.isConnected()) return null
+    return this.getTargetBlock().id
   }
 }

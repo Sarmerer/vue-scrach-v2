@@ -1,22 +1,42 @@
 <template>
   <div id="app">
-    <Scratch v-bind="{ scratch }" />
+    <ScratchRenderer v-bind="{ scratch }" />
   </div>
 </template>
 
 <script>
-import { Scratch as ScratchLogic } from './types/scratch'
-import Scratch from './components/Scratch.vue'
+import { Scratch } from './types/scratch'
+import { ScratchLoader } from './types/loader'
+import ScratchRenderer from './components/Scratch.vue'
 
 export default {
   name: 'App',
 
-  components: { Scratch },
+  components: { ScratchRenderer },
 
   data() {
     return {
-      scratch: new ScratchLogic(),
+      scratch: new Scratch(),
     }
+  },
+
+  mounted() {
+    const loader = new ScratchLoader(this.scratch)
+    loader.load(JSON.parse(localStorage.getItem('scratch')))
+
+    this.scratch.events.addEventListener(Scratch.Events.BLOCK_CHANGE, () => {
+      this.save()
+    })
+
+    this.scratch.events.addEventListener(Scratch.Events.BLOCK_MOVE, () => {
+      this.save()
+    })
+  },
+
+  methods: {
+    save() {
+      localStorage.setItem('scratch', JSON.stringify(this.scratch.toJSON()))
+    },
   },
 }
 </script>

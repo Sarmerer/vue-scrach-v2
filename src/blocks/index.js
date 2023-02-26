@@ -19,23 +19,23 @@ export function declareBlock(source, prefix) {
   Scratch.DeclareBlock(name, newFactory(source))
 }
 
-export function newFactory(source) {
-  return function (factoryBlock) {
-    addInputs(source.inputs, factoryBlock)
-    addConnections(source.connections, factoryBlock)
-    setMisc(source, factoryBlock)
-    setStyle(source.style, factoryBlock)
+export function newFactory(template) {
+  return function (block) {
+    addInputs(template.inputs, block)
+    addConnections(template.connections, block)
+    setMisc(template, block)
+    setStyle(template.style, block)
   }
 }
 
-function addInputs(inputs, factory) {
+function addInputs(inputs, block) {
   if (!Array.isArray(inputs)) return
 
-  for (const input of inputs) {
-    const factoryInput = factory.addInput(input.type, input.name)
-    if (!factoryInput) continue
+  for (const inputTemplate of inputs) {
+    const input = block.addInput(inputTemplate.type, inputTemplate.name)
+    if (!input) continue
 
-    addFields(input.fields, factoryInput)
+    addFields(inputTemplate.fields, input)
   }
 }
 

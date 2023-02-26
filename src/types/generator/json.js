@@ -30,9 +30,9 @@ export class JSONGenerator extends Generator {
     const objects = []
     objects.push(compiler(context))
 
-    if (block.hasNext() && block.nextBlock.isConnected()) {
+    if (block.hasNext() && block.nextConnection.isConnected()) {
       objects.push(
-        ...JSONGenerator.CompileBlock(block.nextBlock.getTargetBlock())
+        ...JSONGenerator.CompileBlock(block.nextConnection.getTargetBlock())
       )
     }
 
