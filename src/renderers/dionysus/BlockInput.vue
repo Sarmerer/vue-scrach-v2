@@ -6,7 +6,7 @@
 import { props } from './block-inputs/mixins'
 import Value from './block-inputs/Value.vue'
 import Statement from './block-inputs/Statement.vue'
-import { BlockInput } from '../types/block-input'
+import { BlockInput } from '../../types/block-input'
 
 export default {
   name: 'BlockInput',

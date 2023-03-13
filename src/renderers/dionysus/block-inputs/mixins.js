@@ -1,5 +1,5 @@
-import { Block } from '../../types/block'
-import { BlockInput } from '../../types/block-input'
+import { Block } from '../../../types/block'
+import { BlockInput } from '../../../types/block-input'
 
 export const props = {
   block: { type: Block, required: true },

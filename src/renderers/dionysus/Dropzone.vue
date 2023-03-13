@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import { Connection } from '../types/connection'
+import { Connection } from '../../types/connection'
 
 export default {
   name: 'BlockDropzone',

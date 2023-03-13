@@ -1,4 +1,4 @@
-import { BlockField } from '../../types/block-field'
+import { BlockField } from '../../../types/block-field'
 import DynamicInput from './DynamicInput.vue'
 
 export const props = {

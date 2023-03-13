@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import { BlockField } from '../types/block-field'
+import { BlockField } from '../../types/block-field'
 import { props } from './block-fields/mixins'
 
 import TextField from './block-fields/Text.vue'

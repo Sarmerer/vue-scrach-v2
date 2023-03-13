@@ -15,10 +15,10 @@
 </template>
 
 <script>
-import { Scratch } from '../types/scratch'
+import { Scratch } from './types/scratch'
 
 import Toolbox from './Toolbox.vue'
-import BlockRenderer from './BlockRenderer.vue'
+import BlockRenderer from './renderers/dionysus/index.vue'
 import CodePreview from './CodePreview.vue'
 
 export default {

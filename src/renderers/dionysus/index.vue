@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import { Block } from '../types/block'
+import { Block } from '../../types/block'
 
 import Dropzone from './Dropzone.vue'
 import BlockInput from './BlockInput.vue'

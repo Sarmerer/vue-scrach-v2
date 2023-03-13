@@ -32,7 +32,7 @@ export default {
   mixins: [mixins],
 
   components: {
-    BlockRenderer: () => import('../BlockRenderer.vue'),
+    BlockRenderer: () => import('../index.vue'),
     Dropzone,
   },
 

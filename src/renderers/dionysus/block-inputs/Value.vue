@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import { BlockInput } from '../../types/block-input'
+import { BlockInput } from '../../../types/block-input'
 import BlockField from '../BlockField.vue'
 import Dropzone from '../Dropzone.vue'
 import mixins from './mixins'
@@ -51,7 +51,7 @@ export default {
   mixins: [mixins],
 
   components: {
-    BlockRenderer: () => import('../BlockRenderer.vue'),
+    BlockRenderer: () => import('../index.vue'),
     BlockField,
     Dropzone,
   },

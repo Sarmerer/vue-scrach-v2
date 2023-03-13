@@ -60,9 +60,9 @@
 </template>
 
 <script>
-import { Scratch } from '../types/scratch'
-import { Toolbox } from '../types/toolbox'
-import BlockRenderer from './BlockRenderer.vue'
+import { Scratch } from './types/scratch'
+import { Toolbox } from './types/toolbox'
+import BlockRenderer from './renderers/dionysus/index.vue'
 
 export default {
   name: 'ScratchToolbox',

@@ -7,7 +7,7 @@
 <script>
 import { Scratch } from './types/scratch'
 import { ScratchLoader } from './types/loader'
-import ScratchRenderer from './components/Scratch.vue'
+import ScratchRenderer from './Scratch.vue'
 
 export default {
   name: 'App',

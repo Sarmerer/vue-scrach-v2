@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import { Scratch } from '../types/scratch'
+import { Scratch } from './types/scratch'
 
 export default {
   name: 'ScratchCodePreview',
