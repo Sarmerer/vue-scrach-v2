@@ -6,10 +6,18 @@ import { CodeGenerator } from './generator/code'
 import { Generator } from './generator'
 import { EventBus } from './event-bus'
 import { Events } from './events'
+import { Renderer } from './renderer'
+import { DionysusRenderer } from '../renderers/dionysus/renderer'
+import { AphroditeRenderer } from '../renderers/aphrodite/renderer'
 
 export class Scratch extends DOMElement {
   static Blocks = {}
   static Events = Events
+  static Renderers = {
+    Dionysus: DionysusRenderer,
+    Aphrodite: AphroditeRenderer,
+  }
+  static Renderer = Scratch.Renderers.Aphrodite
 
   constructor() {
     const id = uuidv4()
@@ -21,7 +29,20 @@ export class Scratch extends DOMElement {
 
     this.events = new EventBus()
     this.proximity = new Proximity(this)
-    this.generator = new CodeGenerator(this)
+
+    this.generator = null
+
+    this.renderer = new Scratch.Renderer(this)
+  }
+
+  setRenderer(renderer) {
+    if (!(renderer?.prototype instanceof Renderer)) {
+      console.error('renderer must extend Renderer class:', renderer)
+      return
+    }
+
+    Scratch.Renderer = renderer
+    this.renderer = new renderer(this)
   }
 
   setGenerator(generator) {

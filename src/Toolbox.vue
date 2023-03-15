@@ -62,7 +62,6 @@
 <script>
 import { Scratch } from './types/scratch'
 import { Toolbox } from './types/toolbox'
-import BlockRenderer from './renderers/dionysus/index.vue'
 
 export default {
   name: 'ScratchToolbox',
@@ -73,8 +72,6 @@ export default {
       required: true,
     },
   },
-
-  components: { BlockRenderer },
 
   data() {
     return {
@@ -87,6 +84,11 @@ export default {
     options() {
       return this.toolbox.categories[this.hoveredCategory]?.blocks || []
     },
+  },
+
+  created() {
+    this.$options.components.BlockRenderer =
+      this.scratch.renderer.BlockComponent
   },
 
   methods: {

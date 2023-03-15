@@ -7,6 +7,8 @@
 <script>
 import { Scratch } from './types/scratch'
 import { ScratchLoader } from './types/loader'
+import { CodeGenerator } from './types/generator/code'
+
 import ScratchRenderer from './Scratch.vue'
 
 export default {
@@ -20,7 +22,8 @@ export default {
     }
   },
 
-  mounted() {
+  created() {
+    this.scratch.setGenerator(CodeGenerator)
     const loader = new ScratchLoader(this.scratch)
     loader.load(JSON.parse(localStorage.getItem('scratch')))
 

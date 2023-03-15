@@ -51,7 +51,7 @@ export default {
   mixins: [mixins],
 
   components: {
-    BlockRenderer: () => import('../index.vue'),
+    BlockRenderer: () => import('../Block.vue'),
     BlockField,
     Dropzone,
   },

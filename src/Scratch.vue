@@ -2,13 +2,7 @@
   <div class="scratch">
     <Toolbox v-bind="{ scratch }" />
 
-    <div :id="scratch.id" class="scratch__blocks">
-      <BlockRenderer
-        v-for="block of scratch.getBlocks()"
-        :key="block.id"
-        v-bind="{ block }"
-      />
-    </div>
+    <BlocksRenderer v-bind="{ scratch }" />
 
     <CodePreview v-bind="{ scratch }" />
   </div>
@@ -18,7 +12,6 @@
 import { Scratch } from './types/scratch'
 
 import Toolbox from './Toolbox.vue'
-import BlockRenderer from './renderers/dionysus/index.vue'
 import CodePreview from './CodePreview.vue'
 
 export default {
@@ -31,11 +24,16 @@ export default {
     },
   },
 
-  components: { Toolbox, BlockRenderer, CodePreview },
+  components: { Toolbox, CodePreview },
+
+  created() {
+    this.$options.components.BlocksRenderer =
+      this.scratch.renderer.BlocksContainerComponent
+  },
 }
 </script>
 
-<style type="scss" scoped>
+<style lang="scss">
 .scratch {
   position: relative;
   width: 100%;
@@ -45,8 +43,10 @@ export default {
 }
 
 .scratch__blocks {
-  position: relative;
-  flex: 1 1 auto;
-  overflow: scroll;
+  &.dionysus {
+    position: relative;
+    flex: 1 1 auto;
+    overflow: scroll;
+  }
 }
 </style>

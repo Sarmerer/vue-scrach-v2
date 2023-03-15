@@ -22,6 +22,14 @@ export class ScratchLoader {
     if (Array.isArray(json.blocks)) {
       this.loadBlocks(json.blocks)
     }
+
+    if (this.scratch.generator) {
+      this.scratch.generator.compile()
+    }
+
+    if (this.scratch.renderer) {
+      this.scratch.renderer.init()
+    }
   }
 
   loadVariables(variables) {

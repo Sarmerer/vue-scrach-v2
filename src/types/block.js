@@ -80,15 +80,6 @@ export class Block extends DOMElement {
     return this.outputConnection !== null
   }
 
-  /** @returns {Array<Array<BlockInput>>} */
-  getInputGroups() {
-    return this.inputs.reduce((acc, input) => {
-      if (input.group > acc.length - 1) acc.push([])
-      acc[acc.length - 1].push(input)
-      return acc
-    }, [])
-  }
-
   /**
    * @param {String} name
    * @returns {BlockInput}
