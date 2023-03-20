@@ -1,7 +1,11 @@
 <template>
   <g :transform="position" @mousedown.stop="block.dragStart($event)">
-    <path :id="block.id" :fill="block.colors.background" :d="body"></path>
-    <Block v-if="nextBlock" :drawer="nextBlock" />
+    <path
+      :id="block.id"
+      :fill="block.colors.background"
+      :d="drawer.path"
+    ></path>
+    <Block v-for="block in relativeBlocks" :drawer="block" />
   </g>
 </template>
 
@@ -27,15 +31,19 @@ export default {
       return `translate(${this.block.x} ${this.block.y})`
     },
 
-    body() {
-      return this.drawer.path
-    },
+    relativeBlocks() {
+      const blocks = []
 
-    nextBlock() {
-      const block = this.block.nextConnection?.getTargetBlock()
-      if (!block) return null
+      const next = this.block.nextConnection?.getTargetBlock()
+      if (next) blocks.push(next)
 
-      return this.drawer.renderer.getDrawer(block)
+      for (const input of this.block.inputs) {
+        if (!input.connection?.isConnected()) continue
+
+        blocks.push(input.connection.getTargetBlock())
+      }
+
+      return blocks.map((b) => this.drawer.renderer.getDrawer(b))
     },
   },
 }

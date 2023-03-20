@@ -14,7 +14,16 @@ export class AphroditeRenderer extends Renderer {
   }
 
   init_() {
-    const callback = this.updateAccordingDrawer.bind(this)
+    const callback = (event) => {
+      const block = event.detail.block
+      if (!block) return
+
+      const drawer = this.drawers.get(block.id)
+      if (!drawer) return
+
+      this.updateDrawer(drawer)
+    }
+
     this.scratch.events.addEventListeners({
       [Scratch.Events.BLOCK_CREATE]: callback,
       [Scratch.Events.BLOCK_MOVE]: callback,
@@ -26,27 +35,14 @@ export class AphroditeRenderer extends Renderer {
     }
   }
 
-  /** @param {CustomEvent} event */
-  updateAccordingDrawer(event) {
-    const block = event.detail.block
-    if (!block) return
-
-    const drawer = this.drawers.get(block.id)
-    if (!drawer) return
-
-    drawer.update()
+  update() {
+    for (const [, drawer] of this.drawers) {
+      drawer.update()
+    }
   }
 
-  /** @param {AphroditeDrawer} member */
-  balanceStack(member) {
-    let next = member.block.nextConnection?.getTargetBlock()
-    if (!next) return
-
-    while (next) {
-      next.y = member.getHeight()
-      next.x = 0
-
-      next = next.nextConnection?.getTargetBlock()
-    }
+  /** @param {AphroditeDrawer} drawer */
+  updateDrawer(drawer) {
+    drawer.update()
   }
 }

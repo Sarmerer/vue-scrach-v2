@@ -9,10 +9,30 @@ export class AphroditeDrawer extends Drawer {
 
     this.path = ''
     this.groupsWidth = []
+    this.inputsHeight = []
+  }
+
+  getHeight() {
+    return this.inputsHeight.reduce((acc, i) => acc + i, 0)
+  }
+
+  getStackHeight(head) {
+    let next = this.renderer.getDrawer(head)
+    if (!next) return 0
+
+    let height = 0
+    while (next) {
+      height += next.getHeight()
+      next = this.renderer.getDrawer(
+        next.block.nextConnection?.getTargetBlock()
+      )
+    }
+
+    return height
   }
 
   update() {
-    this.renderer.balanceStack(this)
+    this.inputsHeight = []
 
     for (let i = 0; i < this.getInputGroups().length; i++) {
       this.groupsWidth.push(this.getGroupWidth(i))
@@ -24,13 +44,49 @@ export class AphroditeDrawer extends Drawer {
       path.push(this.getInput(input))
     }
 
-    path.push(this.getBottom())
+    path.push(this.getBottom(), this.getOutput(), 'z')
 
     this.path = path.join(' ')
+    this.align()
   }
 
-  getHeight() {
-    return this.block.getBoundingClientRect().height
+  align() {
+    this.alignStack()
+    for (const input of this.block.inputs) {
+      this.alignInput(input)
+    }
+  }
+
+  alignStack() {
+    let prev = this
+    let next = this.renderer.getDrawer(
+      this.block.nextConnection?.getTargetBlock()
+    )
+    while (next) {
+      next.block.y = prev.getHeight()
+      next.block.x = 0
+
+      prev = next
+      next = this.renderer.getDrawer(
+        next.block.nextConnection?.getTargetBlock()
+      )
+    }
+  }
+
+  alignInput(input) {
+    const y = this.inputsHeight
+      .slice(0, input.index)
+      .reduce((acc, h) => acc + h, 0)
+
+    const x =
+      input.type == BlockInput.Statement ? 20 : this.getGroupWidth(input.group)
+
+    let next = input.connection?.getTargetBlock()
+    while (next) {
+      next.y = y
+      next.x = x
+      next = next.connection?.getTargetBlock()
+    }
   }
 
   getTop() {
@@ -59,20 +115,49 @@ export class AphroditeDrawer extends Drawer {
 
   getInput(input) {
     if (input.type == BlockInput.Dummy) {
+      this.inputsHeight.push(25)
       return 'v 25'
     }
 
     if (input.type == BlockInput.Value) {
-      return 'v 5 h -5 v 10 h 5 v 5'
+      let height = 25
+
+      const drawer = this.renderer.getDrawer(input.connection?.getTargetBlock())
+      if (drawer) {
+        height = drawer.getHeight()
+      }
+
+      this.inputsHeight.push(height)
+      return `v ${height}`
+      return `v 5 h -5 v 10 h 5 v 5`
     }
 
     const nextGroupWidth = this.getGroupWidth(input.group + 1)
-    let path = `H 20 v 25 H ${20 + nextGroupWidth}`
+    const stackHeight = Math.max(
+      25,
+      this.getStackHeight(input.connection?.getTargetBlock())
+    )
+    let path = `H 20 v ${stackHeight} H ${20 + nextGroupWidth}`
+    let height = stackHeight
+
     if (input.index == this.block.inputs.length - 1) {
-      path += ' v 25'
+      height += 25
+      path += ' v 15'
     }
 
+    this.inputsHeight.push(height)
     return path
+  }
+
+  getOutput() {
+    const height = this.getHeight()
+    if (!this.block.hasOutput()) return ''
+
+    const notchWidth = 5
+    const notchHeight = 10
+    const offset = 8
+    const remainder = notchHeight + offset - height
+    return `v ${remainder} h -${notchWidth} v -${notchHeight} h ${notchWidth}`
   }
 
   getGroupWidth(group) {

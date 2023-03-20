@@ -69,6 +69,8 @@ export class Scratch extends DOMElement {
    * @param {String} type
    * @param {Number} x
    * @param {Number} y
+   *
+   * @returns {Block}
    */
   spawnBlock(type, x = 0, y = 0) {
     const factory = Scratch.Blocks[type]

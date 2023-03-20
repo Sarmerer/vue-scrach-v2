@@ -26,7 +26,9 @@ export class Renderer {
   }
 
   addDrawer(block) {
-    this.drawers.set(block.id, new this.Drawer(block, this))
+    const drawer = new this.Drawer(block, this)
+    this.drawers.set(block.id, drawer)
+    return drawer
   }
 
   init() {
