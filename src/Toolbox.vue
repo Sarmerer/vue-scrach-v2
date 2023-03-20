@@ -88,7 +88,7 @@ export default {
 
   created() {
     this.$options.components.BlockRenderer =
-      this.scratch.renderer.BlockComponent
+      this.toolbox.toolbox.renderer.BlockComponent
   },
 
   methods: {

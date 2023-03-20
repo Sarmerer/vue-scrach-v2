@@ -1,4 +1,4 @@
-import { Drawer } from '../aphrodite/renderer'
+import { Drawer } from '../../types/block-drawer'
 
 export class DionysusDrawer extends Drawer {
   constructor(block, renderer) {

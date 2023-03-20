@@ -6,14 +6,14 @@
 </template>
 
 <script>
-import { Drawer } from './renderer'
+import { AphroditeDrawer } from './drawer'
 
 export default {
   name: 'Block',
 
   props: {
     drawer: {
-      type: Drawer,
+      type: AphroditeDrawer,
       required: true,
     },
   },
@@ -24,8 +24,6 @@ export default {
     },
 
     position() {
-      if (this.block.isRelative()) return 'translate(0, 0)'
-
       return `translate(${this.block.x} ${this.block.y})`
     },
 

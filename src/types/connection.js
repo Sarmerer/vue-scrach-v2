@@ -37,6 +37,22 @@ export class Connection {
     return this.target.block
   }
 
+  isHead() {
+    if (!this.type == Connection.Prev) return true
+
+    return !this.isConnected()
+  }
+
+  getHeadConnection() {
+    if (this.isHead()) return this
+
+    const prev =
+      this.type == Connection.Input
+        ? this.target.block.outputConnection
+        : this.target.block.previousConnection
+    return prev.getHeadConnection()
+  }
+
   isTail() {
     if (!this.type == Connection.Next) return true
 

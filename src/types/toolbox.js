@@ -28,7 +28,7 @@ export class Toolbox {
   constructor(scratch) {
     this.scratch = scratch
 
-    this.toolbox = new Scratch()
+    this.toolbox = new Scratch().setRenderer(Scratch.Renderers.Dionysus)
     this.preset = 'Scripting'
     this.categories = {}
 

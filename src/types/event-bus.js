@@ -3,6 +3,12 @@ export class EventBus {
     this.bus = document.createElement('event-bus')
   }
 
+  addEventListeners(listeners) {
+    for (const [event, callback] of Object.entries(listeners)) {
+      this.addEventListener(event, callback)
+    }
+  }
+
   addEventListener(event, callback) {
     this.bus.addEventListener(event, callback)
   }

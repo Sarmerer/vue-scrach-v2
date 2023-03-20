@@ -1,4 +1,5 @@
 import { Drawer } from './block-drawer'
+import { Scratch } from './scratch'
 
 export class Renderer {
   BlocksContainerComponent = null
@@ -6,24 +7,26 @@ export class Renderer {
 
   Drawer = Drawer
 
+  /**
+   * @param {String} name
+   * @param {Scratch} scratch
+   */
   constructor(name, scratch) {
     this.scratch = scratch
     this.name = name
     this.didInit = false
 
-    this.drawers = {}
+    this.drawers = new Map()
   }
 
   getDrawer(block) {
     if (!block) return null
 
-    return this.drawers[block.id]
+    return this.drawers.get(block.id)
   }
 
   addDrawer(block) {
-    const d = new Drawer(block, this)
-    d.update()
-    this.drawers[block.id] = d
+    this.drawers.set(block.id, new this.Drawer(block, this))
   }
 
   init() {
