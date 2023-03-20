@@ -25,7 +25,7 @@
         />
         <BlockRenderer
           v-if="block.isInline && inputBlock"
-          :block="inputBlock"
+          :drawer="inputBlock"
         />
       </div>
     </div>
@@ -35,7 +35,7 @@
       :connection="input.connection"
     />
 
-    <BlockRenderer v-if="!block.isInline && inputBlock" :block="inputBlock" />
+    <BlockRenderer v-if="!block.isInline && inputBlock" :drawer="inputBlock" />
   </span>
 </template>
 

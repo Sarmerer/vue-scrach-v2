@@ -1,11 +1,29 @@
+import { Drawer } from './block-drawer'
+
 export class Renderer {
   BlocksContainerComponent = null
   BlockComponent = null
+
+  Drawer = Drawer
 
   constructor(name, scratch) {
     this.scratch = scratch
     this.name = name
     this.didInit = false
+
+    this.drawers = {}
+  }
+
+  getDrawer(block) {
+    if (!block) return null
+
+    return this.drawers[block.id]
+  }
+
+  addDrawer(block) {
+    const d = new Drawer(block, this)
+    d.update()
+    this.drawers[block.id] = d
   }
 
   init() {
@@ -15,6 +33,8 @@ export class Renderer {
   }
 
   init_() {
-    console.warn('init_ implementation should be provided')
+    for (const block of this.scratch.blocks) {
+      this.addDrawer(block)
+    }
   }
 }

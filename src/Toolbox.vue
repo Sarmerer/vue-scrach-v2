@@ -43,15 +43,15 @@
 
       <div
         class="toolbox__option"
-        v-for="block in options"
-        :key="block.id"
+        v-for="drawer in options"
+        :key="drawer.block.id"
         @mousedown.stop="
-          toolbox.spawnBlock($event, block), setHoveredCategory(null)
+          toolbox.spawnBlock($event, drawer.block), setHoveredCategory(null)
         "
       >
         <BlockRenderer
           class="toolbox__block"
-          v-bind="{ block }"
+          v-bind="{ drawer }"
           :style="{ position: 'relative' }"
         />
       </div>

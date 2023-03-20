@@ -3,7 +3,7 @@
     <div class="block__statement__vertical-section">
       <div class="block__statement__bar" :style="style"></div>
       <div :id="input.id" class="block__statement__children">
-        <BlockRenderer v-if="inputBlock" :block="inputBlock">
+        <BlockRenderer v-if="inputBlock" :drawer="inputBlock">
           <template #top-zone>
             <Dropzone v-if="input.hasValue()" :connection="input.connection" />
           </template>

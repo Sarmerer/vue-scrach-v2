@@ -76,16 +76,18 @@ export class Toolbox {
       declareModule(module)
     }
 
-    Object.keys(Scratch.Blocks).map((type) => {
+    for (const type of Object.keys(Scratch.Blocks)) {
       const block = this.toolbox.spawnBlock(type)
       block.isFrozen = true
-    })
+    }
 
     this.categories = this.toolbox.blocks.reduce((acc, b) => {
       const category = b.type.split(':')[0] || 'blocks'
       if (!acc[category]) acc[category] = { blocks: [], color: null }
 
-      acc[category].blocks.push(b)
+      acc[category].blocks.push(
+        new this.toolbox.renderer.Drawer(b, this.toolbox.renderer)
+      )
       acc[category].background = b.colors.background
       acc[category].text = b.colors.text
       return acc

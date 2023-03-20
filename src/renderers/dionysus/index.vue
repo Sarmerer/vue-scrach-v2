@@ -1,10 +1,6 @@
 <template>
   <div :id="scratch.id" class="scratch__blocks">
-    <Block
-      v-for="(block, id) of scratch.getBlocks()"
-      :key="id"
-      v-bind="{ block }"
-    />
+    <Block v-for="(drawer, id) of drawers" :key="id" v-bind="{ drawer }" />
   </div>
 </template>
 
@@ -24,6 +20,14 @@ export default {
   },
 
   components: { Block },
+
+  computed: {
+    drawers() {
+      return this.scratch
+        .getBlocks()
+        .map((b) => this.scratch.renderer.getDrawer(b))
+    },
+  },
 }
 </script>
 

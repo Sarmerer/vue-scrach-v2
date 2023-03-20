@@ -17,7 +17,7 @@
       </slot>
 
       <div
-        v-for="(group, index) of renderer.getInputGroups(block)"
+        v-for="(group, index) of drawer.getInputGroups()"
         :key="index"
         class="scratch__block__inputs-group"
         :class="{ inline: block.isInline }"
@@ -34,12 +34,13 @@
       </slot>
     </div>
 
-    <Block v-if="nextBlock" :block="nextBlock" />
+    <Block v-if="nextBlock" :drawer="nextBlock" />
   </div>
 </template>
 
 <script>
 import { Block } from '../../types/block'
+import { DionysusDrawer } from '../dionysus/drawer'
 
 import Dropzone from './Dropzone.vue'
 import BlockInput from './BlockInput.vue'
@@ -48,8 +49,8 @@ export default {
   name: 'Block',
 
   props: {
-    block: {
-      type: Block,
+    drawer: {
+      type: DionysusDrawer,
       required: true,
     },
   },
@@ -61,7 +62,11 @@ export default {
 
   computed: {
     renderer() {
-      return this.block.scratch.renderer
+      return this.drawer.renderer
+    },
+
+    block() {
+      return this.drawer.block
     },
 
     isRelative() {
@@ -75,7 +80,9 @@ export default {
     },
 
     nextBlock() {
-      return this.block.nextConnection?.getTargetBlock()
+      return this.renderer.getDrawer(
+        this.block.nextConnection?.getTargetBlock()
+      )
     },
   },
 }

@@ -17,7 +17,7 @@ export class Scratch extends DOMElement {
     Dionysus: DionysusRenderer,
     Aphrodite: AphroditeRenderer,
   }
-  static Renderer = Scratch.Renderers.Aphrodite
+  static Renderer = Scratch.Renderers.Dionysus
 
   constructor() {
     const id = uuidv4()
@@ -90,6 +90,7 @@ export class Scratch extends DOMElement {
     }
 
     this.blocks.push(block)
+    this.renderer.addDrawer(block)
     this.events.dispatch(Scratch.Events.BLOCK_CREATE, { block })
   }
 

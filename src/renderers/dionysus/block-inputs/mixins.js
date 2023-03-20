@@ -11,8 +11,12 @@ export const computed = {
     return this.block.scratch
   },
 
+  renderer() {
+    return this.scratch.renderer
+  },
+
   inputBlock() {
-    return this.input.connection?.getTargetBlock()
+    return this.renderer.getDrawer(this.input.connection?.getTargetBlock())
   },
 
   nextInputIsStatement() {
