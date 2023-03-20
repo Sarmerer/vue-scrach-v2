@@ -1,6 +1,7 @@
 import { Block } from '../../types/block'
 import { BlockInput } from '../../types/block-input'
 import { Drawer } from '../../types/block-drawer'
+import { Constraints } from './constraints'
 
 export class AphroditeDrawer extends Drawer {
   /** @param {Block} block */
@@ -38,13 +39,13 @@ export class AphroditeDrawer extends Drawer {
       this.groupsWidth.push(this.getGroupWidth(i))
     }
 
-    const path = ['m 0 0', this.getTop()]
+    const path = ['m 0 0', ...this.getTop()]
 
     for (const input of this.block.inputs) {
-      path.push(this.getInput(input))
+      path.push(...this.getInput(input))
     }
 
-    path.push(this.getBottom(), this.getOutput(), 'z')
+    path.push(...this.getBottom(), ...this.getOutput(), 'z')
 
     this.path = path.join(' ')
     this.align()
@@ -79,7 +80,9 @@ export class AphroditeDrawer extends Drawer {
       .reduce((acc, h) => acc + h, 0)
 
     const x =
-      input.type == BlockInput.Statement ? 20 : this.getGroupWidth(input.group)
+      input.type == BlockInput.Statement
+        ? Constraints.StatementBarWidth
+        : this.getGroupWidth(input.group)
 
     let next = input.connection?.getTargetBlock()
     while (next) {
@@ -93,56 +96,70 @@ export class AphroditeDrawer extends Drawer {
     const width = this.getGroupWidth(0)
 
     if (!this.block.hasPrev()) {
-      return `h ${width}`
+      return [`h ${width}`]
     }
 
-    const socketOffset = 10
-    const socketWidth = 15
-    const remainder = width - socketOffset - socketWidth
-    return `h ${socketOffset} v 5 h ${socketWidth} v -5 h ${remainder}`
+    const remainder =
+      width - Constraints.StackSocketOffset - Constraints.StackSocketWidth
+    return [...Constraints.GetStackSocket(), `h ${remainder}`]
   }
 
   getBottom() {
     if (!this.block.hasNext()) {
-      return `H 0`
+      return [`H 0`]
     }
 
-    const socketOffset = 10
-    const socketWidth = 15
-    const sum = socketOffset + socketWidth
-    return `H ${sum} v 5 h -${socketWidth} v -5 h -${socketOffset}`
+    const remainder =
+      Constraints.StackSocketOffset + Constraints.StackSocketWidth
+    return [`H ${remainder}`, ...Constraints.GetStackNotch()]
   }
 
   getInput(input) {
-    if (input.type == BlockInput.Dummy) {
-      this.inputsHeight.push(25)
-      return 'v 25'
+    switch (input.type) {
+      case BlockInput.Statement:
+        return this.getStatement(input)
+      case BlockInput.Value:
+        return this.getValue(input)
+      default:
+        return this.getDummy()
+    }
+  }
+
+  getDummy() {
+    this.inputsHeight.push(Constraints.MinInputHeight)
+    return [`v ${Constraints.MinInputHeight}`]
+  }
+
+  getValue(input) {
+    let height = Constraints.MinInputHeight
+
+    const drawer = this.renderer.getDrawer(input.connection?.getTargetBlock())
+    if (drawer) {
+      height = drawer.getHeight()
     }
 
-    if (input.type == BlockInput.Value) {
-      let height = 25
+    this.inputsHeight.push(height)
+    const remainder =
+      height - Constraints.RowSocketOffset - Constraints.RowSocketHeight
+    return [...Constraints.GetRowSocket(), `v ${remainder}`]
+  }
 
-      const drawer = this.renderer.getDrawer(input.connection?.getTargetBlock())
-      if (drawer) {
-        height = drawer.getHeight()
-      }
-
-      this.inputsHeight.push(height)
-      return `v ${height}`
-      return `v 5 h -5 v 10 h 5 v 5`
-    }
-
+  getStatement(input) {
     const nextGroupWidth = this.getGroupWidth(input.group + 1)
     const stackHeight = Math.max(
-      25,
-      this.getStackHeight(input.connection?.getTargetBlock())
+      Constraints.MinInputWidth,
+      this.getStackHeight(input.connection?.getTargetBlock()) + 5
     )
-    let path = `H 20 v ${stackHeight} H ${20 + nextGroupWidth}`
+    let path = [
+      `H ${Constraints.StatementBarWidth}`,
+      `v ${stackHeight}`,
+      `H ${Constraints.StatementBarWidth + nextGroupWidth}`,
+    ]
     let height = stackHeight
 
     if (input.index == this.block.inputs.length - 1) {
-      height += 25
-      path += ' v 15'
+      height += Constraints.StatementClosureHeight
+      path.push(`v ${Constraints.StatementClosureHeight}`)
     }
 
     this.inputsHeight.push(height)
@@ -151,23 +168,21 @@ export class AphroditeDrawer extends Drawer {
 
   getOutput() {
     const height = this.getHeight()
-    if (!this.block.hasOutput()) return ''
+    if (!this.block.hasOutput()) return []
 
-    const notchWidth = 5
-    const notchHeight = 10
-    const offset = 8
-    const remainder = notchHeight + offset - height
-    return `v ${remainder} h -${notchWidth} v -${notchHeight} h ${notchWidth}`
+    const remainder =
+      Constraints.RowSocketHeight + Constraints.RowSocketOffset - height
+
+    return [`v ${remainder}`, ...Constraints.GetRowNotch()]
   }
 
   getGroupWidth(group) {
     const groups = this.getInputGroups()
     if (group < 0 || group >= groups.length) {
-      return 20
+      return Constraints.MinInputWidth
     }
 
-    const padding = 20
-    let maxWidth = 20
+    let maxWidth = Constraints.MinInputWidth
     for (const input of groups[group]) {
       let inputWidth = 0
       for (const field of input.fields) {
@@ -179,7 +194,7 @@ export class AphroditeDrawer extends Drawer {
       }
     }
 
-    return maxWidth + padding
+    return maxWidth + Constraints.InputPadding
   }
 
   getStringWidth(string) {
