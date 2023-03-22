@@ -1,16 +1,25 @@
 <template>
-  <g :transform="position" @mousedown.stop="block.dragStart($event)">
+  <g
+    class="scratch__block"
+    :transform="position"
+    @mousedown.stop="block.dragStart($event)"
+  >
     <path
       :id="block.id"
       :fill="block.colors.background"
       :d="drawer.path"
     ></path>
+
+    <Input v-for="input of block.inputs" :key="input.id" v-bind="{ input }" />
+
     <Block v-for="block in relativeBlocks" :drawer="block" />
   </g>
 </template>
 
 <script>
 import { AphroditeDrawer } from './drawer'
+
+import Input from './Input.vue'
 
 export default {
   name: 'Block',
@@ -21,6 +30,8 @@ export default {
       required: true,
     },
   },
+
+  components: { Input },
 
   computed: {
     block() {

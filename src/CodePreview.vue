@@ -26,8 +26,9 @@ export default {
 <style lang="scss" scoped>
 .scratch__code-preview {
   flex: 0 0 200px;
-  padding-left: 10px;
+  padding: 10px;
   background-color: ghostwhite;
   font-size: 12px;
+  margin: 0;
 }
 </style>

@@ -14,35 +14,44 @@ export class AphroditeRenderer extends Renderer {
   }
 
   init_() {
-    const callback = (event) => {
-      const block = event.detail.block
-      if (!block) return
-
-      const drawer = this.drawers.get(block.id)
-      if (!drawer) return
-
-      this.updateDrawer(drawer)
-    }
-
-    this.scratch.events.addEventListeners({
-      [Scratch.Events.BLOCK_CREATE]: callback,
-      [Scratch.Events.BLOCK_MOVE]: callback,
-      [Scratch.Events.BLOCK_CHANGE]: callback,
-    })
-
     for (const block of this.scratch.blocks) {
       this.addDrawer(block)
     }
+
+    const callback = (event) => {
+      const { block, oldParent, newParent } = event.detail
+      const drawers = [block, oldParent, newParent].reduce((acc, block) => {
+        if (block && this.drawers.get(block.id)) {
+          acc.set(block.id, this.drawers.get(block.id))
+        }
+
+        return acc
+      }, new Map())
+
+      this.update(drawers)
+    }
+
+    this.scratch.events.addEventsListener(
+      [
+        Scratch.Events.BLOCK_CHANGE,
+        Scratch.Events.BLOCK_CREATE,
+        Scratch.Events.BLOCK_MOVE,
+      ],
+      callback
+    )
   }
 
-  update() {
-    for (const [, drawer] of this.drawers) {
+  /** @param {Array<AphroditeDrawer>} drawers */
+  update(drawers = this.drawers) {
+    for (const [, drawer] of drawers) {
       drawer.update()
     }
   }
 
-  /** @param {AphroditeDrawer} drawer */
-  updateDrawer(drawer) {
-    drawer.update()
+  /** @param {Array<AphroditeDrawer>} drawers */
+  updateFast(drawers = this.drawers) {
+    for (const [, drawer] of drawers) {
+      drawer.updateFast()
+    }
   }
 }

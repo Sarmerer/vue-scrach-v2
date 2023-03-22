@@ -6,8 +6,6 @@
 
 <script>
 import { Scratch } from './types/scratch'
-import { ScratchLoader } from './types/loader'
-import { CodeGenerator } from './types/generator/code'
 
 import ScratchRenderer from './Scratch.vue'
 
@@ -23,17 +21,14 @@ export default {
   },
 
   created() {
-    this.scratch.setGenerator(CodeGenerator)
-    const loader = new ScratchLoader(this.scratch)
-    loader.load(JSON.parse(localStorage.getItem('scratch')))
-
-    this.scratch.events.addEventListener(Scratch.Events.BLOCK_CHANGE, () => {
-      this.save()
-    })
-
-    this.scratch.events.addEventListener(Scratch.Events.BLOCK_MOVE, () => {
-      this.save()
-    })
+    this.scratch.events.addEventsListener(
+      [
+        Scratch.Events.BLOCK_CHANGE,
+        Scratch.Events.BLOCK_DRAG,
+        Scratch.Events.BLOCK_MOVE,
+      ],
+      this.save
+    )
   },
 
   methods: {

@@ -42,4 +42,6 @@ export class Renderer {
       this.addDrawer(block)
     }
   }
+
+  update() {}
 }

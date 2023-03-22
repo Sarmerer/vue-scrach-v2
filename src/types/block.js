@@ -152,7 +152,7 @@ export class Block extends DOMElement {
     this.yBeforeDrag = this.y
 
     this.isDragged = true
-    this.scratch.proximity.prepare(this)
+    this.scratch.proximity.activate(this)
 
     window.addEventListener('mousemove', this.listeners_.drag)
     window.addEventListener('mouseup', this.listeners_.dragEnd, { once: true })
@@ -187,8 +187,8 @@ export class Block extends DOMElement {
     window.removeEventListener('mousemove', this.listeners_.drag)
 
     this.isDragged = false
-    this.scratch.proximity.reset(this)
-    this.scratch.events.dispatch(Scratch.Events.BLOCK_MOVE, {
+    this.scratch.proximity.deactivate(this)
+    this.scratch.events.dispatch(Scratch.Events.BLOCK_DRAG, {
       x: this.x,
       y: this.y,
       block: this,

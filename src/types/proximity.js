@@ -9,16 +9,18 @@ export class Proximity {
     this.connections = []
 
     this.activeBlock = null
-    this.activeBlockConnection = null
-    this.matchingConnections = []
+    this.bestActiveConnection = null
 
+    this.candidates = []
     this.candidate = null
   }
 
+  /** @param {Connection} connection */
   addConnection(connection) {
     this.connections.push(connection)
   }
 
+  /** @param {Connection} connection */
   removeConnection(connection) {
     const index = this.connections.indexOf(connection)
     if (index == -1) return
@@ -26,57 +28,70 @@ export class Proximity {
     this.connections.splice(index, 1)
   }
 
-  cacheMatchingConnections() {
-    this.matchingConnections = this.connections.filter((c) => {
-      return c.canConnectTo(this.activeBlock)
+  /** @param {Block} block */
+  getCandidates(block) {
+    return this.connections.filter((c) => {
+      return c.canConnectTo(block)
     })
   }
 
-  prepare(block) {
+  /**
+   * @param {Connection} connection
+   * @param {Block} block
+   * */
+  getMatchingConnection(connection, block) {
+    switch (connection.type) {
+      case Connection.Prev && !connection.isConnected():
+        return block.nextConnection.getTailConnection()
+      case Connection.Next:
+      case Connection.Statement:
+        return block.previousConnection
+      case Connection.Input:
+        return block.outputConnection
+      default:
+        return null
+    }
+  }
+
+  /** @param {Block} block */
+  activate(block) {
     this.activeBlock = block
-    this.cacheMatchingConnections(block)
+    this.candidates = this.getCandidates(block)
   }
 
   /** @param {Block} block */
   update() {
-    if (!this.activeBlock) return
-    if (!this.matchingConnections.length) return
+    if (!this.activeBlock || !this.candidates.length) return
 
     this.setCandidate(null)
 
     let minDist = 100
-    let candidate = null
-    for (const connection of this.matchingConnections) {
-      let activeConnection = null
-
-      if (connection.type == Connection.Prev && !connection.isConnected()) {
-        activeConnection = this.activeBlock.nextConnection.getTailConnection()
-      } else if (
-        connection.type == Connection.Next ||
-        connection.type == Connection.Statement
-      ) {
-        activeConnection = this.activeBlock.previousConnection
-      } else if (connection.type == Connection.Input) {
-        activeConnection = this.activeBlock.outputConnection
-      }
-
+    let closestConnection = null
+    for (const connection of this.candidates) {
+      let activeConnection = this.getMatchingConnection(
+        connection,
+        this.activeBlock
+      )
       if (!activeConnection) continue
 
-      const aPos = activeConnection.getPosition()
-      const cPos = connection.getPosition()
-      const yDist = Math.abs(cPos.y - aPos.y)
-      const xDist = Math.abs(cPos.x - aPos.x)
+      const activePosition = activeConnection.getPosition()
+      const candidatePosition = connection.getPosition()
+      const yDist = Math.abs(candidatePosition.y - activePosition.y)
+      const xDist = Math.abs(candidatePosition.x - activePosition.x)
 
       if (yDist >= minDist || yDist > 30 || xDist > 50) continue
 
       minDist = yDist
-      candidate = connection
-      this.activeBlockConnection = activeConnection
+      closestConnection = connection
+      this.bestActiveConnection = activeConnection
     }
 
-    if (!candidate) return
+    if (!closestConnection) {
+      this.bestActiveConnection = null
+      return
+    }
 
-    this.setCandidate(candidate)
+    this.setCandidate(closestConnection)
   }
 
   setCandidate(candidate) {
@@ -91,15 +106,15 @@ export class Proximity {
     }
   }
 
-  reset() {
+  deactivate() {
     if (this.candidate) {
-      this.candidate.connect(this.activeBlockConnection)
+      this.candidate.connect(this.bestActiveConnection)
       this.setCandidate(null)
     }
 
     this.activeBlock = null
-    this.activeBlockConnection = null
+    this.bestActiveConnection = null
     this.candidate = null
-    this.matchingConnections = []
+    this.candidates = []
   }
 }

@@ -7,8 +7,15 @@ export class Generator {
     this.scratch = scratch
 
     const compile = this.compile.bind(this)
-    this.scratch.events.addEventListener(Scratch.Events.BLOCK_CHANGE, compile)
-    this.scratch.events.addEventListener(Scratch.Events.BLOCK_MOVE, compile)
+    this.scratch.events.addEventsListener(
+      [
+        Scratch.Events.BLOCK_CREATE,
+        Scratch.Events.BLOCK_CHANGE,
+        Scratch.Events.BLOCK_MOVE,
+        Scratch.Events.BLOCK_DRAG,
+      ],
+      compile
+    )
   }
 
   /**

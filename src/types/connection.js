@@ -1,5 +1,7 @@
 import { Block } from './block'
 import { BlockInput } from './block-input'
+import { Point } from './point'
+import { Scratch } from './scratch'
 
 export class Connection {
   static None = 0
@@ -20,6 +22,7 @@ export class Connection {
     this.input = input
     this.target = null
 
+    this.position = new Point()
     this.isHighlighted = false
   }
 
@@ -75,6 +78,9 @@ export class Connection {
 
   /** @param {Connection} target */
   connect(target) {
+    const oldTarget = target.target
+    const oldParent = target.getTargetBlock()
+
     switch (this.type) {
       case Connection.Prev:
         this.connectPrev(target)
@@ -86,7 +92,18 @@ export class Connection {
       case Connection.Input:
         this.connectInput(target)
         break
+      default:
+        return
     }
+
+    this.block.scratch.events.dispatch(Scratch.Events.BLOCK_MOVE, {
+      connection: target,
+      block: target.block,
+      oldTarget,
+      oldParent,
+      newTarget: this,
+      newParent: this.block,
+    })
   }
 
   /** @param {Connection} target */
@@ -117,12 +134,21 @@ export class Connection {
   }
 
   disconnect() {
-    if (!this.target) return
+    if (!this.isConnected()) return
 
     const target = this.target
     this.target = null
 
     if (target) target.disconnect()
+
+    this.block.scratch.events.dispatch(Scratch.Events.BLOCK_MOVE, {
+      connection: this,
+      block: this.block,
+      oldTarget: target,
+      oldParent: target.block,
+      newParent: null,
+      newTarget: null,
+    })
   }
 
   delete() {
@@ -131,25 +157,7 @@ export class Connection {
   }
 
   getPosition() {
-    let rect = null
-    if (this.type == Connection.Input || this.type == Connection.Statement) {
-      rect = this.input.getBoundingClientRect()
-    } else {
-      rect = this.block.getBoundingClientRect()
-    }
-
-    let x = rect.x
-    let y = rect.y
-
-    if (this.type == Connection.Next) {
-      y += rect.height
-    }
-
-    if (this.type == Connection.Input && !this.block.isInline) {
-      x += rect.width
-    }
-
-    return { x, y }
+    return this.position
   }
 
   canConnectTo(block) {

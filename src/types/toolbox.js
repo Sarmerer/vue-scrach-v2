@@ -32,7 +32,7 @@ export class Toolbox {
     this.preset = 'Scripting'
     this.categories = {}
 
-    this.updateCategories()
+    this.setPreset(this.preset)
   }
 
   getAvailablePresets() {
@@ -61,12 +61,8 @@ export class Toolbox {
     if (!Toolbox.Presets[preset]) return
 
     this.preset = preset
-    this.updateGenerator()
-    this.updateCategories()
-  }
-
-  updateGenerator() {
     this.scratch.setGenerator(this.gerPresetGenerator())
+    this.updateCategories()
   }
 
   updateCategories() {

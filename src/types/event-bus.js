@@ -9,6 +9,12 @@ export class EventBus {
     }
   }
 
+  addEventsListener(events, callback) {
+    for (const event of events) {
+      this.addEventListener(event, callback)
+    }
+  }
+
   addEventListener(event, callback) {
     this.bus.addEventListener(event, callback)
   }

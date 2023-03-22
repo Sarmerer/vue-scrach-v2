@@ -48,10 +48,24 @@ export class AphroditeDrawer extends Drawer {
     path.push(...this.getBottom(), ...this.getOutput(), 'z')
 
     this.path = path.join(' ')
-    this.align()
+
+    this.updateRelatives()
+    this.updateFast()
   }
 
-  align() {
+  updateFast() {
+    const { x: absX, y: absY } = this.block
+
+    if (this.block.previousConnection) {
+      this.block.previousConnection.position.moveTo(absX, absY)
+    }
+
+    if (this.block.nextConnection) {
+      this.block.nextConnection.position.moveTo(absX, absY + this.getHeight())
+    }
+  }
+
+  updateRelatives() {
     this.alignStack()
     for (const input of this.block.inputs) {
       this.alignInput(input)
@@ -145,17 +159,17 @@ export class AphroditeDrawer extends Drawer {
   }
 
   getStatement(input) {
-    const nextGroupWidth = this.getGroupWidth(input.group + 1)
-    const stackHeight = Math.max(
+    const width = this.getGroupWidth(input.group)
+    let height = Math.max(
       Constraints.MinInputWidth,
       this.getStackHeight(input.connection?.getTargetBlock()) + 5
     )
-    let path = [
+
+    const path = [
       `H ${Constraints.StatementBarWidth}`,
-      `v ${stackHeight}`,
-      `H ${Constraints.StatementBarWidth + nextGroupWidth}`,
+      `v ${height}`,
+      `H ${Constraints.StatementBarWidth + width}`,
     ]
-    let height = stackHeight
 
     if (input.index == this.block.inputs.length - 1) {
       height += Constraints.StatementClosureHeight
@@ -182,6 +196,10 @@ export class AphroditeDrawer extends Drawer {
       return Constraints.MinInputWidth
     }
 
+    if (group < this.groupsWidth.length - 1) {
+      return this.groupsWidth[group]
+    }
+
     let maxWidth = Constraints.MinInputWidth
     for (const input of groups[group]) {
       let inputWidth = 0
@@ -202,7 +220,7 @@ export class AphroditeDrawer extends Drawer {
 
     const pseudo = document.createElement('div')
     pseudo.appendChild(document.createTextNode(string))
-    pseudo.style.font = '12px arial'
+    pseudo.style.font = 'normal 11pt sans-serif'
     pseudo.style.position = 'absolute'
     pseudo.style.visibility = 'hidden'
     pseudo.style.whiteSpace = 'nowrap'
