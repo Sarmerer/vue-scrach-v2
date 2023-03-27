@@ -4,11 +4,7 @@
     :transform="position"
     @mousedown.stop="block.dragStart($event)"
   >
-    <path
-      :id="block.id"
-      :fill="block.colors.background"
-      :d="drawer.path"
-    ></path>
+    <path :id="block.id" :fill="block.colors.background" :d="path"></path>
 
     <Input v-for="input of block.inputs" :key="input.id" v-bind="{ input }" />
 
@@ -38,8 +34,12 @@ export default {
       return this.drawer.block
     },
 
+    path() {
+      return this.drawer.path
+    },
+
     position() {
-      return `translate(${this.block.x} ${this.block.y})`
+      return `translate(${this.block.position.x} ${this.block.position.y})`
     },
 
     relativeBlocks() {
@@ -56,6 +56,10 @@ export default {
 
       return blocks.map((b) => this.drawer.renderer.getDrawer(b))
     },
+  },
+
+  mounted() {
+    this.block.scratch.renderer.update(this.block, {})
   },
 }
 </script>

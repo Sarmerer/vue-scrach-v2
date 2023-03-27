@@ -2,6 +2,9 @@ import { Block } from '../../types/block'
 import { BlockInput } from '../../types/block-input'
 import { Drawer } from '../../types/block-drawer'
 import { Constraints } from './constraints'
+import { PointDebugger } from '../../types/point-debugger'
+import { Point } from '../../types/point'
+import { Connection } from '../../types/connection'
 
 export class AphroditeDrawer extends Drawer {
   /** @param {Block} block */
@@ -9,12 +12,18 @@ export class AphroditeDrawer extends Drawer {
     super(block, renderer)
 
     this.path = ''
-    this.groupsWidth = []
-    this.inputsHeight = []
+
+    this.groupsWidthCache = []
   }
 
   getHeight() {
-    return this.inputsHeight.reduce((acc, i) => acc + i, 0)
+    return this.block.height
+  }
+
+  getInputOffsetTop(index) {
+    return this.block.inputs
+      .slice(0, index)
+      .reduce((acc, i) => acc + i.height, 0)
   }
 
   getStackHeight(head) {
@@ -32,12 +41,19 @@ export class AphroditeDrawer extends Drawer {
     return height
   }
 
-  update() {
-    this.inputsHeight = []
-
-    for (let i = 0; i < this.getInputGroups().length; i++) {
-      this.groupsWidth.push(this.getGroupWidth(i))
+  /**
+   * @param {Object} options
+   * @param {Point} options.delta
+   * @param {Boolean} options.fast
+   */
+  update(options) {
+    if (options.fast) {
+      this.updateFast(options)
+      return
     }
+
+    this.updatePosition()
+    this.cacheGroupWidths()
 
     const path = ['m 0 0', ...this.getTop()]
 
@@ -45,65 +61,114 @@ export class AphroditeDrawer extends Drawer {
       path.push(...this.getInput(input))
     }
 
-    path.push(...this.getBottom(), ...this.getOutput(), 'z')
+    this.block.height = this.block.inputs.reduce((acc, i) => acc + i.height, 0)
 
+    path.push(...this.getBottom(), ...this.getOutput(), 'z')
     this.path = path.join(' ')
 
-    this.updateRelatives()
-    this.updateFast()
-  }
+    const { x, y } = this.block.isRelative()
+      ? this.block.scratch.normalizePoint(this.block.getBoundingClientRect())
+      : this.block.position
 
-  updateFast() {
-    const { x: absX, y: absY } = this.block
-
-    if (this.block.previousConnection) {
-      this.block.previousConnection.position.moveTo(absX, absY)
-    }
-
-    if (this.block.nextConnection) {
-      this.block.nextConnection.position.moveTo(absX, absY + this.getHeight())
-    }
-  }
-
-  updateRelatives() {
-    this.alignStack()
-    for (const input of this.block.inputs) {
-      this.alignInput(input)
-    }
-  }
-
-  alignStack() {
-    let prev = this
-    let next = this.renderer.getDrawer(
-      this.block.nextConnection?.getTargetBlock()
+    this.moveConnectionTo(
+      this.block.previousConnection,
+      new Point(x + Constraints.StackSocketOffset, y)
     )
-    while (next) {
-      next.block.y = prev.getHeight()
-      next.block.x = 0
 
-      prev = next
-      next = this.renderer.getDrawer(
-        next.block.nextConnection?.getTargetBlock()
+    this.moveConnectionTo(
+      this.block.nextConnection,
+      new Point(x + Constraints.StackSocketOffset, y + this.getHeight())
+    )
+
+    this.moveConnectionTo(
+      this.block.outputConnection,
+      new Point(x - Constraints.RowSocketDepth, y + Constraints.RowSocketOffset)
+    )
+
+    let offsetTop = 0
+    for (const input of this.block.inputs) {
+      this.moveConnectionTo(
+        input.connection,
+        new Point(
+          x + this.getGroupWidth(input.group),
+          y + offsetTop + Constraints.RowSocketHeight
+        )
       )
+
+      for (const field of input.fields) {
+        field.position.moveTo(
+          x + this.getFieldPaddingX(field),
+          y + Constraints.DefaultFieldPaddingY
+        )
+      }
+
+      offsetTop += input.height
     }
   }
 
-  alignInput(input) {
-    const y = this.inputsHeight
-      .slice(0, input.index)
-      .reduce((acc, h) => acc + h, 0)
+  /**
+   * @param {Object} options
+   * @param {Point} options.delta
+   */
+  updateFast(options) {
+    const delta = options.delta || new Point(0, 0)
 
-    const x =
-      input.type == BlockInput.Statement
-        ? Constraints.StatementBarWidth
-        : this.getGroupWidth(input.group)
+    this.moveConnectionBy(this.block.previousConnection, delta)
+    this.moveConnectionBy(this.block.nextConnection, delta)
+    this.moveConnectionBy(this.block.outputConnection, delta)
 
-    let next = input.connection?.getTargetBlock()
-    while (next) {
-      next.y = y
-      next.x = x
-      next = next.connection?.getTargetBlock()
+    for (const input of this.block.inputs) {
+      this.moveConnectionBy(input.connection, delta)
+
+      for (const field of input.fields) {
+        field.position.moveBy(delta.x, delta.y)
+      }
     }
+  }
+
+  updatePosition() {
+    let alignTo = this.block.previousConnection || this.block.outputConnection
+    if (!alignTo || !alignTo.isConnected()) return this.position
+
+    alignTo = alignTo.target
+    const parent = this.renderer.getDrawer(alignTo.block)
+
+    let offsetTop = 0
+    if (alignTo.input) {
+      offsetTop = parent.getInputOffsetTop(alignTo.input.index)
+    }
+
+    const relativePosition = new Point(0, 0)
+    switch (alignTo.type) {
+      case Connection.Input:
+        relativePosition.moveBy(
+          parent.getGroupWidth(alignTo.input.group),
+          offsetTop
+        )
+        break
+      case Connection.Statement:
+        relativePosition.moveBy(Constraints.StatementBarWidth, offsetTop)
+        break
+      case Connection.Next:
+        relativePosition.moveBy(0, alignTo.block.height)
+        break
+    }
+
+    this.block.position.moveTo(relativePosition.x, relativePosition.y)
+  }
+
+  moveConnectionBy(connection, delta) {
+    if (!connection) return
+
+    connection.position.moveBy(delta.x, delta.y)
+    PointDebugger.Debug(connection.position, this.block.scratch)
+  }
+
+  moveConnectionTo(connection, point) {
+    if (!connection) return
+
+    connection.position.moveTo(point.x, point.y)
+    PointDebugger.Debug(connection.position, this.block.scratch)
   }
 
   getTop() {
@@ -135,12 +200,12 @@ export class AphroditeDrawer extends Drawer {
       case BlockInput.Value:
         return this.getValue(input)
       default:
-        return this.getDummy()
+        return this.getDummy(input)
     }
   }
 
-  getDummy() {
-    this.inputsHeight.push(Constraints.MinInputHeight)
+  getDummy(input) {
+    input.height = Constraints.MinInputHeight
     return [`v ${Constraints.MinInputHeight}`]
   }
 
@@ -152,14 +217,13 @@ export class AphroditeDrawer extends Drawer {
       height = drawer.getHeight()
     }
 
-    this.inputsHeight.push(height)
+    input.height = height
     const remainder =
       height - Constraints.RowSocketOffset - Constraints.RowSocketHeight
     return [...Constraints.GetRowSocket(), `v ${remainder}`]
   }
 
   getStatement(input) {
-    const width = this.getGroupWidth(input.group)
     let height = Math.max(
       Constraints.MinInputWidth,
       this.getStackHeight(input.connection?.getTargetBlock()) + 5
@@ -168,7 +232,7 @@ export class AphroditeDrawer extends Drawer {
     const path = [
       `H ${Constraints.StatementBarWidth}`,
       `v ${height}`,
-      `H ${Constraints.StatementBarWidth + width}`,
+      `H ${Constraints.StatementBarWidth + this.getGroupWidth(input.group)}`,
     ]
 
     if (input.index == this.block.inputs.length - 1) {
@@ -176,14 +240,14 @@ export class AphroditeDrawer extends Drawer {
       path.push(`v ${Constraints.StatementClosureHeight}`)
     }
 
-    this.inputsHeight.push(height)
+    input.height = height
     return path
   }
 
   getOutput() {
-    const height = this.getHeight()
     if (!this.block.hasOutput()) return []
 
+    const height = this.getHeight()
     const remainder =
       Constraints.RowSocketHeight + Constraints.RowSocketOffset - height
 
@@ -191,28 +255,57 @@ export class AphroditeDrawer extends Drawer {
   }
 
   getGroupWidth(group) {
-    const groups = this.getInputGroups()
-    if (group < 0 || group >= groups.length) {
+    if (group < 0 || group > this.groupsWidthCache.length - 1) {
       return Constraints.MinInputWidth
     }
 
-    if (group < this.groupsWidth.length - 1) {
-      return this.groupsWidth[group]
+    return this.groupsWidthCache[group]
+  }
+
+  getInputWidth(input) {
+    let width = Constraints.InputPadding
+    for (const field of input.fields) {
+      field.width =
+        this.getStringWidth(field.value || field.placeholder) +
+        this.getFieldPaddingX(field, 'left') +
+        this.getFieldPaddingX(field, 'right')
+      width += field.width
     }
 
-    let maxWidth = Constraints.MinInputWidth
-    for (const input of groups[group]) {
-      let inputWidth = 0
-      for (const field of input.fields) {
-        inputWidth += this.getStringWidth(field.value || field.placeholder)
-      }
+    input.width = width
+    return width
+  }
 
-      if (inputWidth > maxWidth) {
-        maxWidth = inputWidth
-      }
+  getFieldPaddingX(field, side) {
+    const padding = Constraints.FieldPaddingX[field.type]
+    if (padding == null) return Constraints.DefaultFieldPaddingX
+
+    if (Array.isArray(padding)) {
+      if (!side) return padding[0]
+
+      const index = side == 'right' ? 1 : 0
+      return padding[index]
     }
 
-    return maxWidth + Constraints.InputPadding
+    return padding
+  }
+
+  cacheGroupWidths() {
+    this.groupsWidthCache = []
+
+    const groups = this.getInputGroups()
+    for (const group of groups) {
+      let groupWidth = Constraints.MinInputWidth
+      for (const input of group) {
+        const inputWidth = this.getInputWidth(input)
+
+        if (inputWidth > groupWidth) {
+          groupWidth = inputWidth
+        }
+      }
+
+      this.groupsWidthCache.push(groupWidth)
+    }
   }
 
   getStringWidth(string) {

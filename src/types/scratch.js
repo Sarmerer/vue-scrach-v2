@@ -8,6 +8,7 @@ import { Events } from './events'
 import { Renderer } from './renderer'
 import { DionysusRenderer } from '../renderers/dionysus/renderer'
 import { AphroditeRenderer } from '../renderers/aphrodite/renderer'
+import { Point } from './point'
 
 export class Scratch extends DOMElement {
   static Blocks = {}
@@ -93,6 +94,7 @@ export class Scratch extends DOMElement {
 
     this.blocks.push(block)
     this.renderer.addDrawer(block)
+    this.renderer.update(block, {})
     this.events.dispatch(Scratch.Events.BLOCK_CREATE, { block })
   }
 
@@ -134,17 +136,12 @@ export class Scratch extends DOMElement {
   }
 
   /**
-   * @typedef {Object} Point
-   * @property {Number} x
-   * @property {Number} y
-   *
-   * @param {Number} x
-   * @param {Number} y
+   * @param {Point} point
    * @returns {Point}
    */
-  normalizePosition(x, y) {
+  normalizePoint(point) {
     const rect = this.getBoundingClientRect()
-    return { x: x - rect.x, y: y - rect.y }
+    return new Point(point.x - rect.x, point.y - rect.y)
   }
 
   toJSON() {

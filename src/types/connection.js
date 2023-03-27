@@ -1,7 +1,6 @@
 import { Block } from './block'
 import { BlockInput } from './block-input'
 import { Point } from './point'
-import { Scratch } from './scratch'
 
 export class Connection {
   static None = 0
@@ -35,6 +34,7 @@ export class Connection {
     this.setTarget(connection)
   }
 
+  /** @returns {Block | null} */
   getTargetBlock() {
     if (!this.isConnected()) return null
     return this.target.block
@@ -78,14 +78,17 @@ export class Connection {
 
   /** @param {Connection} target */
   connect(target) {
-    const oldTarget = target.target
-    const oldParent = target.getTargetBlock()
+    let oldTarget = target.getTargetBlock()
+    const oldPosition = target.block.position.clone()
+    const nextPos = target.position.clone()
 
     switch (this.type) {
       case Connection.Prev:
         this.connectPrev(target)
         break
       case Connection.Next:
+        this.connectNext(target)
+        break
       case Connection.Statement:
         this.connectNext(target)
         break
@@ -96,14 +99,15 @@ export class Connection {
         return
     }
 
-    this.block.scratch.events.dispatch(Scratch.Events.BLOCK_MOVE, {
-      connection: target,
-      block: target.block,
-      oldTarget,
-      oldParent,
-      newTarget: this,
-      newParent: this.block,
+    const delta = oldPosition.moveBy(-this.position.x, -this.position.y)
+    this.block.scratch.renderer.update(target.block, {
+      propagateUp: true,
+      delta,
     })
+
+    if (oldTarget) {
+      this.block.scratch.renderer.update(oldTarget, { propagateUp: true })
+    }
   }
 
   /** @param {Connection} target */
@@ -136,19 +140,15 @@ export class Connection {
   disconnect() {
     if (!this.isConnected()) return
 
-    const target = this.target
+    const oldTarget = this.target
     this.target = null
 
-    if (target) target.disconnect()
+    if (oldTarget) {
+      oldTarget.disconnect()
+      this.block.scratch.renderer.update(oldTarget.block, { propagateUp: true })
+    }
 
-    this.block.scratch.events.dispatch(Scratch.Events.BLOCK_MOVE, {
-      connection: this,
-      block: this.block,
-      oldTarget: target,
-      oldParent: target.block,
-      newParent: null,
-      newTarget: null,
-    })
+    this.block.scratch.renderer.update(this.block, { propagateDown: true })
   }
 
   delete() {

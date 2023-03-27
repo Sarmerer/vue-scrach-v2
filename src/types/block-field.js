@@ -6,6 +6,7 @@
  */
 
 import { uuidv4 } from '../utils'
+import { Point } from './point'
 import { Scratch } from './scratch'
 
 export class BlockField {
@@ -24,6 +25,10 @@ export class BlockField {
     this.type = type
     this.block = block
     this.input = input
+
+    this.width = 0
+    this.height = 0
+    this.position = new Point(0, 0)
 
     options = Object.assign(
       { value: null, placeholder: null, options: [] },
@@ -48,11 +53,7 @@ export class BlockField {
 
   set value(value) {
     this.value_ = value
-    this.block.scratch.events.dispatch(Scratch.Events.BLOCK_CHANGE, {
-      type: 'field',
-      block: this.block,
-      value,
-    })
+    this.block.scratch.renderer.update(this.block, { propagateUp: true })
   }
 
   updateOptions() {

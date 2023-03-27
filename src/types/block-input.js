@@ -32,6 +32,8 @@ export class BlockInput extends DOMElement {
 
     this.connection = null
     this.align = BlockInput.Alignment.Left
+    this.width = 0
+    this.height = 0
 
     this.index = block.inputs.length
     this.group = 0

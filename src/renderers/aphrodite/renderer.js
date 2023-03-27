@@ -1,6 +1,8 @@
 import { Scratch } from '../../types/scratch'
 import { Renderer } from '../../types/renderer'
 import { AphroditeDrawer } from './drawer'
+import { Block } from '../../types/block'
+import { Point } from '../../types/point'
 
 export class AphroditeRenderer extends Renderer {
   BlocksContainerComponent = () => import('./index.vue')
@@ -19,39 +21,41 @@ export class AphroditeRenderer extends Renderer {
     }
 
     const callback = (event) => {
-      const { block, oldParent, newParent } = event.detail
-      const drawers = [block, oldParent, newParent].reduce((acc, block) => {
-        if (block && this.drawers.get(block.id)) {
-          acc.set(block.id, this.drawers.get(block.id))
-        }
-
-        return acc
-      }, new Map())
-
-      this.update(drawers)
+      const { block } = event.detail
+      this.update(block, { propagateUp: true })
     }
 
     this.scratch.events.addEventsListener(
-      [
-        Scratch.Events.BLOCK_CHANGE,
-        Scratch.Events.BLOCK_CREATE,
-        Scratch.Events.BLOCK_MOVE,
-      ],
+      [Scratch.Events.BLOCK_CHANGE],
       callback
     )
   }
 
-  /** @param {Array<AphroditeDrawer>} drawers */
-  update(drawers = this.drawers) {
-    for (const [, drawer] of drawers) {
-      drawer.update()
-    }
-  }
+  /**
+   * @param {Block} block
+   * @param {Object} options
+   * @param {Boolean} options.propagateUp
+   * @param {Boolean} options.propagateDown
+   */
+  update(block, options) {
+    if (!block) return
 
-  /** @param {Array<AphroditeDrawer>} drawers */
-  updateFast(drawers = this.drawers) {
-    for (const [, drawer] of drawers) {
-      drawer.updateFast()
+    const updates = []
+    if (options.propagateUp) {
+      updates.push(...block.getAscendants())
+    }
+
+    if (options.propagateDown) {
+      updates.push(...block.getDescendants())
+    }
+
+    if (!updates.length) {
+      updates.push(block)
+    }
+
+    for (const block of updates) {
+      const drawer = this.getDrawer(block)
+      if (drawer) drawer.update(options)
     }
   }
 }

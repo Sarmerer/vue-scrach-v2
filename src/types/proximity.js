@@ -41,7 +41,8 @@ export class Proximity {
    * */
   getMatchingConnection(connection, block) {
     switch (connection.type) {
-      case Connection.Prev && !connection.isConnected():
+      case Connection.Prev:
+        if (connection.isConnected()) return null
         return block.nextConnection.getTailConnection()
       case Connection.Next:
       case Connection.Statement:

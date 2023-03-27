@@ -1,5 +1,6 @@
 import { Block } from './block'
 import { BlockInput } from './block-input'
+import { Point } from './point'
 import { Renderer } from './renderer'
 
 export class Drawer {
@@ -21,5 +22,12 @@ export class Drawer {
     }, [])
   }
 
-  update() {}
+  /**
+   * @param {Object} options
+   * @param {Point} options.delta
+   * @param {Boolean} options.fast
+   * @param {Boolean} options.propagateUp
+   * @param {Boolean} options.propagateDown
+   */
+  update(options) {}
 }

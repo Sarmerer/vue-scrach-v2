@@ -76,7 +76,7 @@ export default {
     transform() {
       if (this.isRelative) return null
 
-      return `translate(${this.block.x}px, ${this.block.y}px)`
+      return `translate(${this.block.position.x}px, ${this.block.position.y}px)`
     },
 
     nextBlock() {

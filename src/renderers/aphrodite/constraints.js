@@ -1,3 +1,5 @@
+import { BlockField } from '../../types/block-field'
+
 export class Constraints {
   static StackSocketDepth = 5
   static StackSocketWidth = 15
@@ -13,6 +15,13 @@ export class Constraints {
   static MinInputHeight = 35
   static MinInputWidth = 25
   static InputPadding = 20
+
+  static DefaultFieldPaddingY = 7
+  static DefaultFieldPaddingX = 6
+  static FieldPaddingX = {
+    [BlockField.Text]: 10,
+    [BlockField.Number]: [10, 30],
+  }
 
   static GetStackSocket() {
     const curveWidth = 3

@@ -9,6 +9,7 @@ import {
 } from './block-input'
 import { BlockField } from '../types/block-field'
 import { Connection } from './connection'
+import { Point } from './point'
 
 export class Block extends DOMElement {
   /**
@@ -24,10 +25,11 @@ export class Block extends DOMElement {
     this.scratch = scratch
     this.type = type
 
-    this.x = x
-    this.y = y
-    this.offsetX = 0
-    this.offsetY = 0
+    this.initialPosition = new Point(x, y)
+    this.position = new Point(x, y)
+    this.dragOffset = new Point()
+    this.width = 0
+    this.height = 0
 
     this.isDragged = false
     this.isFrozen = false
@@ -53,7 +55,7 @@ export class Block extends DOMElement {
 
   /** @returns {Boolean} */
   isRelative() {
-    return (
+    return !!(
       this.previousConnection?.isConnected() ||
       this.outputConnection?.isConnected()
     )
@@ -133,23 +135,70 @@ export class Block extends DOMElement {
     return statements
   }
 
+  /** @returns {Block | null} */
+  getParent() {
+    if (this.hasPrev() && this.previousConnection.isConnected()) {
+      return this.previousConnection.getTargetBlock()
+    } else if (this.hasOutput() && this.outputConnection.isConnected()) {
+      return this.outputConnection.getTargetBlock()
+    }
+
+    return null
+  }
+
+  getAscendants() {
+    const blocks = [this]
+    let parent = this.getParent()
+    while (parent) {
+      blocks.push(parent)
+      parent = parent.getParent()
+    }
+
+    return blocks
+  }
+
+  /** @returns {Array<Block>} */
+  getDescendants() {
+    const blocks = [this]
+    for (const child of this.getChildren()) {
+      blocks.push(...child.getDescendants())
+    }
+
+    return blocks
+  }
+
+  /** @returns {Array<Block>} */
+  getChildren() {
+    const blocks = []
+    for (const input of this.inputs) {
+      if (!input.connection?.isConnected()) continue
+
+      blocks.push(input.connection.getTargetBlock())
+    }
+
+    if (this.hasNext() && this.nextConnection.isConnected()) {
+      blocks.push(this.nextConnection.getTargetBlock())
+    }
+
+    return blocks
+  }
+
   /** @param {MouseEvent} event */
   dragStart(event) {
     if (this.isDragged || this.isFrozen) return
 
+    event = this.scratch.normalizeMouseEvent(event)
+
     if (this.isRelative()) {
-      const rect = this.getBoundingClientRect()
-      const { x, y } = this.scratch.normalizePosition(rect.x, rect.y)
-      this.x = x
-      this.y = y
+      const rect = this.scratch.normalizePoint(this.getBoundingClientRect())
+      this.initialPosition.moveTo(rect.x, rect.y)
+    } else {
+      this.initialPosition.moveTo(this.position.x, this.position.y)
     }
 
-    event = this.scratch.normalizeMouseEvent(event)
-    this.offsetX = this.x - event.clientX
-    this.offsetY = this.y - event.clientY
-
-    this.xBeforeDrag = this.x
-    this.yBeforeDrag = this.y
+    this.dragOffset
+      .moveTo(this.initialPosition.x, this.initialPosition.y)
+      .moveBy(-event.clientX, -event.clientY)
 
     this.isDragged = true
     this.scratch.proximity.activate(this)
@@ -163,21 +212,26 @@ export class Block extends DOMElement {
     if (!this.isDragged) return
 
     event = this.scratch.normalizeMouseEvent(event)
-    const nextX = event.clientX + this.offsetX
-    const nextY = event.clientY + this.offsetY
 
+    const delta = new Point(
+      event.clientX - this.position.x + this.dragOffset.x,
+      event.clientY - this.position.y + this.dragOffset.y
+    )
     if (this.isRelative()) {
-      const dx = Math.abs(this.xBeforeDrag - nextX)
-      const dy = Math.abs(this.yBeforeDrag - nextY)
-      if (dx < 15 && dy < 15) return
+      const dx = Math.abs(this.initialPosition.x - this.position.x + delta.x)
+      const dy = Math.abs(this.initialPosition.y - this.position.y + delta.y)
+      if (dx < 30 && dy < 30) return
 
       this.outputConnection?.disconnect()
       this.previousConnection?.disconnect()
     }
 
-    this.x = nextX
-    this.y = nextY
-
+    this.position.moveBy(delta.x, delta.y)
+    this.scratch.renderer.update(this, {
+      propagateDown: true,
+      fast: true,
+      delta,
+    })
     this.scratch.proximity.update(this)
   }
 
@@ -189,8 +243,8 @@ export class Block extends DOMElement {
     this.isDragged = false
     this.scratch.proximity.deactivate(this)
     this.scratch.events.dispatch(Scratch.Events.BLOCK_DRAG, {
-      x: this.x,
-      y: this.y,
+      x: this.position.x,
+      y: this.position.y,
       block: this,
     })
   }
@@ -302,8 +356,8 @@ export class Block extends DOMElement {
       id: this.id,
       type: this.type,
 
-      x: this.x,
-      y: this.y,
+      x: this.position.x,
+      y: this.position.y,
 
       inputs: this.inputs.map((i) => i.toJSON()),
       outputConnection: this.outputConnection?.toJSON(),
