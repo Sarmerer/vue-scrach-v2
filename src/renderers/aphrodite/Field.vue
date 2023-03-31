@@ -9,7 +9,7 @@
 <script>
 import { BlockField } from '../../types/block-field'
 
-import Text from './fields/Text.vue'
+import Label from './fields/Label.vue'
 import DionysusField from '../dionysus/BlockField.vue'
 
 export default {
@@ -24,7 +24,7 @@ export default {
     component() {
       switch (this.field.type) {
         case BlockField.Label:
-          return Text
+          return Label
 
         default:
           return DionysusField

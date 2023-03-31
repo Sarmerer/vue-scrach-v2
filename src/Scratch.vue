@@ -30,6 +30,20 @@ export default {
     this.$options.components.BlocksRenderer =
       this.scratch.renderer.BlocksContainerComponent
   },
+
+  mounted() {
+    const s = this.scratch.spawnBlock('strings:print', 100, 200)
+    const s1 = this.scratch.spawnBlock('strings:print', 100, 200)
+    s.nextConnection.connect(s1.previousConnection)
+
+    const l = this.scratch.spawnBlock('lists:new', 200, 200)
+    const l2 = this.scratch.spawnBlock('lists:new', 200, 200)
+    l.inputs[0].connection.connect(l2.outputConnection)
+
+    const p = this.scratch.spawnBlock('loops:repeat', 100, 100)
+    p.inputs[0].connection.connect(l.outputConnection)
+    p.inputs[1].connection.connect(s.previousConnection)
+  },
 }
 </script>
 

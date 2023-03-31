@@ -78,10 +78,6 @@ export class Connection {
 
   /** @param {Connection} target */
   connect(target) {
-    let oldTarget = target.getTargetBlock()
-    const oldPosition = target.block.position.clone()
-    const nextPos = target.position.clone()
-
     switch (this.type) {
       case Connection.Prev:
         this.connectPrev(target)
@@ -99,15 +95,8 @@ export class Connection {
         return
     }
 
-    const delta = oldPosition.moveBy(-this.position.x, -this.position.y)
-    this.block.scratch.renderer.update(target.block, {
-      propagateUp: true,
-      delta,
-    })
-
-    if (oldTarget) {
-      this.block.scratch.renderer.update(oldTarget, { propagateUp: true })
-    }
+    this.block.scratch.renderer.update(target.block, { propagateUp: true })
+    this.block.scratch.renderer.update(this.block, { propagateDown: true })
   }
 
   /** @param {Connection} target */
@@ -144,7 +133,7 @@ export class Connection {
     this.target = null
 
     if (oldTarget) {
-      oldTarget.disconnect()
+      oldTarget.target = null
       this.block.scratch.renderer.update(oldTarget.block, { propagateUp: true })
     }
 

@@ -26,6 +26,7 @@ export class Block extends DOMElement {
     this.type = type
 
     this.initialPosition = new Point(x, y)
+    this.relativePosition = new Point(x, y)
     this.position = new Point(x, y)
     this.dragOffset = new Point()
     this.width = 0
@@ -189,13 +190,7 @@ export class Block extends DOMElement {
 
     event = this.scratch.normalizeMouseEvent(event)
 
-    if (this.isRelative()) {
-      const rect = this.scratch.normalizePoint(this.getBoundingClientRect())
-      this.initialPosition.moveTo(rect.x, rect.y)
-    } else {
-      this.initialPosition.moveTo(this.position.x, this.position.y)
-    }
-
+    this.initialPosition.moveTo(this.position.x, this.position.y)
     this.dragOffset
       .moveTo(this.initialPosition.x, this.initialPosition.y)
       .moveBy(-event.clientX, -event.clientY)
@@ -217,6 +212,7 @@ export class Block extends DOMElement {
       event.clientX - this.position.x + this.dragOffset.x,
       event.clientY - this.position.y + this.dragOffset.y
     )
+
     if (this.isRelative()) {
       const dx = Math.abs(this.initialPosition.x - this.position.x + delta.x)
       const dy = Math.abs(this.initialPosition.y - this.position.y + delta.y)

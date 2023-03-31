@@ -35,11 +35,15 @@ export default {
     },
 
     path() {
-      return this.drawer.path
+      return this.drawer.path.join(' ')
     },
 
     position() {
-      return `translate(${this.block.position.x} ${this.block.position.y})`
+      const position = this.block.isRelative()
+        ? this.block.relativePosition
+        : this.block.position
+
+      return `translate(${position.x} ${position.y})`
     },
 
     relativeBlocks() {
@@ -59,6 +63,8 @@ export default {
   },
 
   mounted() {
+    if (this.drawer.didMount) return
+    this.drawer.didMount = true
     this.block.scratch.renderer.update(this.block, {})
   },
 }

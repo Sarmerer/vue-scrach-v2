@@ -11,9 +11,10 @@ export class AphroditeDrawer extends Drawer {
   constructor(block, renderer) {
     super(block, renderer)
 
-    this.path = ''
+    this.path = []
 
     this.groupsWidthCache = []
+    this.didMount = false
   }
 
   getHeight() {
@@ -52,7 +53,8 @@ export class AphroditeDrawer extends Drawer {
       return
     }
 
-    this.updatePosition()
+    this.updateAbsolutePosition()
+    this.updateRelativePosition()
     this.cacheGroupWidths()
 
     const path = ['m 0 0', ...this.getTop()]
@@ -64,11 +66,9 @@ export class AphroditeDrawer extends Drawer {
     this.block.height = this.block.inputs.reduce((acc, i) => acc + i.height, 0)
 
     path.push(...this.getBottom(), ...this.getOutput(), 'z')
-    this.path = path.join(' ')
+    this.path = path
 
-    const { x, y } = this.block.isRelative()
-      ? this.block.scratch.normalizePoint(this.block.getBoundingClientRect())
-      : this.block.position
+    const { x, y } = this.block.position
 
     this.moveConnectionTo(
       this.block.previousConnection,
@@ -113,6 +113,8 @@ export class AphroditeDrawer extends Drawer {
   updateFast(options) {
     const delta = options.delta || new Point(0, 0)
 
+    this.updateAbsolutePosition(delta)
+
     this.moveConnectionBy(this.block.previousConnection, delta)
     this.moveConnectionBy(this.block.nextConnection, delta)
     this.moveConnectionBy(this.block.outputConnection, delta)
@@ -126,9 +128,33 @@ export class AphroditeDrawer extends Drawer {
     }
   }
 
-  updatePosition() {
+  updateAbsolutePosition(delta) {
+    PointDebugger.Debug(this.block.position, this.block.scratch, {
+      color: 'green',
+    })
+
+    if (!this.block.isRelative()) return
+
+    if (delta) {
+      this.block.position.moveBy(delta.x, delta.y)
+      return
+    }
+
+    const rect = this.block.scratch.normalizePoint(
+      this.block.getBoundingClientRect()
+    )
+    this.block.position.moveTo(rect.x, rect.y)
+  }
+
+  updateRelativePosition() {
     let alignTo = this.block.previousConnection || this.block.outputConnection
-    if (!alignTo || !alignTo.isConnected()) return this.position
+    if (!alignTo || !alignTo.isConnected()) {
+      this.block.relativePosition.moveTo(
+        this.block.position.x,
+        this.block.position.y
+      )
+      return
+    }
 
     alignTo = alignTo.target
     const parent = this.renderer.getDrawer(alignTo.block)
@@ -154,7 +180,7 @@ export class AphroditeDrawer extends Drawer {
         break
     }
 
-    this.block.position.moveTo(relativePosition.x, relativePosition.y)
+    this.block.relativePosition.moveTo(relativePosition.x, relativePosition.y)
   }
 
   moveConnectionBy(connection, delta) {
