@@ -148,14 +148,15 @@ export class Block extends DOMElement {
   }
 
   getAscendants() {
-    const blocks = [this]
-    let parent = this.getParent()
+    let parent = this
     while (parent) {
-      blocks.push(parent)
-      parent = parent.getParent()
+      const nextParent = parent.getParent()
+      if (!nextParent) break
+
+      parent = nextParent
     }
 
-    return blocks
+    return parent.getDescendants().reverse()
   }
 
   /** @returns {Array<Block>} */
@@ -223,11 +224,7 @@ export class Block extends DOMElement {
     }
 
     this.position.moveBy(delta.x, delta.y)
-    this.scratch.renderer.update(this, {
-      propagateDown: true,
-      fast: true,
-      delta,
-    })
+    this.scratch.renderer.update(this, { fast: true, delta })
     this.scratch.proximity.update(this)
   }
 

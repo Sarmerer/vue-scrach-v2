@@ -95,8 +95,7 @@ export class Connection {
         return
     }
 
-    this.block.scratch.renderer.update(target.block, { propagateUp: true })
-    this.block.scratch.renderer.update(this.block, { propagateDown: true })
+    this.block.scratch.renderer.update(this.block, { propagateUp: true })
   }
 
   /** @param {Connection} target */
@@ -129,15 +128,11 @@ export class Connection {
   disconnect() {
     if (!this.isConnected()) return
 
-    const oldTarget = this.target
+    const target = this.target
     this.target = null
+    target.disconnect()
 
-    if (oldTarget) {
-      oldTarget.target = null
-      this.block.scratch.renderer.update(oldTarget.block, { propagateUp: true })
-    }
-
-    this.block.scratch.renderer.update(this.block, { propagateDown: true })
+    this.block.scratch.renderer.update(this.block, { propagateUp: true })
   }
 
   delete() {

@@ -27,7 +27,6 @@ export class Drawer {
    * @param {Point} options.delta
    * @param {Boolean} options.fast
    * @param {Boolean} options.propagateUp
-   * @param {Boolean} options.propagateDown
    */
   update(options) {}
 }

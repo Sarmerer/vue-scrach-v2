@@ -42,6 +42,23 @@ export class AphroditeDrawer extends Drawer {
     return height
   }
 
+  getConnectionPosition(connection) {
+    const position = connection.position.clone()
+
+    switch (connection.type) {
+      case Connection.Prev:
+      case Connection.Next:
+        position.moveBy(-Constraints.StackSocketOffset, 0)
+        break
+      case Connection.Input:
+      case Connection.Statement:
+        position.moveBy(0, -Constraints.RowSocketHeight)
+        break
+    }
+
+    return position
+  }
+
   /**
    * @param {Object} options
    * @param {Point} options.delta
@@ -87,12 +104,14 @@ export class AphroditeDrawer extends Drawer {
 
     let offsetTop = 0
     for (const input of this.block.inputs) {
+      const offsetX =
+        input.type == BlockInput.Value
+          ? this.getGroupWidth(input.group)
+          : Constraints.StatementBarWidth
+
       this.moveConnectionTo(
         input.connection,
-        new Point(
-          x + this.getGroupWidth(input.group),
-          y + offsetTop + Constraints.RowSocketHeight
-        )
+        new Point(x + offsetX, y + offsetTop + Constraints.RowSocketHeight)
       )
 
       for (const field of input.fields) {
@@ -140,53 +159,49 @@ export class AphroditeDrawer extends Drawer {
       return
     }
 
-    const rect = this.block.scratch.normalizePoint(
-      this.block.getBoundingClientRect()
-    )
-    this.block.position.moveTo(rect.x, rect.y)
+    let alignTo = this.block.previousConnection || this.block.outputConnection
+    if (!alignTo || !alignTo.isConnected()) {
+      return
+    }
+
+    alignTo = alignTo.target
+    const position = this.getConnectionPosition(alignTo)
+    this.block.position.moveTo(position.x, position.y)
   }
 
   updateRelativePosition() {
     let alignTo = this.block.previousConnection || this.block.outputConnection
     if (!alignTo || !alignTo.isConnected()) {
-      this.block.relativePosition.moveTo(
-        this.block.position.x,
-        this.block.position.y
-      )
       return
     }
 
     alignTo = alignTo.target
-    const parent = this.renderer.getDrawer(alignTo.block)
-
-    let offsetTop = 0
-    if (alignTo.input) {
-      offsetTop = parent.getInputOffsetTop(alignTo.input.index)
-    }
-
-    const relativePosition = new Point(0, 0)
-    switch (alignTo.type) {
-      case Connection.Input:
-        relativePosition.moveBy(
-          parent.getGroupWidth(alignTo.input.group),
-          offsetTop
-        )
-        break
-      case Connection.Statement:
-        relativePosition.moveBy(Constraints.StatementBarWidth, offsetTop)
-        break
-      case Connection.Next:
-        relativePosition.moveBy(0, alignTo.block.height)
-        break
-    }
+    const relativePosition = this.getConnectionPosition(alignTo)
+    relativePosition.moveBy(
+      -alignTo.block.position.x,
+      -alignTo.block.position.y
+    )
 
     this.block.relativePosition.moveTo(relativePosition.x, relativePosition.y)
+  }
+
+  updateConnectedBlock(connection, options) {
+    if (
+      connection.type == Connection.Output ||
+      connection.type == Connection.Prev ||
+      !connection.isConnected()
+    ) {
+      return
+    }
+
+    this.renderer.update(connection.getTargetBlock(), options)
   }
 
   moveConnectionBy(connection, delta) {
     if (!connection) return
 
     connection.position.moveBy(delta.x, delta.y)
+    this.updateConnectedBlock(connection, { delta, fast: true })
     PointDebugger.Debug(connection.position, this.block.scratch)
   }
 
@@ -194,6 +209,7 @@ export class AphroditeDrawer extends Drawer {
     if (!connection) return
 
     connection.position.moveTo(point.x, point.y)
+    this.updateConnectedBlock(connection, {})
     PointDebugger.Debug(connection.position, this.block.scratch)
   }
 
