@@ -30,5 +30,6 @@ export default {
   background-color: ghostwhite;
   font-size: 12px;
   margin: 0;
+  white-space: break-spaces;
 }
 </style>

@@ -8,7 +8,7 @@
       :id="scratch.id"
       class="scratch__blocks scratch__blocks-aphrodite"
     >
-      <Block v-for="(drawer, id) of drawers" :key="id" v-bind="{ drawer }" />
+      <Block v-for="block of blocks" :key="block.id" v-bind="{ block }" />
     </svg>
   </InputsMask>
 </template>
@@ -32,10 +32,8 @@ export default {
   components: { Block, InputsMask },
 
   computed: {
-    drawers() {
-      return this.scratch
-        .getBlocks()
-        .map((b) => this.scratch.renderer.getDrawer(b))
+    blocks() {
+      return this.scratch.getBlocks()
     },
   },
 }

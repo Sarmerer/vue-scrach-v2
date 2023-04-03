@@ -11,7 +11,7 @@ export class AphroditeDrawer extends Drawer {
   constructor(block, renderer) {
     super(block, renderer)
 
-    this.path = []
+    this.path = ''
 
     this.groupsWidthCache = []
     this.didMount = false
@@ -83,7 +83,7 @@ export class AphroditeDrawer extends Drawer {
     this.block.height = this.block.inputs.reduce((acc, i) => acc + i.height, 0)
 
     path.push(...this.getBottom(), ...this.getOutput(), 'z')
-    this.path = path
+    this.path = path.join(' ')
 
     const { x, y } = this.block.position
 

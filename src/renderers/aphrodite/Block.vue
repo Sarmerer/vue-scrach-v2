@@ -4,16 +4,20 @@
     :transform="position"
     @mousedown.stop="block.dragStart($event)"
   >
-    <path :id="block.id" :fill="block.colors.background" :d="path"></path>
+    <path
+      :id="block.id"
+      :fill="block.colors.background"
+      :d="drawer.path"
+    ></path>
 
     <Input v-for="input of block.inputs" :key="input.id" v-bind="{ input }" />
 
-    <Block v-for="block in relativeBlocks" :drawer="block" />
+    <Block v-for="relative in relativeBlocks" :block="relative" />
   </g>
 </template>
 
 <script>
-import { AphroditeDrawer } from './drawer'
+import { Block } from '../../types/block'
 
 import Input from './Input.vue'
 
@@ -21,23 +25,30 @@ export default {
   name: 'Block',
 
   props: {
-    drawer: {
-      type: AphroditeDrawer,
+    block: {
+      type: Block,
       required: true,
     },
   },
 
   components: { Input },
 
+  watch: {
+    'block.id': {
+      immediate: true,
+      handler() {
+        this.drawer = this.block.scratch.renderer.getDrawer(this.block)
+      },
+    },
+  },
+
+  data() {
+    return {
+      drawer: null,
+    }
+  },
+
   computed: {
-    block() {
-      return this.drawer.block
-    },
-
-    path() {
-      return this.drawer.path.join(' ')
-    },
-
     position() {
       const position = this.block.isRelative()
         ? this.block.relativePosition
@@ -49,8 +60,9 @@ export default {
     relativeBlocks() {
       const blocks = []
 
-      const next = this.block.nextConnection?.getTargetBlock()
-      if (next) blocks.push(next)
+      if (this.block.nextConnection?.isConnected()) {
+        blocks.push(this.block.nextConnection.getTargetBlock())
+      }
 
       for (const input of this.block.inputs) {
         if (!input.connection?.isConnected()) continue
@@ -58,7 +70,7 @@ export default {
         blocks.push(input.connection.getTargetBlock())
       }
 
-      return blocks.map((b) => this.drawer.renderer.getDrawer(b))
+      return blocks
     },
   },
 
