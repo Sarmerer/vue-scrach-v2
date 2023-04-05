@@ -1,5 +1,5 @@
-import { Point } from './point'
-import { Scratch } from './scratch'
+import { Point } from '../point'
+import { Scratch } from '../scratch'
 
 export class PointDebugger {
   /**

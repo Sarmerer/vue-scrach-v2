@@ -2,12 +2,12 @@
   <div :id="`${scratch.id}.mask`" class="scratch__aphrodite__mask">
     <slot></slot>
 
-    <FieldMask
+    <Field
       v-for="field of fields"
       :key="field.id"
       v-bind="{ field }"
       class="scratch__block__field__aphrodite-mask"
-    ></FieldMask>
+    ></Field>
   </div>
 </template>
 
@@ -15,7 +15,7 @@
 import { BlockField } from '../../types/block-field'
 import { Scratch } from '../../types/scratch'
 
-import FieldMask from './Field.vue'
+import Field from './Field.vue'
 
 export default {
   props: {
@@ -25,26 +25,22 @@ export default {
     },
   },
 
-  components: { FieldMask },
+  components: { Field },
 
   computed: {
     fields() {
-      const maskedFields = [
-        BlockField.Number,
-        BlockField.Select,
-        BlockField.Text,
-        BlockField.Variable,
-      ]
-      return this.scratch.blocks.reduce((acc, block) => {
+      const masks = []
+      for (const block of this.scratch.blocks) {
         for (const input of block.inputs) {
           for (const field of input.fields) {
-            if (!maskedFields.includes(field.type)) continue
-            acc.push(field)
+            if (field.type === BlockField.Label) continue
+
+            masks.push(field)
           }
         }
+      }
 
-        return acc
-      }, [])
+      return masks
     },
   },
 }

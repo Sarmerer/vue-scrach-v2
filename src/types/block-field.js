@@ -29,6 +29,7 @@ export class BlockField {
     this.width = 0
     this.height = 0
     this.position = new Point(0, 0)
+    this.relativePosition = new Point(0, 0)
 
     options = Object.assign(
       { value: null, placeholder: null, options: [] },

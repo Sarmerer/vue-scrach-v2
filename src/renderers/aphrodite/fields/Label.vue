@@ -1,32 +1,34 @@
 <template>
-  <text
-    transform="translate(7 22)"
-    class="block__field__text"
-    :fill="color"
-    v-text="field.value"
-  ></text>
+  <g v-bind="{ transform }">
+    <text
+      class="block__field__text"
+      :fill="color"
+      v-text="field.value"
+      x="0"
+      y="13"
+    ></text>
+  </g>
 </template>
 
 <script>
-import { BlockField } from '../../../types/block-field'
+import mixins from './mixins'
 
 export default {
-  props: {
-    field: {
-      type: BlockField,
-      required: true,
-    },
-  },
+  mixins: [mixins],
 
   computed: {
+    transform() {
+      return `translate(${this.relativePosition.x} ${this.relativePosition.y})`
+    },
+
     color() {
       return this.field.block.colors.text
     },
   },
-}
+} 
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .block__field__text {
   font: normal 11pt sans-serif;
   user-select: none;

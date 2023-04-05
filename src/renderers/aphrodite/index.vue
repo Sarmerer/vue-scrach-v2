@@ -17,7 +17,7 @@
 import { Scratch } from '../../types/scratch'
 
 import Block from './Block.vue'
-import InputsMask from './InputsMask.vue'
+import InputsMask from './FieldsMask.vue'
 
 export default {
   name: 'BlocksRenderer',
@@ -39,7 +39,7 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .scratch__blocks-aphrodite {
   position: absolute;
   left: 0;

@@ -2,9 +2,10 @@ import { Block } from '../../types/block'
 import { BlockInput } from '../../types/block-input'
 import { Drawer } from '../../types/block-drawer'
 import { Constraints } from './constraints'
-import { PointDebugger } from '../../types/point-debugger'
 import { Point } from '../../types/point'
 import { Connection } from '../../types/connection'
+import { PointDebugger } from '../../types/debug/point'
+import { BoxDebugger } from '../../types/debug/box'
 
 export class AphroditeDrawer extends Drawer {
   /** @param {Block} block */
@@ -63,6 +64,20 @@ export class AphroditeDrawer extends Drawer {
    * @param {Object} options
    * @param {Point} options.delta
    * @param {Boolean} options.fast
+   *
+   * FIXME - the update methods gets called too many times
+   * which may cause performance issues on larger workspaces
+   * when using the propagateUp flag.
+   *
+   * Why does it happen: when using the propagateUp flag,
+   * the whole tree of block ascendants gets slow updated;
+   * during the slow update, all the connected blocks of
+   * every ascendant get updated recursively to preserve
+   * proper blocks and connections positioning.
+   *
+   * Possible fixes:
+   * - implement propagateUp inside a drawer itself to walk the ascendants
+   * - introduces renderer ticks and allow each drawer to get slow updated only once on each tick
    */
   update(options) {
     if (options.fast) {
@@ -72,7 +87,7 @@ export class AphroditeDrawer extends Drawer {
 
     this.updateAbsolutePosition()
     this.updateRelativePosition()
-    this.cacheGroupWidths()
+    this.updateDimensions()
 
     const path = ['m 0 0', ...this.getTop()]
 
@@ -102,7 +117,7 @@ export class AphroditeDrawer extends Drawer {
       new Point(x - Constraints.RowSocketDepth, y + Constraints.RowSocketOffset)
     )
 
-    let offsetTop = 0
+    let inputOffsetTop = 0
     for (const input of this.block.inputs) {
       const offsetX =
         input.type == BlockInput.Value
@@ -111,17 +126,33 @@ export class AphroditeDrawer extends Drawer {
 
       this.moveConnectionTo(
         input.connection,
-        new Point(x + offsetX, y + offsetTop + Constraints.RowSocketHeight)
+        new Point(x + offsetX, y + inputOffsetTop + Constraints.RowSocketHeight)
       )
 
+      let fieldOffsetLeft = 0
       for (const field of input.fields) {
+        field.relativePosition.moveTo(
+          fieldOffsetLeft + Constraints.FieldPaddingX,
+          inputOffsetTop + Constraints.FieldPaddingY
+        )
+
         field.position.moveTo(
-          x + this.getFieldPaddingX(field),
-          y + Constraints.DefaultFieldPaddingY
+          x + field.relativePosition.x,
+          y + field.relativePosition.y
+        )
+
+        fieldOffsetLeft += field.width + Constraints.FieldsGap
+
+        BoxDebugger.Debug(
+          field,
+          field.position,
+          field.width,
+          16,
+          this.block.scratch
         )
       }
 
-      offsetTop += input.height
+      inputOffsetTop += input.height
     }
   }
 
@@ -143,6 +174,14 @@ export class AphroditeDrawer extends Drawer {
 
       for (const field of input.fields) {
         field.position.moveBy(delta.x, delta.y)
+
+        BoxDebugger.Debug(
+          field,
+          field.position,
+          field.width,
+          16,
+          this.block.scratch
+        )
       }
     }
   }
@@ -271,10 +310,15 @@ export class AphroditeDrawer extends Drawer {
       this.getStackHeight(input.connection?.getTargetBlock()) + 5
     )
 
+    const closureWidth = Math.max(
+      this.getGroupWidth(input.group),
+      Constraints.StatementBarWidth + Constraints.MinInputWidth
+    )
+
     const path = [
       `H ${Constraints.StatementBarWidth}`,
       `v ${height}`,
-      `H ${Constraints.StatementBarWidth + this.getGroupWidth(input.group)}`,
+      `H ${closureWidth}`,
     ]
 
     if (input.index == this.block.inputs.length - 1) {
@@ -305,34 +349,34 @@ export class AphroditeDrawer extends Drawer {
   }
 
   getInputWidth(input) {
-    let width = Constraints.InputPadding
+    let width = Constraints.FieldPaddingX * 2
+
+    if (input.fields.length > 1) {
+      width += Constraints.FieldsGap * input.fields.length - 1
+    }
+
     for (const field of input.fields) {
-      field.width =
-        this.getStringWidth(field.value || field.placeholder) +
-        this.getFieldPaddingX(field, 'left') +
-        this.getFieldPaddingX(field, 'right')
-      width += field.width
+      width += this.getFieldWidth(field)
     }
 
     input.width = width
     return width
   }
 
-  getFieldPaddingX(field, side) {
-    const padding = Constraints.FieldPaddingX[field.type]
-    if (padding == null) return Constraints.DefaultFieldPaddingX
+  getFieldWidth(field) {
+    field.height = Constraints.FieldHeight
 
-    if (Array.isArray(padding)) {
-      if (!side) return padding[0]
+    const tolerance = Constraints.FieldWidthTolerance[field.type] || 0
 
-      const index = side == 'right' ? 1 : 0
-      return padding[index]
-    }
+    field.width = Math.max(
+      Constraints.MinFieldWidth,
+      this.getStringWidth(field.value || field.placeholder) + tolerance
+    )
 
-    return padding
+    return field.width
   }
 
-  cacheGroupWidths() {
+  updateDimensions() {
     this.groupsWidthCache = []
 
     const groups = this.getInputGroups()

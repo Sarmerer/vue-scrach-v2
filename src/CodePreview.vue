@@ -23,7 +23,7 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .scratch__code-preview {
   flex: 0 0 200px;
   padding: 10px;

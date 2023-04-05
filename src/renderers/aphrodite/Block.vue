@@ -1,7 +1,7 @@
 <template>
   <g
     class="scratch__block"
-    :transform="position"
+    v-bind="{ transform }"
     @mousedown.stop="block.dragStart($event)"
   >
     <path
@@ -10,16 +10,21 @@
       :d="drawer.path"
     ></path>
 
-    <Input v-for="input of block.inputs" :key="input.id" v-bind="{ input }" />
-
     <Block v-for="relative in relativeBlocks" :block="relative" />
+
+    <LabelField
+      v-for="field of textFields"
+      :key="field.id"
+      v-bind="{ field }"
+    />
   </g>
 </template>
 
 <script>
 import { Block } from '../../types/block'
+import { BlockField } from '../../types/block-field'
 
-import Input from './Input.vue'
+import LabelField from './fields/Label.vue'
 
 export default {
   name: 'Block',
@@ -31,7 +36,7 @@ export default {
     },
   },
 
-  components: { Input },
+  components: { LabelField },
 
   watch: {
     'block.id': {
@@ -49,7 +54,7 @@ export default {
   },
 
   computed: {
-    position() {
+    transform() {
       const position = this.block.isRelative()
         ? this.block.relativePosition
         : this.block.position
@@ -71,6 +76,19 @@ export default {
       }
 
       return blocks
+    },
+
+    textFields() {
+      const fields = []
+      for (const input of this.block.inputs) {
+        for (const field of input.fields) {
+          if (field.type !== BlockField.Label) continue
+
+          fields.push(field)
+        }
+      }
+
+      return fields
     },
   },
 

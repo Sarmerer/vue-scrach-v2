@@ -1,26 +1,29 @@
 import { BlockField } from '../../types/block-field'
 
 export class Constraints {
-  static StackSocketDepth = 5
-  static StackSocketWidth = 15
-  static StackSocketOffset = 10
+  static StackSocketDepth = 4
+  static StackSocketWidth = 16
+  static StackSocketOffset = 8
 
-  static RowSocketDepth = 5
-  static RowSocketHeight = 15
+  static RowSocketDepth = 4
+  static RowSocketHeight = 16
   static RowSocketOffset = 8
 
   static StatementBarWidth = 20
-  static StatementClosureHeight = 15
+  static StatementClosureHeight = 16
 
-  static MinInputHeight = 35
-  static MinInputWidth = 25
-  static InputPadding = 20
+  static MinInputHeight = 32
+  static MinInputWidth = 24
+  static MinFieldWidth = 24
 
-  static DefaultFieldPaddingY = 7
-  static DefaultFieldPaddingX = 6
-  static FieldPaddingX = {
-    [BlockField.Text]: 10,
-    [BlockField.Number]: [10, 30],
+  static FieldsGap = 8
+  static FieldPaddingY = 8
+  static FieldPaddingX = 8
+  static FieldHeight = 16
+
+  static FieldWidthTolerance = {
+    [BlockField.Select]: 24,
+    [BlockField.Variable]: 24,
   }
 
   static GetStackSocket() {
