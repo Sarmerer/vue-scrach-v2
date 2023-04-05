@@ -4,8 +4,6 @@ import { Drawer } from '../../types/block-drawer'
 import { Constraints } from './constraints'
 import { Point } from '../../types/point'
 import { Connection } from '../../types/connection'
-import { PointDebugger } from '../../types/debug/point'
-import { BoxDebugger } from '../../types/debug/box'
 
 export class AphroditeDrawer extends Drawer {
   /** @param {Block} block */
@@ -142,14 +140,6 @@ export class AphroditeDrawer extends Drawer {
         )
 
         fieldOffsetLeft += field.width + Constraints.FieldsGap
-
-        BoxDebugger.Debug(
-          field,
-          field.position,
-          field.width,
-          16,
-          this.block.scratch
-        )
       }
 
       inputOffsetTop += input.height
@@ -174,23 +164,11 @@ export class AphroditeDrawer extends Drawer {
 
       for (const field of input.fields) {
         field.position.moveBy(delta.x, delta.y)
-
-        BoxDebugger.Debug(
-          field,
-          field.position,
-          field.width,
-          16,
-          this.block.scratch
-        )
       }
     }
   }
 
   updateAbsolutePosition(delta) {
-    PointDebugger.Debug(this.block.position, this.block.scratch, {
-      color: 'green',
-    })
-
     if (!this.block.isRelative()) return
 
     if (delta) {
@@ -241,7 +219,6 @@ export class AphroditeDrawer extends Drawer {
 
     connection.position.moveBy(delta.x, delta.y)
     this.updateConnectedBlock(connection, { delta, fast: true })
-    PointDebugger.Debug(connection.position, this.block.scratch)
   }
 
   moveConnectionTo(connection, point) {
@@ -249,7 +226,6 @@ export class AphroditeDrawer extends Drawer {
 
     connection.position.moveTo(point.x, point.y)
     this.updateConnectedBlock(connection, {})
-    PointDebugger.Debug(connection.position, this.block.scratch)
   }
 
   getTop() {
