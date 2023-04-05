@@ -1,9 +1,13 @@
 import { Block } from '../../types/block'
 import { BlockInput } from '../../types/block-input'
+import { BlockField } from '../../types/block-field'
+import { Connection } from '../../types/connection'
+import { Point } from '../../types/point'
+
 import { Drawer } from '../../types/block-drawer'
 import { Constraints } from './constraints'
-import { Point } from '../../types/point'
-import { Connection } from '../../types/connection'
+
+import { BoxDebugger } from '../../types/debug/box'
 
 export class AphroditeDrawer extends Drawer {
   /** @param {Block} block */
@@ -288,7 +292,7 @@ export class AphroditeDrawer extends Drawer {
 
     const closureWidth = Math.max(
       this.getGroupWidth(input.group),
-      Constraints.StatementBarWidth + Constraints.MinInputWidth
+      Constraints.MinInputWidth
     )
 
     const path = [
@@ -331,6 +335,10 @@ export class AphroditeDrawer extends Drawer {
       width += Constraints.FieldsGap * input.fields.length - 1
     }
 
+    if (input.type == BlockInput.Value) {
+      width += Constraints.RowSocketDepth
+    }
+
     for (const field of input.fields) {
       width += this.getFieldWidth(field)
     }
@@ -343,11 +351,14 @@ export class AphroditeDrawer extends Drawer {
     field.height = Constraints.FieldHeight
 
     const tolerance = Constraints.FieldWidthTolerance[field.type] || 0
-
-    field.width = Math.max(
-      Constraints.MinFieldWidth,
+    const width =
       this.getStringWidth(field.value || field.placeholder) + tolerance
-    )
+
+    if (field.type !== BlockField.Label) {
+      field.width = Math.max(Constraints.MinFieldWidth, width)
+    } else {
+      field.width = width
+    }
 
     return field.width
   }
@@ -385,5 +396,15 @@ export class AphroditeDrawer extends Drawer {
     pseudo.remove()
 
     return width
+  }
+
+  debugFieldBox(field) {
+    BoxDebugger.Debug(
+      field,
+      field.position,
+      field.width,
+      Constraints.FieldHeight,
+      this.block.scratch
+    )
   }
 }

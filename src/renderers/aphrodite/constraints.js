@@ -9,11 +9,11 @@ export class Constraints {
   static RowSocketHeight = 16
   static RowSocketOffset = 8
 
-  static StatementBarWidth = 20
+  static StatementBarWidth = 16
   static StatementClosureHeight = 16
 
   static MinInputHeight = 32
-  static MinInputWidth = 24
+  static MinInputWidth = 32
   static MinFieldWidth = 24
 
   static FieldsGap = 8

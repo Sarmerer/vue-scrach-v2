@@ -8,7 +8,7 @@
       :id="scratch.id"
       class="scratch__blocks scratch__blocks-aphrodite"
     >
-      <Block v-for="block of blocks" :key="block.id" v-bind="{ block }" />
+      <Block v-for="block of blocks_" :key="block.id" v-bind="{ block }" />
     </svg>
   </InputsMask>
 </template>
@@ -27,12 +27,16 @@ export default {
       type: Scratch,
       required: true,
     },
+
+    blocks: Array,
   },
 
   components: { Block, InputsMask },
 
   computed: {
-    blocks() {
+    blocks_() {
+      if (Array.isArray(this.blocks)) return this.blocks
+
       return this.scratch.getBlocks()
     },
   },
