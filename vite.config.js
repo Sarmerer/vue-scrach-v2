@@ -20,5 +20,5 @@ export default defineConfig({
     outDir: 'docs',
   },
 
-  base: '/vue-scrach-v2',
+  base: '/vue-scratch-v2',
 })
