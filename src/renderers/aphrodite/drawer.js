@@ -275,11 +275,18 @@ export class AphroditeDrawer extends Drawer {
 
   getStatement(input) {
     const closureWidth = Math.max(input.groupWidth, Constraints.MinInputWidth)
+    let previousWidth =
+      this.block.inputs[input.index - 1]?.width || closureWidth
 
+    previousWidth -= Constraints.CornerArcDepth
+
+    const depth = Constraints.CornerArcDepth
     const path = [
-      `H ${Constraints.StatementBarWidth}`,
-      `v ${input.height}`,
-      `H ${closureWidth}`,
+      `h ${Constraints.StatementBarWidth - previousWidth}`,
+      `a ${depth} ${depth} 0 0 0 ${-depth} ${depth}`,
+      `v ${input.height - depth * 2}`,
+      `a ${depth} ${depth} 0 0 0 ${depth} ${depth}`,
+      `h ${closureWidth - Constraints.StatementBarWidth - depth}`,
     ]
 
     if (input.index == this.block.inputs.length - 1) {
@@ -419,7 +426,9 @@ export class AphroditeDrawer extends Drawer {
   isCornerRounded(corner) {
     const rules = {
       [Corner.TL]: !(
-        this.block.hasOutput() || this.block.previousConnection?.isConnected()
+        this.block.hasOutput() ||
+        (this.block.previousConnection?.isConnected() &&
+          this.block.previousConnection.target.type !== Connection.Statement)
       ),
       [Corner.BL]: !(
         this.block.hasOutput() || this.block.nextConnection?.isConnected()

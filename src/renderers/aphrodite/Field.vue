@@ -51,7 +51,7 @@ export default {
   padding: 0;
   text-align: center;
   box-sizing: border-box;
-  border-radius: 2px;
+  border-radius: 4px;
 }
 
 .aphrodite__field::-webkit-outer-spin-button,
