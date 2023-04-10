@@ -10,7 +10,11 @@
       :d="drawer.path"
     ></path>
 
-    <Block v-for="relative in relativeBlocks" :block="relative" />
+    <Block
+      v-for="relative in relativeBlocks"
+      :key="relative.id"
+      :block="relative"
+    />
 
     <LabelField
       v-for="field of textFields"

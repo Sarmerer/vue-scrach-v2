@@ -15,9 +15,27 @@ export class Drawer {
 
   /** @returns {Array<Array<BlockInput>>} */
   getInputGroups() {
+    if (this.block.isInline) return this.getInputGroupsInline()
+
     return this.block.inputs.reduce((acc, input) => {
       if (input.group > acc.length - 1) acc.push([])
       acc[acc.length - 1].push(input)
+      return acc
+    }, [])
+  }
+
+  getInputGroupsInline() {
+    return this.block.inputs.reduce((acc, input) => {
+      if (input.type == BlockInput.Statement) {
+        acc.push([input])
+        return acc
+      }
+
+      if (!acc.length) {
+        acc.push([])
+      }
+
+      acc[0].push(input)
       return acc
     }, [])
   }
