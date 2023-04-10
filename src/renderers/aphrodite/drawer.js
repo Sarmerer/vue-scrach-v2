@@ -12,6 +12,7 @@ import { Input as DrawableInput } from './drawables/input'
 import { Field as DrawableField } from './drawables/field'
 
 import { BoxDebugger } from '../../types/debug/box'
+import { PointDebugger } from '../../types/debug/point'
 
 export class AphroditeDrawer extends Drawer {
   /** @param {Block} block */
@@ -81,7 +82,7 @@ export class AphroditeDrawer extends Drawer {
 
     this.updateAbsolutePosition()
     this.updateRelativePosition()
-    this.updateDimensions()
+    this.measure()
 
     const path = ['m 0 0', ...this.getTop()]
     path.push(...this.getInputs())
@@ -160,6 +161,7 @@ export class AphroditeDrawer extends Drawer {
 
     connection.position.moveBy(delta.x, delta.y)
     this.updateConnectedBlock(connection, { delta, fast: true })
+    this.debugConnection(connection)
   }
 
   moveConnectionTo(connection, point) {
@@ -167,6 +169,7 @@ export class AphroditeDrawer extends Drawer {
 
     connection.position.moveTo(point.x, point.y)
     this.updateConnectedBlock(connection, {})
+    this.debugConnection(connection)
   }
 
   getTop() {
@@ -299,6 +302,7 @@ export class AphroditeDrawer extends Drawer {
     const { x, y } = this.block.position
 
     let inputOffsetTop = 0
+    let inputOffsetLeft = 0
     for (const input of this.block.inputs) {
       if (delta instanceof Point) {
         this.moveConnectionBy(input.connection, delta)
@@ -310,22 +314,20 @@ export class AphroditeDrawer extends Drawer {
         continue
       }
 
-      const offsetX =
-        input.type == BlockInput.Value
-          ? input.groupWidth
-          : Constraints.StatementBarWidth
-
-      this.moveConnectionTo(
-        input.connection,
-        new Point(x + offsetX, y + inputOffsetTop + Constraints.RowSocketHeight)
-      )
-
       let fieldOffsetLeft = 0
       for (const field of input.fields) {
-        field.relativePosition.moveTo(
+        const fieldPosition = new Point(
           fieldOffsetLeft + Constraints.FieldPaddingX,
-          inputOffsetTop + Constraints.FieldPaddingY
+          Constraints.FieldPaddingY
         )
+
+        if (!this.block.isInline) {
+          fieldPosition.moveBy(0, inputOffsetTop)
+        } else {
+          fieldPosition.moveBy(inputOffsetLeft, 0)
+        }
+
+        field.relativePosition.moveTo(fieldPosition.x, fieldPosition.y)
 
         field.position.moveTo(
           x + field.relativePosition.x,
@@ -335,11 +337,30 @@ export class AphroditeDrawer extends Drawer {
         fieldOffsetLeft += field.width + Constraints.FieldsGap
       }
 
+      const offsetX =
+        input.type == BlockInput.Value
+          ? input.groupWidth
+          : Constraints.StatementBarWidth
+
+      const inputPosition =
+        this.block.isInline && input.type !== BlockInput.Statement
+          ? new Point(
+              x + inputOffsetLeft + fieldOffsetLeft + Constraints.FieldPaddingX,
+              y + Constraints.FieldPaddingY + Constraints.RowSocketHeight
+            )
+          : new Point(
+              x + offsetX,
+              y + inputOffsetTop + Constraints.RowSocketHeight
+            )
+
+      this.moveConnectionTo(input.connection, inputPosition)
+
       inputOffsetTop += input.height
+      inputOffsetLeft += input.width
     }
   }
 
-  updateDimensions() {
+  measure() {
     for (const input of this.block.inputs) {
       for (const field of input.fields) {
         this.measureField(field)
@@ -386,5 +407,9 @@ export class AphroditeDrawer extends Drawer {
       Constraints.FieldHeight,
       this.block.scratch
     )
+  }
+
+  debugConnection(connection) {
+    PointDebugger.Debug(connection.position, connection.block.scratch)
   }
 }

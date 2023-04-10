@@ -16,15 +16,12 @@ export class Groups extends Drawable {
         totalWidth += input.width
         if (input.width < groupWidth) continue
 
-        if (input.block.isInline) {
-          groupWidth = totalWidth
-        } else {
-          groupWidth = input.width
-        }
+        groupWidth = input.width
       }
 
+      const width = this.drawable.isInline ? totalWidth : groupWidth
       for (const input of groups[i]) {
-        input.groupWidth = groupWidth
+        input.groupWidth = width
       }
     }
   }

@@ -5,13 +5,9 @@ import { Drawable } from './drawable'
 export class Input extends Drawable {
   constructor(input) {
     super(input)
-
-    this.groupWidth = 0
   }
 
   measure() {
-    // this.width = this.measureWidth()
-    // this.height = this.measureHeight()
     this.drawable.width = this.measureWidth()
     this.drawable.height = this.measureHeight()
   }
@@ -23,32 +19,42 @@ export class Input extends Drawable {
       width += Constraints.FieldsGap * this.drawable.fields.length - 1
     }
 
-    if (this.drawable.type == BlockInput.Value) {
-      if (!this.drawable.block.isInline) {
-        width += Constraints.RowSocketDepth
-      } else if (this.drawable.connection.isConnected()) {
-        const connection = this.drawable.connection.getTargetBlock()
-        width += connection.width + Constraints.FieldsGap * 2
-      } else {
-        width += Constraints.EmptyInlineInputWidth + Constraints.FieldsGap * 2
-      }
-    }
-
     for (const field of this.drawable.fields) {
       width += field.width
     }
 
-    return width
+    if (this.drawable.type !== BlockInput.Value) {
+      return width
+    }
+
+    if (!this.drawable.block.isInline) {
+      return width + Constraints.RowSocketDepth
+    }
+
+    if (!this.drawable.connection.isConnected()) {
+      return width + Constraints.EmptyInlineInputWidth
+    }
+
+    const connection = this.drawable.connection.getTargetBlock()
+    return width + connection.width
   }
 
   measureHeight() {
     let height = Constraints.MinInputHeight
     switch (this.drawable.type) {
       case BlockInput.Value:
-        const target = this.drawable.connection?.getTargetBlock()
-        if (!target) break
+        height = 0
+        if (this.drawable.block.isInline) {
+          height += Constraints.FieldPaddingY * 2
+        }
 
-        height = target.height
+        const target = this.drawable.connection?.getTargetBlock()
+        if (!target) {
+          height = Constraints.MinInputHeight
+          break
+        }
+
+        height += target.height
         break
       case BlockInput.Statement:
         let curr = this.drawable?.connection?.getTargetBlock()
