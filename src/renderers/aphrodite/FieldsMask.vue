@@ -23,14 +23,22 @@ export default {
       type: Scratch,
       required: true,
     },
+
+    blocks: Array,
   },
 
   components: { Field },
 
   computed: {
+    blocks_() {
+      if (Array.isArray(this.blocks)) return this.blocks
+
+      return this.scratch.blocks
+    },
+
     fields() {
       const masks = []
-      for (const block of this.scratch.blocks) {
+      for (const block of this.blocks_) {
         for (const input of block.inputs) {
           for (const field of input.fields) {
             if (field.type === BlockField.Label) continue

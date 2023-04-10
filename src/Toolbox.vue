@@ -19,7 +19,7 @@
         v-for="(category, name) in toolbox.categories"
         :key="name"
         class="toolbox__category"
-        @click="setHoveredCategory(name)"
+        @click="setHoveredCategory(category)"
       >
         <div
           class="toolbox__category__name"
@@ -32,29 +32,32 @@
       </div>
     </div>
 
-    <div v-show="options.length" class="toolbox__flyout">
+    <div v-show="hoveredCategoryOptions.length" class="toolbox__flyout">
       <button
-        v-show="hoveredCategory == 'variables'"
+        v-show="hoveredCategoryName == 'variables'"
         class="scratch__add-variable"
         @click="toolbox.addVariable()"
       >
         Add variable
       </button>
 
-      <div
-        class="toolbox__option"
-        v-for="drawer in options"
-        :key="drawer.block.id"
-        @mousedown.stop="
-          toolbox.spawnBlock($event, drawer.block), setHoveredCategory(null)
-        "
+      <BlocksRenderer
+        :scratch="toolbox"
+        :blocks="hoveredCategoryOptions"
+        :style="{ width: `${hoveredCategoryWidth}px` }"
+        class="toolbox__options"
       >
-        <BlockRenderer
-          class="toolbox__block"
-          v-bind="{ drawer }"
-          :style="{ position: 'relative' }"
-        />
-      </div>
+        <template #blocks>
+          <BlockDrawer
+            v-for="block in hoveredCategoryOptions"
+            :key="block.id"
+            v-bind="{ block }"
+            @mousedown.native.stop="
+              toolbox.spawnBlock($event, block), setHoveredCategory(null)
+            "
+          />
+        </template>
+      </BlocksRenderer>
     </div>
   </div>
 </template>
@@ -81,14 +84,24 @@ export default {
   },
 
   computed: {
-    options() {
-      return this.toolbox.categories[this.hoveredCategory]?.blocks || []
+    hoveredCategoryOptions() {
+      return this.hoveredCategory?.blocks || []
+    },
+
+    hoveredCategoryName() {
+      return this.hoveredCategory?.name || ''
+    },
+
+    hoveredCategoryWidth() {
+      return this.hoveredCategory?.width || 0
     },
   },
 
   created() {
-    this.$options.components.BlockRenderer =
-      this.toolbox.toolbox.renderer.BlockComponent
+    Object.assign(this.$options.components, {
+      BlockDrawer: this.toolbox.renderer.BlockComponent,
+      BlocksRenderer: this.toolbox.renderer.BlocksContainerComponent,
+    })
   },
 
   methods: {
@@ -131,15 +144,9 @@ export default {
   padding: 5px 10px;
 }
 
-.toolbox__option {
+.toolbox__options {
   position: relative;
-  height: fit-content;
+  height: 100%;
   user-select: none;
-  padding: 10px 10px;
-}
-
-.toolbox__block {
-  pointer-events: none;
-  z-index: 0;
 }
 </style>

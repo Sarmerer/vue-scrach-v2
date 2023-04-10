@@ -1,5 +1,5 @@
 <template>
-  <InputsMask v-bind="{ scratch }">
+  <FieldsMask v-bind="{ scratch, blocks }">
     <svg
       version="1.1"
       width="100%"
@@ -8,16 +8,19 @@
       :id="scratch.id"
       class="scratch__blocks scratch__blocks-aphrodite"
     >
-      <Block v-for="block of blocks_" :key="block.id" v-bind="{ block }" />
+      <slot name="blocks">
+        <text>broken</text>
+        <Block v-for="block of blocks_" :key="block.id" v-bind="{ block }" />
+      </slot>
     </svg>
-  </InputsMask>
+  </FieldsMask>
 </template>
 
 <script>
 import { Scratch } from '../../types/scratch'
 
 import Block from './Block.vue'
-import InputsMask from './FieldsMask.vue'
+import FieldsMask from './FieldsMask.vue'
 
 export default {
   name: 'BlocksRenderer',
@@ -31,7 +34,7 @@ export default {
     blocks: Array,
   },
 
-  components: { Block, InputsMask },
+  components: { Block, FieldsMask },
 
   computed: {
     blocks_() {

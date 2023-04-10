@@ -15,7 +15,7 @@ import base from '../blocks/builder/base'
 import inputs from '../blocks/builder/inputs'
 import fields from '../blocks/builder/fields'
 
-export class Toolbox {
+export class Toolbox extends Scratch {
   static Presets = {
     Scripting: {
       generator: CodeGenerator,
@@ -26,9 +26,10 @@ export class Toolbox {
   }
 
   constructor(scratch) {
+    super()
+
     this.scratch = scratch
 
-    this.toolbox = new Scratch().setRenderer(Scratch.Renderers.Dionysus)
     this.preset = 'Scripting'
     this.categories = {}
 
@@ -73,19 +74,27 @@ export class Toolbox {
     }
 
     for (const type of Object.keys(Scratch.Blocks)) {
-      const block = this.toolbox.spawnBlock(type)
+      const block = super.spawnBlock(type)
       block.isFrozen = true
     }
 
-    this.categories = this.toolbox.blocks.reduce((acc, b) => {
-      const category = b.type.split(':')[0] || 'blocks'
-      if (!acc[category]) acc[category] = { blocks: [], color: null }
+    const offsetLeft = 20
+    this.categories = this.blocks.reduce((acc, block) => {
+      const category = block.type.split(':')[0] || 'blocks'
+      if (!acc[category]) {
+        acc[category] = { blocks: [], color: null, width: 0, offsetTop: 20 }
+      }
 
-      acc[category].blocks.push(
-        new this.toolbox.renderer.Drawer(b, this.toolbox.renderer)
-      )
-      acc[category].background = b.colors.background
-      acc[category].text = b.colors.text
+      if (block.width > acc[category].width) {
+        acc[category].width = block.width + 50
+      }
+
+      block.position.moveTo(offsetLeft, acc[category].offsetTop)
+      acc[category].offsetTop += block.height + 20
+
+      acc[category].blocks.push(block)
+      acc[category].background = block.colors.background
+      acc[category].text = block.colors.text
       return acc
     }, {})
   }
@@ -106,7 +115,7 @@ export class Toolbox {
 
   reset() {
     Scratch.Blocks = {}
-    this.toolbox = new Scratch()
+    this.blocks = []
   }
 
   static AddPreset(name, includedCategories) {
