@@ -24,7 +24,7 @@ export class Input extends Drawable {
     }
 
     if (this.drawable.type !== BlockInput.Value) {
-      return width
+      return Math.max(width, Constraints.MinInputWidth)
     }
 
     if (!this.drawable.block.isInline) {
@@ -68,7 +68,7 @@ export class Input extends Drawable {
           curr = next
         }
 
-        height = Math.max(Constraints.MinInputWidth, stackHeight)
+        height = Math.max(Constraints.MinInputHeight, stackHeight)
         break
     }
 

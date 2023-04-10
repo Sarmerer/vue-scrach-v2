@@ -5,7 +5,7 @@
       :fill="color"
       v-text="field.value"
       x="0"
-      y="13"
+      y="18"
     ></text>
   </g>
 </template>
@@ -30,7 +30,7 @@ export default {
 
 <style scoped>
 .block__field__text {
-  font: normal 11pt sans-serif;
+  font: normal 12pt sans-serif;
   user-select: none;
 }
 </style>

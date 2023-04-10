@@ -14,6 +14,13 @@ import { Field as DrawableField } from './drawables/field'
 import { BoxDebugger } from '../../types/debug/box'
 import { PointDebugger } from '../../types/debug/point'
 
+export const Corner = {
+  TL: 0,
+  TR: 1,
+  BR: 2,
+  BL: 3,
+}
+
 export class AphroditeDrawer extends Drawer {
   /** @param {Block} block */
   constructor(block, renderer) {
@@ -91,8 +98,6 @@ export class AphroditeDrawer extends Drawer {
 
     this.positionBlockConnections()
     this.positionInputConnections()
-
-    this.debugBlockBox()
   }
 
   /**
@@ -106,8 +111,6 @@ export class AphroditeDrawer extends Drawer {
     this.updateAbsolutePosition(delta)
     this.positionBlockConnections(delta)
     this.positionInputConnections(delta)
-
-    this.debugBlockBox()
   }
 
   updateAbsolutePosition(delta) {
@@ -161,7 +164,6 @@ export class AphroditeDrawer extends Drawer {
 
     connection.position.moveBy(delta.x, delta.y)
     this.updateConnectedBlock(connection, { delta, fast: true })
-    this.debugConnection(connection)
   }
 
   moveConnectionTo(connection, point) {
@@ -169,29 +171,54 @@ export class AphroditeDrawer extends Drawer {
 
     connection.position.moveTo(point.x, point.y)
     this.updateConnectedBlock(connection, {})
-    this.debugConnection(connection)
   }
 
   getTop() {
-    const width = this.block.inputs[0].groupWidth
+    let width = this.block.inputs[0].groupWidth
+    const top = []
 
-    if (!this.block.hasPrev()) {
-      return [`h ${width}`]
+    if (this.isCornerRounded(Corner.TL)) {
+      const depth = Constraints.CornerArcDepth
+      width -= depth
+      top.push(`m 0 ${depth}`, `a ${depth} ${depth} 0 0 1 ${depth} ${-depth}`)
     }
 
-    const remainder =
-      width - Constraints.StackSocketOffset - Constraints.StackSocketWidth
-    return [...Constraints.GetStackSocket(), `h ${remainder}`]
+    if (!this.block.hasPrev()) {
+      top.push(`h ${width}`)
+    } else {
+      let remainder =
+        width - Constraints.StackSocketOffset - Constraints.StackSocketWidth
+
+      top.push(...Constraints.GetStackSocket(), `h ${remainder}`)
+    }
+
+    return top
   }
 
   getBottom() {
-    if (!this.block.hasNext()) {
-      return [`H 0`]
+    const lastInput = this.block.inputs[this.block.inputs.length - 1]
+    let width = lastInput.groupWidth
+
+    const bottom = []
+    const corner = []
+
+    if (this.isCornerRounded(Corner.BL)) {
+      width -= Constraints.CornerArcDepth
+      const depth = Constraints.CornerArcDepth
+      corner.push(`a ${depth} ${depth} 0 0 1 ${-depth} ${-depth}`)
     }
 
-    const remainder =
-      Constraints.StackSocketOffset + Constraints.StackSocketWidth
-    return [`H ${remainder}`, ...Constraints.GetStackNotch()]
+    if (!this.block.hasNext()) {
+      bottom.push(`h ${-width}`)
+    } else {
+      const remainder =
+        Constraints.StackSocketOffset + Constraints.StackSocketWidth - width
+      bottom.push(`h ${remainder}`, ...Constraints.GetStackNotch())
+    }
+
+    bottom.push(...corner)
+
+    return bottom
   }
 
   getInputs() {
@@ -387,6 +414,19 @@ export class AphroditeDrawer extends Drawer {
     }
 
     this.drawableFields.get(field.id).measure()
+  }
+
+  isCornerRounded(corner) {
+    const rules = {
+      [Corner.TL]: !(
+        this.block.hasOutput() || this.block.previousConnection?.isConnected()
+      ),
+      [Corner.BL]: !(
+        this.block.hasOutput() || this.block.nextConnection?.isConnected()
+      ),
+    }
+
+    return rules[corner] || false
   }
 
   debugBlockBox() {

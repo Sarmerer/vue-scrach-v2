@@ -7,20 +7,22 @@ export class Constraints {
 
   static RowSocketDepth = 4
   static RowSocketHeight = 16
-  static RowSocketOffset = 8
+  static RowSocketOffset = 12
 
   static StatementBarWidth = 16
   static StatementClosureHeight = 16
   static EmptyInlineInputWidth = 16
 
-  static MinInputHeight = 32
-  static MinInputWidth = 32
+  static MinInputHeight = 40
+  static MinInputWidth = 48
   static MinFieldWidth = 24
 
   static FieldsGap = 8
   static FieldPaddingY = 8
-  static FieldPaddingX = 8
-  static FieldHeight = 16
+  static FieldPaddingX = 12
+  static FieldHeight = 24
+
+  static CornerArcDepth = 8
 
   static FieldWidthTolerance = {
     [BlockField.Select]: 24,
