@@ -5,9 +5,9 @@
 </template>
 
 <script>
-import { Scratch } from './types/scratch'
+import { Scratch } from '../../src/types/scratch'
 
-import ScratchRenderer from './Scratch.vue'
+import ScratchRenderer from '../../src/index.vue'
 
 export default {
   name: 'App',

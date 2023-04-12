@@ -9,15 +9,9 @@ export default defineConfig({
       jsx: true,
     }),
   ],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
-      vue: 'vue/dist/vue.esm.js',
-    },
-  },
   build: {
-    brotliSize: false, // unsupported in StackBlitz
-    outDir: 'docs',
+    brotliSize: false,
+    outDir: '../../docs',
   },
 
   base: '/vue-scratch-v2',
