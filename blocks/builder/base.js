@@ -1,7 +1,5 @@
 import { createModule } from '..'
-import { BlockInput } from '../../types/block-input'
-import { BlockField } from '../../types/block-field'
-import { Connection } from '../../types/connection'
+import { BlockInput, BlockField, Connection } from '../types'
 
 export default createModule({
   name: 'base',
@@ -31,8 +29,8 @@ export default createModule({
             {
               type: BlockField.Select,
               name: 'display',
-              value: 'block',
-              options: ['block', 'inline'],
+              value: 'stacked',
+              options: ['stacked', 'inline'],
             },
             { type: BlockField.Label, value: 'inputs' },
           ],

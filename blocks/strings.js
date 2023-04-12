@@ -1,7 +1,5 @@
 import { createModule } from '.'
-import { BlockInput } from '../types/block-input'
-import { BlockField } from '../types/block-field'
-import { Connection } from '../types/connection'
+import { BlockInput, BlockField, Connection } from './types'
 
 export default createModule({
   name: 'strings',

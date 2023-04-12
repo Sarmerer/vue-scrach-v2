@@ -1,4 +1,4 @@
-import { Scratch } from '../types/scratch'
+import { Scratch } from '../src/types/scratch'
 
 export function declareModule(module) {
   for (const source of module.blocks) {

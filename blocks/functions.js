@@ -1,6 +1,5 @@
 import { createModule } from '.'
-import { BlockInput } from '../types/block-input'
-import { BlockField } from '../types/block-field'
+import { BlockInput, BlockField } from './types'
 
 export default createModule({
   name: 'functions',
