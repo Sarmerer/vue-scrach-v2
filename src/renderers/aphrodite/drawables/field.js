@@ -15,11 +15,7 @@ export class Field extends Drawable {
       this.getStringWidth(this.drawable.value || this.drawable.placeholder) +
       tolerance
 
-    if (this.drawable.type !== BlockField.Label) {
-      this.drawable.width = Math.max(Constraints.MinFieldWidth, baseWidth)
-    } else {
-      this.drawable.width = baseWidth
-    }
+    this.drawable.width = Math.max(Constraints.MinFieldWidth, baseWidth)
   }
 
   getStringWidth(string) {

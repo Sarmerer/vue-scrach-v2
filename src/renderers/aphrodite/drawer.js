@@ -424,15 +424,20 @@ export class AphroditeDrawer extends Drawer {
   }
 
   isCornerRounded(corner) {
+    const firstInput = this.block.inputs[0]
+    const lastInput = this.block.inputs[this.block.inputs.length - 1]
+
     const rules = {
       [Corner.TL]: !(
         this.block.hasOutput() ||
         (this.block.previousConnection?.isConnected() &&
           this.block.previousConnection.target.type !== Connection.Statement)
       ),
+      [Corner.TR]: firstInput.type == BlockInput.Dummy,
       [Corner.BL]: !(
         this.block.hasOutput() || this.block.nextConnection?.isConnected()
       ),
+      [Corner.BR]: lastInput.type == BlockInput.Dummy,
     }
 
     return rules[corner] || false
