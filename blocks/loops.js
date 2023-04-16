@@ -1,16 +1,18 @@
-import { createModule } from '.'
-import { BlockInput, BlockField, Connection } from './types'
+import { defineBlocks } from '.'
+import { BlockInput, BlockField } from './types'
 
-export default createModule({
-  name: 'loops',
+export default defineBlocks(
+  {
+    prefix: 'loops',
+    style: { background: 'orange', text: 'black' },
+  },
 
-  style: { background: 'Orange', text: 'black' },
-
-  blocks: [
+  [
     {
-      name: 'repeat',
+      type: 'repeat',
       inline: true,
-      connections: [Connection.Prev, Connection.Next],
+      previous: true,
+      next: true,
       inputs: [
         {
           type: BlockInput.Value,
@@ -23,7 +25,7 @@ export default createModule({
         },
       ],
 
-      compile(context) {
+      compiler(context) {
         const count = context.input.count || 10
         const body = context.input.body || ''
         return [`for (let i = 0; i < ${count}; i++) {`, body, '}']
@@ -31,8 +33,9 @@ export default createModule({
     },
 
     {
-      name: 'foreach',
-      connections: [Connection.Prev, Connection.Next],
+      type: 'foreach',
+      previous: true,
+      next: true,
       inputs: [
         {
           type: BlockInput.Value,
@@ -49,7 +52,7 @@ export default createModule({
         },
       ],
 
-      compile(context) {
+      compiler(context) {
         const item = context.item?.name || 'i'
         const list = context.input.list || '[]'
         const body = context.input.body || ''
@@ -59,8 +62,8 @@ export default createModule({
     },
 
     {
-      name: 'lifecycle',
-      connections: [Connection.Prev],
+      type: 'lifecycle',
+      previous: true,
       inputs: [
         {
           type: BlockInput.Dummy,
@@ -75,7 +78,7 @@ export default createModule({
         },
       ],
 
-      compile: ['${action}'],
+      compiler: ['${action}'],
     },
-  ],
-})
+  ]
+)

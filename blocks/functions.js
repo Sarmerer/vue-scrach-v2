@@ -1,16 +1,15 @@
-import { createModule } from '.'
+import { defineBlocks } from '.'
 import { BlockInput, BlockField } from './types'
 
-export default createModule({
-  name: 'functions',
-
-  style: {
-    background: 'green',
+export default defineBlocks(
+  {
+    prefix: 'functions',
+    style: { background: 'green' },
   },
 
-  blocks: [
+  [
     {
-      name: 'with-return',
+      type: 'with-return',
       inputs: [
         {
           type: BlockInput.Dummy,
@@ -33,7 +32,7 @@ export default createModule({
         },
       ],
 
-      compile: [
+      compiler: [
         'function ${name} () {',
         '${input.body}',
         'return ${input.returns}',
@@ -42,7 +41,7 @@ export default createModule({
     },
 
     {
-      name: 'without-return',
+      type: 'without-return',
       inputs: [
         {
           type: BlockInput.Dummy,
@@ -60,7 +59,7 @@ export default createModule({
         },
       ],
 
-      compile: ['function ${name} () {', '${input.body}', '}'],
+      compiler: ['function ${name} () {', '${input.body}', '}'],
     },
-  ],
-})
+  ]
+)

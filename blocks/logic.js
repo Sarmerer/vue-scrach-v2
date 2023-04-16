@@ -1,18 +1,17 @@
-import { createModule } from '.'
-import { BlockInput, BlockField, Connection } from './types'
+import { defineBlocks } from '.'
+import { BlockInput, BlockField } from './types'
 
-export default createModule({
-  name: 'logic',
-
-  style: {
-    background: 'Aquamarine',
-    text: 'black',
+export default defineBlocks(
+  {
+    prefix: 'logic',
+    style: { background: 'aquamarine', text: 'black' },
   },
 
-  blocks: [
+  [
     {
-      name: 'if',
-      connections: [Connection.Prev, Connection.Next],
+      type: 'if',
+      previous: true,
+      next: true,
       inputs: [
         {
           type: BlockInput.Value,
@@ -26,13 +25,13 @@ export default createModule({
         },
       ],
 
-      compile: ['if (${input.if}) {', '${do}', '}'],
+      compiler: ['if (${input.if}) {', '${do}', '}'],
     },
 
     {
-      name: 'compare',
+      type: 'compare',
       inline: true,
-      connections: [Connection.Output],
+      output: true,
       inputs: [
         { type: BlockInput.Value, name: 'left_side' },
         {
@@ -49,13 +48,13 @@ export default createModule({
         { type: BlockInput.Value, name: 'right_side' },
       ],
 
-      compile: ['${input.left_side} ${operator} ${input.right_side}'],
+      compiler: ['${input.left_side} ${operator} ${input.right_side}'],
     },
 
     {
-      name: 'operator',
+      type: 'operator',
       inline: true,
-      connections: [Connection.Output],
+      output: true,
       inputs: [
         { type: BlockInput.Value, name: 'left_side' },
         {
@@ -72,13 +71,13 @@ export default createModule({
         { type: BlockInput.Value, name: 'right_side' },
       ],
 
-      compile: ['${input.left_side} ${operator} ${input.right_side}'],
+      compiler: ['${input.left_side} ${operator} ${input.right_side}'],
     },
 
     {
-      name: 'bool',
+      type: 'bool',
       inline: true,
-      connections: [Connection.Output],
+      output: true,
       inputs: [
         {
           type: BlockInput.Dummy,
@@ -93,7 +92,7 @@ export default createModule({
         },
       ],
 
-      compile: ['${bool}'],
+      compiler: ['${bool}'],
     },
-  ],
-})
+  ]
+)

@@ -1,17 +1,16 @@
-import { createModule } from '.'
-import { BlockInput, BlockField, Connection } from './types'
+import { defineBlocks } from '.'
+import { BlockInput, BlockField } from './types'
 
-export default createModule({
-  name: 'variables',
-
-  style: {
-    background: 'coral',
+export default defineBlocks(
+  {
+    prefix: 'variables',
+    style: { background: 'coral' },
   },
 
-  blocks: [
+  [
     {
-      name: 'get',
-      connections: [Connection.Output],
+      type: 'get',
+      output: true,
       inputs: [
         {
           type: BlockInput.Dummy,
@@ -24,12 +23,13 @@ export default createModule({
         },
       ],
 
-      compile: ['${variable.name}'],
+      compiler: ['${variable.name}'],
     },
 
     {
-      name: 'set',
-      connections: [Connection.Prev, Connection.Next],
+      type: 'set',
+      previous: true,
+      next: true,
       inputs: [
         {
           type: BlockInput.Value,
@@ -51,7 +51,7 @@ export default createModule({
         },
       ],
 
-      compile: ['${variable.name} = ${input.value}'],
+      compiler: ['${variable.name} = ${input.value}'],
     },
-  ],
-})
+  ]
+)

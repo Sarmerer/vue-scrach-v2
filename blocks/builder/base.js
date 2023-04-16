@@ -1,16 +1,15 @@
-import { createModule } from '..'
-import { BlockInput, BlockField, Connection } from '../types'
+import { defineBlocks } from '..'
+import { BlockInput, BlockField } from '../types'
 
-export default createModule({
-  name: 'base',
-
-  style: {
-    background: 'darkgreen',
+export default defineBlocks(
+  {
+    prefix: 'base',
+    style: { background: 'darkgreen' },
   },
 
-  blocks: [
+  [
     {
-      name: 'block',
+      type: 'block',
       inputs: [
         {
           type: BlockInput.Dummy,
@@ -62,18 +61,32 @@ export default createModule({
         },
       ],
 
-      compile(context) {
-        const connections = {
-          'has output': [Connection.Output],
-          'has prev': [Connection.Prev],
-          'has next': [Connection.Next],
-          'has prev+next': [Connection.Prev, Connection.Next],
+      compiler(context) {
+        let output = false
+        let previous = false
+        let next = false
+        switch (context.connections) {
+          case 'has output':
+            output = true
+            break
+          case 'has prev':
+            previous = true
+            break
+          case 'has next':
+            next = true
+            break
+          case 'has prev+next':
+            previous = true
+            next = true
+            break
         }
 
         return {
-          name: context.name,
+          type: context.name,
           inline: context.display == 'inline',
-          connections: connections[context.connections],
+          previous,
+          next,
+          output,
           inputs: context.input.inputs || [],
           style: {
             background: context.background_color,
@@ -82,5 +95,5 @@ export default createModule({
         }
       },
     },
-  ],
-})
+  ]
+)

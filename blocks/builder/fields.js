@@ -1,17 +1,20 @@
-import { createModule } from '..'
-import { BlockInput, BlockField, Connection } from '../types'
+import { defineBlocks } from '..'
+import { BlockInput, BlockField } from '../types'
 
-export default createModule({
-  name: 'fields',
+export default defineBlocks(
+  {
+    prefix: 'fields',
 
-  style: {
-    background: 'darkgreen',
+    style: {
+      background: 'darkgreen',
+    },
   },
 
-  blocks: [
+  [
     {
-      name: 'field:label',
-      connections: [Connection.Prev, Connection.Next],
+      type: 'field:label',
+      previous: true,
+      next: true,
       inputs: [
         {
           type: BlockInput.Dummy,
@@ -22,7 +25,7 @@ export default createModule({
         },
       ],
 
-      compile(context) {
+      compiler(context) {
         return {
           type: BlockField.Label,
           value: context.value,
@@ -31,8 +34,9 @@ export default createModule({
     },
 
     {
-      name: 'field:text',
-      connections: [Connection.Prev, Connection.Next],
+      type: 'field:text',
+      previous: true,
+      next: true,
       inputs: [
         {
           type: BlockInput.Dummy,
@@ -48,7 +52,7 @@ export default createModule({
         },
       ],
 
-      compile(context) {
+      compiler(context) {
         return {
           type: BlockField.Label,
           value: context.value,
@@ -56,5 +60,5 @@ export default createModule({
         }
       },
     },
-  ],
-})
+  ]
+)

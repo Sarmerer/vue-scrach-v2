@@ -1,18 +1,17 @@
-import { createModule } from '.'
-import { BlockInput, BlockField, Connection } from './types'
+import { defineBlocks } from '.'
+import { BlockInput, BlockField } from './types'
 
-export default createModule({
-  name: 'sql',
-
-  style: {
-    background: 'cadetblue',
-    text: 'white',
+export default defineBlocks(
+  {
+    prefix: 'sql',
+    style: { background: 'cadetblue', text: 'white' },
   },
 
-  blocks: [
+  [
     {
-      name: 'insert',
-      connections: [Connection.Prev, Connection.Next],
+      type: 'insert',
+      previous: true,
+      next: true,
       inputs: [
         {
           type: BlockInput.Dummy,
@@ -36,12 +35,102 @@ export default createModule({
         },
       ],
 
-      compile: ['INSERT', '${input.rows}', 'INTO ${table}'],
+      compiler: ['INSERT', '${input.rows}', 'INTO ${table}'],
+    },
+    {
+      type: 'insert1',
+      previous: true,
+      next: true,
+      inputs: [
+        {
+          type: BlockInput.Dummy,
+          fields: [{ type: BlockField.Label, value: 'INSERT' }],
+        },
+        {
+          name: 'rows',
+          type: BlockInput.Statement,
+        },
+        {
+          type: BlockInput.Dummy,
+          fields: [
+            { type: BlockField.Label, value: 'INTO' },
+            {
+              type: BlockField.Select,
+              name: 'table',
+              value: 'addresses',
+              options: ['addresses', 'users'],
+            },
+          ],
+        },
+      ],
+
+      compiler: ['INSERT', '${input.rows}', 'INTO ${table}'],
     },
 
     {
-      name: 'update',
-      connections: [Connection.Prev, Connection.Next],
+      type: 'insert2',
+      previous: true,
+      next: true,
+      inputs: [
+        {
+          type: BlockInput.Dummy,
+          fields: [{ type: BlockField.Label, value: 'INSERT' }],
+        },
+        {
+          name: 'rows',
+          type: BlockInput.Statement,
+        },
+        {
+          type: BlockInput.Dummy,
+          fields: [
+            { type: BlockField.Label, value: 'INTO' },
+            {
+              type: BlockField.Select,
+              name: 'table',
+              value: 'addresses',
+              options: ['addresses', 'users'],
+            },
+          ],
+        },
+      ],
+
+      compiler: ['INSERT', '${input.rows}', 'INTO ${table}'],
+    },
+
+    {
+      type: 'insert3',
+      previous: true,
+      next: true,
+      inputs: [
+        {
+          type: BlockInput.Dummy,
+          fields: [{ type: BlockField.Label, value: 'INSERT' }],
+        },
+        {
+          name: 'rows',
+          type: BlockInput.Statement,
+        },
+        {
+          type: BlockInput.Dummy,
+          fields: [
+            { type: BlockField.Label, value: 'INTO' },
+            {
+              type: BlockField.Select,
+              name: 'table',
+              value: 'addresses',
+              options: ['addresses', 'users'],
+            },
+          ],
+        },
+      ],
+
+      compiler: ['INSERT', '${input.rows}', 'INTO ${table}'],
+    },
+
+    {
+      type: 'update',
+      previous: true,
+      next: true,
       inputs: [
         {
           type: BlockInput.Dummy,
@@ -73,7 +162,7 @@ export default createModule({
         },
       ],
 
-      compile: [
+      compiler: [
         'UPDATE',
         '${input.rows}',
         'WITH',
@@ -83,8 +172,9 @@ export default createModule({
     },
 
     {
-      name: 'row',
-      connections: [Connection.Prev, Connection.Next],
+      type: 'row',
+      previous: true,
+      next: true,
       inputs: [
         {
           type: BlockInput.Dummy,
@@ -99,12 +189,13 @@ export default createModule({
         },
       ],
 
-      compile: ['${row}'],
+      compiler: ['${row}'],
     },
 
     {
-      name: 'value',
-      connections: [Connection.Prev, Connection.Next],
+      type: 'value',
+      previous: true,
+      next: true,
       inputs: [
         {
           type: BlockInput.Dummy,
@@ -118,12 +209,13 @@ export default createModule({
         },
       ],
 
-      compile: ['${value}'],
+      compiler: ['${value}'],
     },
 
     {
-      name: 'row-value',
-      connections: [Connection.Prev, Connection.Next],
+      type: 'row-value',
+      previous: true,
+      next: true,
       inputs: [
         {
           type: BlockInput.Dummy,
@@ -143,7 +235,7 @@ export default createModule({
         },
       ],
 
-      compile: ['${row}: ${value}'],
+      compiler: ['${row}: ${value}'],
     },
-  ],
-})
+  ]
+)

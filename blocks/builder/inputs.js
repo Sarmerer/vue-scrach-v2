@@ -1,17 +1,17 @@
-import { createModule } from '..'
-import { BlockInput, BlockField, Connection } from '../types'
+import { defineBlocks } from '..'
+import { BlockInput, BlockField } from '../types'
 
-export default createModule({
-  name: 'inputs',
-
-  style: {
-    background: 'darkgreen',
+export default defineBlocks(
+  {
+    prefix: 'inputs',
+    style: { background: 'darkgreen' },
   },
 
-  blocks: [
+  [
     {
-      name: 'input:value',
-      connections: [Connection.Prev, Connection.Next],
+      type: 'input:value',
+      previous: true,
+      next: true,
       inputs: [
         {
           type: BlockInput.Dummy,
@@ -26,7 +26,7 @@ export default createModule({
         },
       ],
 
-      compile(context) {
+      compiler(context) {
         const fields = []
 
         return {
@@ -38,8 +38,9 @@ export default createModule({
     },
 
     {
-      name: 'input:statement',
-      connections: [Connection.Prev, Connection.Next],
+      type: 'input:statement',
+      previous: true,
+      next: true,
       inputs: [
         {
           type: BlockInput.Dummy,
@@ -54,7 +55,7 @@ export default createModule({
         },
       ],
 
-      compile(context) {
+      compiler(context) {
         const fields = []
 
         return {
@@ -66,8 +67,9 @@ export default createModule({
     },
 
     {
-      name: 'input:dummy',
-      connections: [Connection.Prev, Connection.Next],
+      type: 'input:dummy',
+      previous: true,
+      next: true,
       inputs: [
         {
           type: BlockInput.Dummy,
@@ -79,12 +81,12 @@ export default createModule({
         },
       ],
 
-      compile(context) {
+      compiler(context) {
         return {
           type: BlockInput.Dummy,
           fields: context.input.fields || [],
         }
       },
     },
-  ],
-})
+  ]
+)

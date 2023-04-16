@@ -1,18 +1,17 @@
-import { createModule } from '.'
-import { BlockInput, BlockField, Connection } from './types'
+import { defineBlocks } from '.'
+import { BlockInput, BlockField } from './types'
 
-export default createModule({
-  name: 'math',
-
-  style: {
-    background: 'SkyBlue',
+export default defineBlocks(
+  {
+    prefix: 'math',
+    style: { background: 'skyblue' },
   },
 
-  blocks: [
+  [
     {
-      name: 'operation',
+      type: 'operation',
       inline: true,
-      connections: [Connection.Output],
+      output: true,
       inputs: [
         { type: BlockInput.Value, name: 'left_side' },
         {
@@ -30,12 +29,12 @@ export default createModule({
         { type: BlockInput.Value, name: 'right_side' },
       ],
 
-      compile: ['${input.left_side} ${operator} ${input.right_side}'],
+      compiler: ['${input.left_side} ${operator} ${input.right_side}'],
     },
 
     {
-      name: 'number',
-      connections: [Connection.Output],
+      type: 'number',
+      output: true,
       inputs: [
         {
           type: BlockInput.Dummy,
@@ -49,7 +48,7 @@ export default createModule({
         },
       ],
 
-      compile: ['${value}'],
+      compiler: ['${value}'],
     },
-  ],
-})
+  ]
+)

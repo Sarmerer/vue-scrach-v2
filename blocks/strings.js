@@ -1,17 +1,17 @@
-import { createModule } from '.'
-import { BlockInput, BlockField, Connection } from './types'
+import { defineBlocks } from '.'
+import { BlockInput, BlockField } from './types'
 
-export default createModule({
-  name: 'strings',
-
-  style: {
-    background: 'LightSeaGreen',
+export default defineBlocks(
+  {
+    prefix: 'strings',
+    style: { background: 'LightSeaGreen' },
   },
 
-  blocks: [
+  [
     {
-      name: 'print',
-      connections: [Connection.Prev, Connection.Next],
+      type: 'print',
+      previous: true,
+      next: true,
       inputs: [
         {
           type: BlockInput.Value,
@@ -20,12 +20,12 @@ export default createModule({
         },
       ],
 
-      compile: ['console.log(${input.text})'],
+      compiler: ['console.log(${input.text})'],
     },
 
     {
-      name: 'string',
-      connections: [Connection.Output],
+      type: 'string',
+      output: true,
       inputs: [
         {
           type: BlockInput.Dummy,
@@ -39,7 +39,7 @@ export default createModule({
         },
       ],
 
-      compile: ['"${value}"'],
+      compiler: ['"${value}"'],
     },
-  ],
-})
+  ]
+)

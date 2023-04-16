@@ -1,82 +1,3 @@
-import { Scratch } from '../src/types/scratch'
-
-export function declareModule(module) {
-  for (const source of module.blocks) {
-    if (!source.style) {
-      source.style = module.style
-    }
-
-    declareBlock(source, module.name)
-  }
-}
-
-export function declareBlock(source, prefix) {
-  let name = source.name
-  if (typeof prefix == 'string' && prefix.length > 0) {
-    name = `${prefix}:${name}`
-  }
-
-  Scratch.DeclareBlock(name, newFactory(source))
-}
-
-export function newFactory(template) {
-  return function (block) {
-    addInputs(template.inputs, block)
-    addConnections(template.connections, block)
-    setMisc(template, block)
-    setStyle(template.style, block)
-  }
-}
-
-function addInputs(inputs, block) {
-  if (!Array.isArray(inputs)) return
-
-  for (const inputTemplate of inputs) {
-    const input = block.addInput(inputTemplate.type, inputTemplate.name)
-    if (!input) continue
-
-    addFields(inputTemplate.fields, input)
-  }
-}
-
-function addFields(fields, factoryInput) {
-  if (!Array.isArray(fields)) return
-
-  for (const field of fields) {
-    factoryInput.addField(field.type, field.name, field)
-  }
-}
-
-function addConnections(connections, factory) {
-  if (!Array.isArray(connections)) return
-
-  for (const connection of connections) {
-    factory.allowConnection(connection)
-  }
-}
-
-function setMisc(source, factoryBlock) {
-  if (source.inline) {
-    factoryBlock.setInline()
-  }
-
-  if (source.compile) {
-    factoryBlock.setCompiler(source.compile)
-  }
-}
-
-function setStyle(style, factoryInput) {
-  if (!style) return
-
-  if (style.background) {
-    factoryInput.setBackgroundColor(style.background)
-  }
-
-  if (style.text) {
-    factoryInput.setTextColor(style.text)
-  }
-}
-
 /**
  * @callback DynamicOptions
  * @param {Object} context
@@ -102,35 +23,60 @@ function setStyle(style, factoryInput) {
  * @property {String} InputDeclaration.name
  * @property {Array<FieldDeclaration>} InputDeclaration.fields
  *
- * @typedef {Object} BlockDeclaration
- * @property {String} BlockDeclaration.name
- * @property {Boolean} BlockDeclaration.inline
- * @property {Array<String> | BlockCompiler} BlockDeclaration.compile
- * @property {Array<Number>} BlockDeclaration.connections
- * @property {Array<InputDeclaration>} BlockDeclaration.inputs
+ * @typedef {Object} BlockDefinition
+ * @property {String} BlockDefinition.type
+ * @property {Boolean} BlockDefinition.inline
+ * @property {Boolean} BlockDefinition.output
+ * @property {Boolean} BlockDefinition.previous
+ * @property {Boolean} BlockDefinition.next
+ * @property {Array<String> | BlockCompiler} BlockDefinition.compiler
+ * @property {Array<InputDeclaration>} BlockDefinition.inputs
  *
- * @typedef {Object} BlocksModuleStyle
- * @property {string} BlocksModuleStyle.background
- * @property {string} BlocksModuleStyle.text
  *
- * @typedef {Object} BlocksModule
- * @property {String} BlocksModule.name
- * @property {Array<BlockDeclaration>} BlocksModule.blocks
- * @property {BlocksModuleStyle} BlocksModule.style
+ * @param {Array<BlockDefinition>} blocksDefs
+ * @param {Object} config
+ * @param {String} config.prefix
  *
- * @param {BlocksModule} module
- * @returns {BlocksModule}
+ * @param {Object} config.style
+ * @param {string} config.style.background
+ * @param {string} config.style.text
+ *
+ * @callback BlockDefinitionBakedCallback
+ * @param {Block} block
+ * @typedef {Object.<String, BlockDefinitionBakedCallback>} BlockDefinitionBaked
+ * @returns {BlockDefinitionBaked}
  */
-export function createModule(module) {
-  return module
+
+export function defineBlocks(config, blocksDefs) {
+  const blocks = {}
+  for (const blockDef of blocksDefs) {
+    if (!blockDef.type) {
+      console.warn('block definition must have a type, got:', blockDef)
+      continue
+    }
+
+    if (config?.style) {
+      extendBlockStyles(config.style, blockDef)
+    }
+
+    const prefix = config?.prefix || ''
+    blockDef.type = prefix ? `${prefix}:${blockDef.type}` : blockDef.type
+    blocks[blockDef.type] = function (block) {
+      block.applyDefinition(blockDef)
+    }
+  }
+
+  return blocks
 }
 
-/**
- * @param {BlockDeclaration} block
- * @returns {BlockDeclaration}
- */
-export function createBlockType(block) {
-  return block
+function extendBlockStyles(styles, blockDef) {
+  if (!blockDef.background) {
+    blockDef.background = styles.background
+  }
+
+  if (!blockDef.text) {
+    blockDef.text = styles.text
+  }
 }
 
-export default { declareModule }
+export default { defineBlocks }

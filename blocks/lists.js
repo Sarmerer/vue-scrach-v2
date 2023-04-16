@@ -1,17 +1,16 @@
-import { createModule } from '.'
-import { BlockInput, BlockField, Connection } from './types'
+import { defineBlocks } from '.'
+import { BlockInput, BlockField } from './types'
 
-export default createModule({
-  name: 'lists',
-
-  style: {
-    background: 'brown',
+export default defineBlocks(
+  {
+    prefix: 'lists',
+    style: { background: 'brown' },
   },
 
-  blocks: [
+  [
     {
-      name: 'new',
-      connections: [Connection.Output],
+      type: 'new',
+      output: true,
       inputs: [
         {
           type: BlockInput.Value,
@@ -33,10 +32,10 @@ export default createModule({
         },
       ],
 
-      compile(context) {
+      compiler(context) {
         const items = Object.values(context.input).join(', ')
         return [`[${items}]`]
       },
     },
-  ],
-})
+  ]
+)
