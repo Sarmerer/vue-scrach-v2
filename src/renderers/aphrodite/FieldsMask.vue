@@ -57,11 +57,10 @@ export default {
 <style lang="scss" scoped>
 .scratch__aphrodite__mask {
   position: relative;
-  flex: 1 1 100%;
 
   .aphrodite__mask__element {
     position: absolute;
-    z-index: 9999;
+    z-index: 2;
   }
 }
 

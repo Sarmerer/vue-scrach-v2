@@ -3,21 +3,13 @@
 </template>
 
 <script>
-import { Scratch } from './types/scratch'
-
 export default {
   name: 'ScratchCodePreview',
 
   props: {
-    scratch: {
-      type: Scratch,
+    code: {
+      type: String,
       required: true,
-    },
-  },
-
-  computed: {
-    code() {
-      return this.scratch.generator.code
     },
   },
 }
@@ -31,5 +23,6 @@ export default {
   font-size: 12px;
   margin: 0;
   white-space: break-spaces;
+  z-index: 3;
 }
 </style>

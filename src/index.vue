@@ -1,18 +1,12 @@
 <template>
-  <div class="scratch">
-    <Toolbox v-bind="{ scratch }" />
-
-    <BlocksRenderer v-bind="{ scratch }" />
-
-    <CodePreview v-bind="{ scratch }" />
-  </div>
+  <component :is="renderer" v-bind="{ scratch }" />
 </template>
 
 <script>
 import { Scratch } from './types/scratch'
 
-import Toolbox from './Toolbox.vue'
-import CodePreview from './CodePreview.vue'
+import Aphrodite from './renderers/aphrodite/index.vue'
+import Dionysus from './renderers/dionysus/index.vue'
 
 export default {
   name: 'Scratch',
@@ -24,29 +18,15 @@ export default {
     },
   },
 
-  components: { Toolbox, CodePreview },
+  computed: {
+    renderer() {
+      const renderers = {
+        aphrodite: Aphrodite,
+        dionysus: Dionysus,
+      }
 
-  created() {
-    this.$options.components.BlocksRenderer =
-      this.scratch.renderer.BlocksContainerComponent
+      return renderers[this.scratch.renderer.name] || Aphrodite
+    },
   },
 }
 </script>
-
-<style lang="scss">
-.scratch {
-  position: relative;
-  width: 100%;
-  height: 100%;
-
-  display: flex;
-}
-
-.scratch__blocks {
-  &.dionysus {
-    position: relative;
-    flex: 1 1 auto;
-    overflow: scroll;
-  }
-}
-</style>

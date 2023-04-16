@@ -1,26 +1,20 @@
 <template>
-  <FieldsMask v-bind="{ scratch, blocks }">
-    <svg
-      version="1.1"
-      width="100%"
-      height="100%"
-      xmlns="http://www.w3.org/2000/svg"
-      :id="scratch.id"
-      class="scratch__blocks scratch__blocks-aphrodite"
-    >
-      <slot name="blocks">
-        <text>broken</text>
-        <Block v-for="block of blocks_" :key="block.id" v-bind="{ block }" />
-      </slot>
-    </svg>
-  </FieldsMask>
+  <div class="scratch__workspace--aphrodite">
+    <Toolbox v-bind="{ toolbox }" />
+    <Blocks
+      class="scratch__workspace__blocks--aphrodite"
+      v-bind="{ scratch }"
+    />
+    <CodePreview v-bind="{ code }" />
+  </div>
 </template>
 
 <script>
 import { Scratch } from '../../types/scratch'
 
-import Block from './Block.vue'
-import FieldsMask from './FieldsMask.vue'
+import CodePreview from '../common/CodePreview.vue'
+import Toolbox from './Toolbox.vue'
+import Blocks from './Blocks.vue'
 
 export default {
   name: 'BlocksRenderer',
@@ -30,26 +24,36 @@ export default {
       type: Scratch,
       required: true,
     },
-
-    blocks: Array,
   },
 
-  components: { Block, FieldsMask },
+  components: {
+    CodePreview,
+    Toolbox,
+    Blocks,
+  },
 
   computed: {
-    blocks_() {
-      if (Array.isArray(this.blocks)) return this.blocks
+    toolbox() {
+      return this.scratch.toolbox
+    },
 
-      return this.scratch.getBlocks()
+    code() {
+      return this.scratch.generator.code
     },
   },
 }
 </script>
 
 <style scoped>
-.scratch__blocks-aphrodite {
-  position: absolute;
-  left: 0;
-  top: 0;
+.scratch__workspace--aphrodite {
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+}
+
+.scratch__workspace__blocks--aphrodite {
+  flex: 1 100%;
 }
 </style>

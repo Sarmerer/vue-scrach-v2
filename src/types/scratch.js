@@ -9,6 +9,8 @@ import { Renderer } from './renderer'
 import { DionysusRenderer } from '../renderers/dionysus/renderer'
 import { AphroditeRenderer } from '../renderers/aphrodite/renderer'
 import { Point } from './point'
+import { CodeGenerator } from './generator/code'
+import { Toolbox } from './toolbox'
 
 export class Scratch extends DOMElement {
   static Blocks = {}
@@ -30,12 +32,16 @@ export class Scratch extends DOMElement {
     this.events = new EventBus()
     this.proximity = new Proximity(this)
 
-    this.generator = null
+    this.generator = new CodeGenerator(this)
+    this.toolbox = new Toolbox(this)
 
     this.renderer = new Scratch.Renderer(this)
     this.renderer.init()
   }
 
+  /**
+   * @param {Renderer} renderer
+   */
   setRenderer(renderer) {
     if (!(renderer?.prototype instanceof Renderer)) {
       console.error('renderer must extend Renderer class:', renderer)
@@ -46,6 +52,9 @@ export class Scratch extends DOMElement {
     this.renderer = new renderer(this)
   }
 
+  /**
+   * @param {Generator} generator
+   */
   setGenerator(generator) {
     if (!(generator?.prototype instanceof Generator)) {
       console.error('generator must extend Generator class:', generator)
@@ -53,6 +62,26 @@ export class Scratch extends DOMElement {
     }
 
     this.generator = new generator(this)
+  }
+
+  /**
+   * @param {import('../../toolboxes').ToolboxDefinition} toolbox
+   */
+  setToolbox(toolbox) {
+    Scratch.Blocks = {}
+
+    if (toolbox.renderer) {
+      this.setRenderer(toolbox.renderer)
+    }
+
+    if (toolbox.generator) {
+      this.setGenerator(toolbox.generator)
+    }
+
+    Scratch.DeclareBlocksFromToolbox(toolbox)
+
+    this.toolbox.blocks = toolbox.blocks
+    this.toolbox.categories = toolbox.categories
   }
 
   /** @returns {Array<Block>} */
@@ -153,17 +182,36 @@ export class Scratch extends DOMElement {
   }
 
   /**
-   *  @callback BlockTypeFactory
-   * @param {Block} block
    *
-   * @param {String} name
-   * @param {BlockTypeFactory} factory
+   * @param {import('../../toolboxes').ToolboxDefinition} toolbox
    */
-  static DeclareBlock(name, factory) {
+  static DeclareBlocksFromToolbox(toolbox) {
+    const blocks = { ...toolbox.blocks }
+    for (const category of toolbox.categories) {
+      Object.assign(blocks, category.blocks)
+    }
+
+    Scratch.DeclareBlocks(blocks)
+  }
+
+  /**
+   * @param {Object<String, import('../../blocks').BlockDefinition>} blocks
+   */
+  static DeclareBlocks(blocks) {
+    for (const [name, block] of Object.entries(blocks)) {
+      Scratch.DeclareBlock(name, block)
+    }
+  }
+
+  /**
+   * @param {String} name
+   * @param {import('../../blocks').BlockDefinition} block
+   */
+  static DeclareBlock(name, block) {
     if (Scratch.Blocks[name]) {
       console.warn('overriding existing block type with name:', name)
     }
 
-    Scratch.Blocks[name] = factory
+    Scratch.Blocks[name] = block
   }
 }

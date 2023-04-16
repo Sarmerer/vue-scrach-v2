@@ -1,5 +1,3 @@
-import { newFactory } from '../blocks'
-import all from '../blocks/all'
 import { Block } from './block'
 import { BlockInput } from './block-input'
 import { Scratch } from './scratch'
@@ -134,17 +132,10 @@ export class ScratchLoader {
 
   getFactory(type) {
     if (typeof type !== 'string') return
-    const path = type.split(':')
-    if (path.length < 2) return null
 
-    const superType = path[0]
-    const module = all[superType]
-    if (!Array.isArray(module?.blocks)) return null
+    const factory = Scratch.Blocks[type]
+    if (!factory) return null
 
-    const subType = path[1]
-    const template = module.blocks.find((t) => t.name == subType)
-    if (!template) return null
-
-    return newFactory(template)
+    return factory
   }
 }

@@ -6,6 +6,7 @@
 
 <script>
 import { Scratch } from '../../src/types/scratch'
+import toolbox from '../../toolboxes/scripting'
 
 import ScratchRenderer from '../../src/index.vue'
 
@@ -16,11 +17,14 @@ export default {
 
   data() {
     return {
-      scratch: new Scratch(),
+      scratch: null,
     }
   },
 
   created() {
+    this.scratch = new Scratch()
+    this.scratch.setToolbox(toolbox)
+
     this.scratch.events.addEventsListener(
       [
         Scratch.Events.BLOCK_CHANGE,

@@ -103,3 +103,16 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.scratch__block {
+  user-select: none;
+}
+
+.scratch__block > path {
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-opacity: 60%;
+  stroke: white;
+}
+</style>

@@ -2,9 +2,6 @@ import { Drawer } from './block-drawer'
 import { Scratch } from './scratch'
 
 export class Renderer {
-  BlocksContainerComponent = null
-  BlockComponent = null
-
   Drawer = Drawer
 
   /**

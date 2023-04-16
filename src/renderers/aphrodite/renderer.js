@@ -4,9 +4,6 @@ import { AphroditeDrawer } from './drawer'
 import { Block } from '../../types/block'
 
 export class AphroditeRenderer extends Renderer {
-  BlocksContainerComponent = () => import('./index.vue')
-  BlockComponent = () => import('./Block.vue')
-
   Drawer = AphroditeDrawer
 
   /** @param {Scratch} scratch */

@@ -185,6 +185,14 @@ export class Block extends DOMElement {
     return blocks
   }
 
+  freeze() {
+    this.isFrozen = true
+  }
+
+  unfreeze() {
+    this.isFrozen = false
+  }
+
   /** @param {MouseEvent} event */
   dragStart(event) {
     if (this.isDragged || this.isFrozen) return
@@ -257,6 +265,7 @@ export class Block extends DOMElement {
     const typedClass = types[type]
     if (!typedClass) {
       console.error('unknown input type:', type)
+      return
     }
 
     const input = new typedClass(this, name, type)
@@ -342,6 +351,64 @@ export class Block extends DOMElement {
   /** @returns {Block} */
   setCompiler(compiler) {
     this.compiler = compiler
+  }
+
+  applyDefinition(def) {
+    this.type = def.type
+
+    if (def.output && def.previous) {
+      console.warn(
+        `${this.type}: a block should either have a previous/next block or an output`
+      )
+    }
+
+    if (def.output) {
+      this.allowOutput()
+    } else {
+      if (def.previous) {
+        this.allowPrev()
+      }
+
+      if (def.next) {
+        this.allowNext()
+      }
+    }
+
+    if (def.inline) {
+      this.setInline()
+    }
+
+    if (def.compiler) {
+      this.setCompiler(def.compiler)
+    }
+
+    if (def.background) {
+      this.setBackgroundColor(def.background)
+    }
+
+    if (def.text) {
+      this.setTextColor(def.text)
+    }
+
+    this.inputs = []
+    for (const inputDef of def.inputs || []) {
+      if (typeof inputDef.type !== 'number') {
+        console.error('input must be typed, got:', inputDef)
+        continue
+      }
+
+      const input = this.addInput(inputDef.type, inputDef.name)
+      if (!input) continue
+
+      for (const fieldDef of inputDef.fields || []) {
+        if (typeof inputDef.type !== 'number') {
+          console.error('field must be typed, got:', fieldDef)
+          continue
+        }
+
+        input.addField(fieldDef.type, fieldDef.name, fieldDef)
+      }
+    }
   }
 
   toJSON() {
