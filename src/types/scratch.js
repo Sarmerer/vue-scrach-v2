@@ -94,6 +94,18 @@ export class Scratch extends DOMElement {
     return this.blocks.find((b) => b.isDragged)
   }
 
+  getBlockOfType(type) {
+    const factory = Scratch.Blocks[type]
+    if (!factory) {
+      console.error('unknown block type:', type)
+      return null
+    }
+
+    const block = new Block(this, 0, 0, type)
+    factory(block)
+    return block
+  }
+
   /**
    * @param {String} type
    * @param {Number} x
@@ -102,26 +114,29 @@ export class Scratch extends DOMElement {
    * @returns {Block}
    */
   spawnBlock(type, x = 0, y = 0) {
-    const factory = Scratch.Blocks[type]
-    if (!factory) {
-      console.error('unknown block type:', type)
-      return
-    }
+    const block = this.getBlockOfType(type)
+    if (!block) return
 
-    const block = new Block(this, x, y, type)
-    factory(block)
+    block.position.moveTo(x, y)
     this.addBlock(block)
 
     return block
   }
 
-  /** @param {Block} block */
+  /**
+   * @param {Block} block
+   */
   addBlock(block) {
     if (!block.scratch) {
       block.scratch = this
     }
 
     this.blocks.push(block)
+
+    for (const connection of block.getActiveConnections()) {
+      this.proximity.addConnection(connection)
+    }
+
     this.renderer.addDrawer(block)
     this.renderer.update(block, {})
     this.events.dispatch(Scratch.Events.BLOCK_CREATE, { block })
@@ -134,7 +149,12 @@ export class Scratch extends DOMElement {
     const index = this.blocks.indexOf(block)
     if (index === -1) return
 
+    this.renderer.removeDrawer(block)
     this.blocks.splice(index, 1)
+    for (const connection of block.getActiveConnections()) {
+      this.proximity.removeConnection(connection)
+    }
+
     this.events.dispatch(Scratch.Events.BLOCK_DELETE, { block })
   }
 

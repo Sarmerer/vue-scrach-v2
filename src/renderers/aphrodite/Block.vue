@@ -4,11 +4,7 @@
     v-bind="{ transform }"
     @mousedown.stop="block.dragStart($event)"
   >
-    <path
-      :id="block.id"
-      :fill="block.colors.background"
-      :d="drawer.path"
-    ></path>
+    <path :id="block.id" v-bind="{ fill, d }"></path>
 
     <Block
       v-for="relative in relativeBlocks"
@@ -58,6 +54,16 @@ export default {
   },
 
   computed: {
+    d() {
+      return this.drawer.path
+    },
+
+    fill() {
+      if (!this.block.isShadow) return this.block.colors.background
+
+      return 'lightgrey'
+    },
+
     transform() {
       const position = this.block.isRelative()
         ? this.block.relativePosition
@@ -83,6 +89,8 @@ export default {
     },
 
     textFields() {
+      if (this.block.isShadow) return []
+
       const fields = []
       for (const input of this.block.inputs) {
         for (const field of input.fields) {
@@ -94,12 +102,6 @@ export default {
 
       return fields
     },
-  },
-
-  mounted() {
-    if (this.drawer.didMount) return
-    this.drawer.didMount = true
-    this.block.scratch.renderer.update(this.block, {})
   },
 }
 </script>

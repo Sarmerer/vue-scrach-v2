@@ -1,3 +1,4 @@
+import { Constraints } from '../renderers/aphrodite/constraints'
 import { Block } from './block'
 import { BlockInput } from './block-input'
 import { Point } from './point'
@@ -20,9 +21,9 @@ export class Connection {
     this.block = block
     this.input = input
     this.target = null
+    this.shadow = null
 
     this.position = new Point()
-    this.isHighlighted = false
   }
 
   setTarget(connection) {
@@ -98,6 +99,14 @@ export class Connection {
     this.block.scratch.renderer.update(this.block, { propagateUp: true })
   }
 
+  /** @param {Block} block */
+  connectToBlock(block) {
+    const connection = this.getMatchingBlockConnection(block)
+    if (!connection) return
+
+    this.connect(connection)
+  }
+
   /** @param {Connection} target */
   connectPrev(target) {
     if (this.isConnected()) {
@@ -125,6 +134,61 @@ export class Connection {
     this.setTargetsMutual(target)
   }
 
+  /**
+   * @param {Block} block
+   * @returns {Block}
+   */
+  createShadow(block) {
+    if (this.shadow?.type === block.type) return
+
+    this.disposeShadow()
+
+    const shadow = this.block.scratch.getBlockOfType(block.type)
+    if (!shadow) return
+
+    shadow.isShadow = true
+    this.shadow = shadow
+    this.block.scratch.addBlock(shadow)
+
+    // FIXME: find a better way to
+    // position shadow above the target block
+    // without relying on constraints
+    // of a specific renderer
+    if (this.type == Connection.Prev) {
+      shadow.position.moveTo(
+        this.block.position.x,
+        this.block.position.y - shadow.height + Constraints.StackSocketDepth
+      )
+    }
+
+    this.connectToBlock(shadow)
+
+    return shadow
+  }
+
+  heal() {
+    const target = this.getTargetBlock()
+    this.disconnect()
+
+    if (!target?.isShadow) return
+    if (!target.nextConnection?.isConnected()) return
+
+    if (!(this.type == Connection.Next || this.type == Connection.Statement))
+      return
+
+    this.connect(target.nextConnection.target)
+  }
+
+  disposeShadow() {
+    if (!this.shadow) return
+
+    this.heal()
+    const shadow = this.shadow
+    this.shadow = null
+
+    this.block.scratch.removeBlock(shadow)
+  }
+
   disconnect() {
     if (!this.isConnected()) return
 
@@ -135,15 +199,28 @@ export class Connection {
     this.block.scratch.renderer.update(this.block, { propagateUp: true })
   }
 
-  delete() {
+  dispose() {
+    this.disposeShadow()
     this.disconnect()
     this.block.scratch.proximity.removeConnection(this)
   }
 
-  getPosition() {
-    return this.position
+  /** @param {Block} block */
+  getMatchingBlockConnection(block) {
+    switch (this.type) {
+      case Connection.Prev:
+        return block.nextConnection
+      case Connection.Next:
+      case Connection.Statement:
+        return block.previousConnection
+      case Connection.Input:
+        return block.outputConnection
+      default:
+        return null
+    }
   }
 
+  /** @param {Block} block */
   canConnectTo(block) {
     if (this.block.isActive()) return false
 
@@ -151,7 +228,7 @@ export class Connection {
       case Connection.Input:
         return !this.isConnected() && block.hasOutput()
       case Connection.Prev:
-        return block.hasNext()
+        return !this.isConnected() && block.hasNext()
       case Connection.Next:
       case Connection.Statement:
         return block.hasPrev()

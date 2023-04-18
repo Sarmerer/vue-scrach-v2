@@ -39,6 +39,8 @@ export default {
     fields() {
       const masks = []
       for (const block of this.blocks_) {
+        if (block.isShadow) continue
+
         for (const input of block.inputs) {
           for (const field of input.fields) {
             if (field.type === BlockField.Label) continue

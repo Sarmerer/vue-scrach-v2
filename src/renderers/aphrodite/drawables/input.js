@@ -35,8 +35,8 @@ export class Input extends Drawable {
       return width + Constraints.EmptyInlineInputWidth
     }
 
-    const connection = this.drawable.connection.getTargetBlock()
-    return width + connection.width
+    let target = this.drawable.connection.getTargetBlock()
+    return width + target.width + Constraints.RowSocketDepth
   }
 
   measureHeight() {

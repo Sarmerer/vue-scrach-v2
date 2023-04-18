@@ -34,7 +34,7 @@ export class Block extends DOMElement {
 
     this.isDragged = false
     this.isFrozen = false
-
+    this.isShadow = false
     this.isInline = false
 
     this.inputs = []
@@ -185,6 +185,24 @@ export class Block extends DOMElement {
     return blocks
   }
 
+  /** @returns {Array<Connection>} */
+  getActiveConnections() {
+    if (this.isShadow || this.isFrozen) return []
+
+    const connections = []
+    if (this.hasPrev()) connections.push(this.previousConnection)
+    if (this.hasNext()) connections.push(this.nextConnection)
+    if (this.hasOutput()) connections.push(this.outputConnection)
+
+    for (const input of this.inputs) {
+      if (!input.connection) continue
+
+      connections.push(input.connection)
+    }
+
+    return connections
+  }
+
   freeze() {
     this.isFrozen = true
   }
@@ -205,7 +223,6 @@ export class Block extends DOMElement {
       .moveBy(-event.clientX, -event.clientY)
 
     this.isDragged = true
-    this.scratch.proximity.activate(this)
 
     window.addEventListener('mousemove', this.listeners_.drag)
     window.addEventListener('mouseup', this.listeners_.dragEnd, { once: true })
@@ -242,7 +259,7 @@ export class Block extends DOMElement {
     window.removeEventListener('mousemove', this.listeners_.drag)
 
     this.isDragged = false
-    this.scratch.proximity.deactivate(this)
+    this.scratch.proximity.deactivate()
     this.scratch.events.dispatch(Scratch.Events.BLOCK_DRAG, {
       x: this.position.x,
       y: this.position.y,
@@ -293,41 +310,38 @@ export class Block extends DOMElement {
   /** @returns {Block} */
   allowOutput() {
     if (this.hasPrev()) {
-      this.previousConnection.delete()
+      this.previousConnection.dispose()
       this.previousConnection = null
     }
 
     if (this.hasNext()) {
-      this.nextConnection.delete()
+      this.nextConnection.dispose()
       this.nextConnection = null
     }
 
     this.outputConnection = new Connection(Connection.Output, this)
-    this.scratch.proximity.addConnection(this.outputConnection)
     return this
   }
 
   /** @returns {Block} */
   allowPrev() {
     if (this.hasOutput()) {
-      this.outputConnection.delete()
+      this.outputConnection.dispose()
       this.outputConnection = null
     }
 
     this.previousConnection = new Connection(Connection.Prev, this)
-    this.scratch.proximity.addConnection(this.previousConnection)
     return this
   }
 
   /** @returns {Block} */
   allowNext() {
     if (this.hasOutput()) {
-      this.outputConnection.delete()
+      this.outputConnection.dispose()
       this.outputConnection = null
     }
 
     this.nextConnection = new Connection(Connection.Next, this)
-    this.scratch.proximity.addConnection(this.nextConnection)
     return this
   }
 

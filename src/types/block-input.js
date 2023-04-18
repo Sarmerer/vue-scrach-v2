@@ -105,7 +105,6 @@ export class BlockValueInput extends BlockInput {
   constructor(block, name) {
     super(block, name, BlockInput.Value)
     this.connection = new Connection(Connection.Input, block, this)
-    this.block.scratch.proximity.addConnection(this.connection)
   }
 }
 
@@ -117,7 +116,6 @@ export class BlockStatementInput extends BlockInput {
   constructor(block, name) {
     super(block, name, BlockInput.Statement)
     this.connection = new Connection(Connection.Statement, block, this)
-    this.block.scratch.proximity.addConnection(this.connection)
     this.group++
   }
 }

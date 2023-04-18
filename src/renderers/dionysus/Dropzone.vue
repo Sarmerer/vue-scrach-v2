@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="connection.isHighlighted"
+    v-if="connection.shadow"
     class="block__dropzone"
     :class="{ vertical: isVertical, inline: isInline, absolute }"
   ></div>

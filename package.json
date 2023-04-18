@@ -2,8 +2,10 @@
   "name": "vite-js",
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "vite demos/dev/",
+    "sql": "vite demos/sql/",
+    "generator": "vite demos/generator/",
+    "build": "vite build --config demos/dev",
     "serve": "vite preview"
   },
   "devDependencies": {

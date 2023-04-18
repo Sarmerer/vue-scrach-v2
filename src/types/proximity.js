@@ -9,8 +9,6 @@ export class Proximity {
     this.connections = []
 
     this.activeBlock = null
-    this.bestActiveConnection = null
-
     this.candidates = []
     this.candidate = null
   }
@@ -35,87 +33,74 @@ export class Proximity {
     })
   }
 
-  /**
-   * @param {Connection} connection
-   * @param {Block} block
-   * */
-  getMatchingConnection(connection, block) {
-    switch (connection.type) {
-      case Connection.Prev:
-        if (connection.isConnected()) return null
-        return block.nextConnection.getTailConnection()
-      case Connection.Next:
-      case Connection.Statement:
-        return block.previousConnection
-      case Connection.Input:
-        return block.outputConnection
-      default:
-        return null
+  getClosestConnection(block, candidates) {
+    let closestConnection = null
+    let minYDist = 100
+    for (const candidate of candidates) {
+      let blockConnection = candidate.getMatchingBlockConnection(block)
+      if (!blockConnection) continue
+
+      const blockPosition = blockConnection.position
+      const candidatePosition = candidate.position
+      const yDist = Math.abs(candidatePosition.y - blockPosition.y)
+      const xDist = Math.abs(candidatePosition.x - blockPosition.x)
+
+      if (yDist > 30 || xDist > 50) continue
+      if (yDist > minYDist) continue
+
+      minYDist = yDist
+      closestConnection = candidate
     }
+
+    return closestConnection
   }
 
   /** @param {Block} block */
   activate(block) {
+    if (this.activeBlock || !block) return
+
     this.activeBlock = block
-    this.candidates = this.getCandidates(block)
+    this.candidates = this.getCandidates(this.activeBlock)
   }
 
   /** @param {Block} block */
-  update() {
+  update(block) {
+    this.activate(block)
+
     if (!this.activeBlock || !this.candidates.length) return
 
-    this.setCandidate(null)
-
-    let minDist = 100
-    let closestConnection = null
-    for (const connection of this.candidates) {
-      let activeConnection = this.getMatchingConnection(
-        connection,
-        this.activeBlock
-      )
-      if (!activeConnection) continue
-
-      const activePosition = activeConnection.getPosition()
-      const candidatePosition = connection.getPosition()
-      const yDist = Math.abs(candidatePosition.y - activePosition.y)
-      const xDist = Math.abs(candidatePosition.x - activePosition.x)
-
-      if (yDist >= minDist || yDist > 30 || xDist > 50) continue
-
-      minDist = yDist
-      closestConnection = connection
-      this.bestActiveConnection = activeConnection
-    }
-
-    if (!closestConnection) {
-      this.bestActiveConnection = null
-      return
-    }
+    const closestConnection = this.getClosestConnection(
+      this.activeBlock,
+      this.candidates
+    )
 
     this.setCandidate(closestConnection)
   }
 
+  isSameCandidate(oldCandidate, newCandidate) {
+    if ((!!oldCandidate ^ !!newCandidate) === 1) return true
+
+    return oldCandidate !== newCandidate
+  }
+
   setCandidate(candidate) {
-    if (this.candidate) {
-      this.candidate.isHighlighted = false
-    }
+    if (!this.isSameCandidate(this.candidate, candidate)) return
 
+    this.candidate?.disposeShadow()
+    candidate?.createShadow(this.activeBlock)
     this.candidate = candidate
-
-    if (this.candidate) {
-      this.candidate.isHighlighted = true
-    }
   }
 
   deactivate() {
-    if (this.candidate) {
-      this.candidate.connect(this.bestActiveConnection)
-      this.setCandidate(null)
-    }
+    const candidate = this.candidate
+    const activeBlock = this.activeBlock
 
     this.activeBlock = null
-    this.bestActiveConnection = null
-    this.candidate = null
+    this.setCandidate(null)
     this.candidates = []
+
+    if (candidate && activeBlock) {
+      candidate.connectToBlock(activeBlock)
+    }
   }
 }

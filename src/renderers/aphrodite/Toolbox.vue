@@ -19,8 +19,11 @@
     </div>
 
     <div v-if="scratch" class="toolbox__flyout">
-      <!-- v-show="activeCategoryName == 'variables'" -->
-      <button class="scratch__add-variable" @click="toolbox.addVariable">
+      <button
+        v-show="activeCategoryName == 'variables'"
+        class="scratch__add-variable"
+        @click="toolbox.addVariable"
+      >
         Add variable
       </button>
 

@@ -26,13 +26,11 @@ export class AphroditeDrawer extends Drawer {
   constructor(block, renderer) {
     super(block, renderer)
 
-    this.path = ''
-
-    this.didMount = false
     this.drawable = new DrawableBlock(this.block)
     this.drawableGroups = new DrawableGroups(this.block)
     this.drawableInputs = new Map()
     this.drawableFields = new Map()
+    this.path = ''
   }
 
   getHeight() {
@@ -239,7 +237,7 @@ export class AphroditeDrawer extends Drawer {
     const path = ['v 0']
     for (const input of this.block.inputs) {
       if (input.type == BlockInput.Statement) {
-        path.push(...this.getInput(input))
+        path.push(...this.getStatement(input))
         continue
       }
 

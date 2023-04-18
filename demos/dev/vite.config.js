@@ -1,4 +1,3 @@
-import { fileURLToPath } from 'url'
 import { defineConfig } from 'vite'
 import { createVuePlugin as vue2 } from 'vite-plugin-vue2'
 
