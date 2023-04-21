@@ -55,6 +55,7 @@ export class BlockField {
   set value(value) {
     this.value_ = value
     this.block.scratch.renderer.update(this.block, { propagateUp: true })
+    this.block.scratch.generator.compile()
   }
 
   updateOptions() {

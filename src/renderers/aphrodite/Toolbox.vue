@@ -113,6 +113,7 @@ export default {
 
       if (category) {
         this.scratch = new Scratch()
+        this.scratch.setToolbox(this.toolbox)
       } else {
         this.scratch = null
       }

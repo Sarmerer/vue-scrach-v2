@@ -5,7 +5,6 @@
       class="scratch__workspace__blocks--aphrodite"
       v-bind="{ scratch }"
     />
-    <CodePreview v-bind="{ code }" />
   </div>
 </template>
 
@@ -35,10 +34,6 @@ export default {
   computed: {
     toolbox() {
       return this.scratch.toolbox
-    },
-
-    code() {
-      return this.scratch.generator.code
     },
   },
 }

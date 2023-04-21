@@ -89,7 +89,7 @@ export class CodeGenerator extends Generator {
     return CodeGenerator.CompileBlock(block, indentation + '  ')
   }
 
-  compile() {
+  compile_() {
     const lines = []
 
     const variables = this.scratch.getVariables()

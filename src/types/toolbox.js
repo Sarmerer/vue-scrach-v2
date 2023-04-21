@@ -1,4 +1,4 @@
-import { Scratch } from './scratch'
+import { CodeGenerator } from './generator/code'
 
 export class Toolbox {
   constructor(scratch, toolboxDef) {
@@ -6,6 +6,7 @@ export class Toolbox {
 
     this.categories = toolboxDef?.categories || []
     this.blocks = toolboxDef?.blocks || []
+    this.generator = toolboxDef?.generator || CodeGenerator
   }
 
   getWidestBlock(blocks) {

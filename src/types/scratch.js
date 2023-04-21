@@ -82,6 +82,7 @@ export class Scratch extends DOMElement {
 
     this.toolbox.blocks = toolbox.blocks
     this.toolbox.categories = toolbox.categories
+    this.toolbox.generator = toolbox.generator
   }
 
   /** @returns {Array<Block>} */
@@ -139,6 +140,7 @@ export class Scratch extends DOMElement {
 
     this.renderer.addDrawer(block)
     this.renderer.update(block, {})
+    this.generator.compile()
     this.events.dispatch(Scratch.Events.BLOCK_CREATE, { block })
   }
 

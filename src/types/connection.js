@@ -97,6 +97,7 @@ export class Connection {
     }
 
     this.block.scratch.renderer.update(this.block, { propagateUp: true })
+    this.block.scratch.generator.compile()
   }
 
   /** @param {Block} block */
@@ -197,6 +198,7 @@ export class Connection {
     target.disconnect()
 
     this.block.scratch.renderer.update(this.block, { propagateUp: true })
+    this.block.scratch.generator.compile()
   }
 
   dispose() {

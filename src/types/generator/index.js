@@ -1,21 +1,13 @@
+import { debounce } from '../../utils'
 import { Block } from '../block'
 import { Scratch } from '../scratch'
 
 export class Generator {
+  compile = debounce(this.compile_, 700)
+
   /** @param {Scratch} scratch */
   constructor(scratch) {
     this.scratch = scratch
-
-    const compile = this.compile.bind(this)
-    this.scratch.events.addEventsListener(
-      [
-        Scratch.Events.BLOCK_CREATE,
-        Scratch.Events.BLOCK_CHANGE,
-        Scratch.Events.BLOCK_MOVE,
-        Scratch.Events.BLOCK_DRAG,
-      ],
-      compile
-    )
   }
 
   /**
@@ -50,5 +42,7 @@ export class Generator {
     return null
   }
 
-  compile() {}
+  compile_() {
+    console.warn('should be overridden')
+  }
 }

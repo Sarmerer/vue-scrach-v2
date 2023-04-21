@@ -251,6 +251,7 @@ export class Block extends DOMElement {
     this.position.moveBy(delta.x, delta.y)
     this.scratch.renderer.update(this, { fast: true, delta })
     this.scratch.proximity.update(this)
+    this.scratch.generator.compile()
   }
 
   dragEnd() {
