@@ -25,7 +25,7 @@ export default defineBlocks(
         },
       ],
 
-      compiler: ['if (${input.if}) {', '${do}', '}'],
+      compiler: ['if (${inputs.if}) {', '${fields.do', '}'],
     },
 
     {
@@ -48,7 +48,7 @@ export default defineBlocks(
         { type: BlockInput.Value, name: 'right_side' },
       ],
 
-      compiler: ['${input.left_side} ${operator} ${input.right_side}'],
+      compiler: ['${inputs.left_side} ${fields.operator} ${inputs.right_side}'],
     },
 
     {
@@ -71,7 +71,7 @@ export default defineBlocks(
         { type: BlockInput.Value, name: 'right_side' },
       ],
 
-      compiler: ['${input.left_side} ${operator} ${input.right_side}'],
+      compiler: ['${inputs.left_side} ${fields.operator} ${inputs.right_side}'],
     },
 
     {
@@ -92,7 +92,7 @@ export default defineBlocks(
         },
       ],
 
-      compiler: ['${bool}'],
+      compiler: ['${fields.bool}'],
     },
   ]
 )

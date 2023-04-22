@@ -35,96 +35,7 @@ export default defineBlocks(
         },
       ],
 
-      compiler: ['INSERT', '${input.rows}', 'INTO ${table}'],
-    },
-    {
-      type: 'insert1',
-      previous: true,
-      next: true,
-      inputs: [
-        {
-          type: BlockInput.Dummy,
-          fields: [{ type: BlockField.Label, value: 'INSERT' }],
-        },
-        {
-          name: 'rows',
-          type: BlockInput.Statement,
-        },
-        {
-          type: BlockInput.Dummy,
-          fields: [
-            { type: BlockField.Label, value: 'INTO' },
-            {
-              type: BlockField.Select,
-              name: 'table',
-              value: 'addresses',
-              options: ['addresses', 'users'],
-            },
-          ],
-        },
-      ],
-
-      compiler: ['INSERT', '${input.rows}', 'INTO ${table}'],
-    },
-
-    {
-      type: 'insert2',
-      previous: true,
-      next: true,
-      inputs: [
-        {
-          type: BlockInput.Dummy,
-          fields: [{ type: BlockField.Label, value: 'INSERT' }],
-        },
-        {
-          name: 'rows',
-          type: BlockInput.Statement,
-        },
-        {
-          type: BlockInput.Dummy,
-          fields: [
-            { type: BlockField.Label, value: 'INTO' },
-            {
-              type: BlockField.Select,
-              name: 'table',
-              value: 'addresses',
-              options: ['addresses', 'users'],
-            },
-          ],
-        },
-      ],
-
-      compiler: ['INSERT', '${input.rows}', 'INTO ${table}'],
-    },
-
-    {
-      type: 'insert3',
-      previous: true,
-      next: true,
-      inputs: [
-        {
-          type: BlockInput.Dummy,
-          fields: [{ type: BlockField.Label, value: 'INSERT' }],
-        },
-        {
-          name: 'rows',
-          type: BlockInput.Statement,
-        },
-        {
-          type: BlockInput.Dummy,
-          fields: [
-            { type: BlockField.Label, value: 'INTO' },
-            {
-              type: BlockField.Select,
-              name: 'table',
-              value: 'addresses',
-              options: ['addresses', 'users'],
-            },
-          ],
-        },
-      ],
-
-      compiler: ['INSERT', '${input.rows}', 'INTO ${table}'],
+      compiler: ['INSERT', '${inputs.rows}', 'INTO ${fields.table}'],
     },
 
     {
@@ -164,10 +75,10 @@ export default defineBlocks(
 
       compiler: [
         'UPDATE',
-        '${input.rows}',
+        '${inputs.rows}',
         'WITH',
-        '${input.with}',
-        'IN ${table}',
+        '${inputs.with}',
+        'IN ${fields.table}',
       ],
     },
 
@@ -189,7 +100,7 @@ export default defineBlocks(
         },
       ],
 
-      compiler: ['${row}'],
+      compiler: ['${fields.row}'],
     },
 
     {
@@ -209,7 +120,7 @@ export default defineBlocks(
         },
       ],
 
-      compiler: ['${value}'],
+      compiler: ['${fields.value}'],
     },
 
     {
@@ -235,7 +146,7 @@ export default defineBlocks(
         },
       ],
 
-      compiler: ['${row}: ${value}'],
+      compiler: ['${fields.row}: ${fields.value}'],
     },
   ]
 )

@@ -22,4 +22,15 @@ export function defineToolbox(definition) {
   }
 }
 
-export default { defineToolbox }
+export function withStyle(styleDef) {
+  return {
+    background: getStyleDefProperty(styleDef, 'background'),
+    text: getStyleDefProperty(styleDef, 'text'),
+  }
+}
+
+function getStyleDefProperty(source, property) {
+  return source?.[property] || source?.style?.[property] || null
+}
+
+export default { defineToolbox, withStyle }

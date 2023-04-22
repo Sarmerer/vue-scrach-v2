@@ -33,9 +33,9 @@ export default defineBlocks(
       ],
 
       compiler: [
-        'function ${name} () {',
-        '${input.body}',
-        'return ${input.returns}',
+        'function ${fields.name} () {',
+        '${inputs.body}',
+        'return ${inputs.returns}',
         '}',
       ],
     },
@@ -59,7 +59,7 @@ export default defineBlocks(
         },
       ],
 
-      compiler: ['function ${name} () {', '${input.body}', '}'],
+      compiler: ['function ${fields.name} () {', '${inputs.body}', '}'],
     },
   ]
 )

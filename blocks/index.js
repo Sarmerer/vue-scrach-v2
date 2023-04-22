@@ -1,3 +1,5 @@
+import { CompilerContext } from '../src/types/generator/context'
+
 /**
  * @callback DynamicOptions
  * @param {Object} context
@@ -7,8 +9,7 @@
  * @returns {Array<String>}
  *
  * @callback BlockCompiler
- * @param {Object} context
- * @param {Block} block
+ * @param {CompilerContext} context
  * @returns {Array<String> | Object}
  *
  * @typedef {Object} FieldDeclaration

@@ -2,6 +2,7 @@ import { Template } from '../template'
 import { Block } from '../block'
 import { BlockInput } from '../block-input'
 import { Generator } from '.'
+import { CompilerContext } from './context'
 
 export class CodeGenerator extends Generator {
   constructor(scratch) {
@@ -22,24 +23,23 @@ export class CodeGenerator extends Generator {
       compiler = this.DefaultCompiler(compiler)
     }
 
-    const context = block.getFieldsValues()
-    context._indentation = indentation
-    context.input = {}
-
+    const fields = block.getFieldsValues()
+    const inputs = {}
     for (const [name, input] of Object.entries(block.getInputs())) {
-      context.input[name] = CodeGenerator.CompileInput(input, indentation).join(
-        '\n'
-      )
+      inputs[name] = CodeGenerator.CompileInput(input, indentation).join('\n')
     }
 
-    const compiled = compiler(context, block)
+    const context = new CompilerContext(block, inputs, fields)
+    context.indentation_ = indentation
+
+    const compiled = compiler(context)
     if (!Array.isArray(compiled)) {
       console.error('compiler must return an array of strings:', block.type)
       return []
     }
 
     const lines = compiled.map((l) =>
-      CodeGenerator.Indent(l, context._indentation)
+      CodeGenerator.Indent(l, context.indentation_)
     )
 
     if (block.hasNext() && block.nextConnection.isConnected()) {
@@ -118,7 +118,7 @@ export class CodeGenerator extends Generator {
       return lines.map((line) => {
         return CodeGenerator.Indent(
           Template.interpolate(line, context),
-          context._indentation
+          context.indentation_
         )
       })
     }

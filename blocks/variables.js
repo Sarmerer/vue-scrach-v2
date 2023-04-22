@@ -23,7 +23,7 @@ export default defineBlocks(
         },
       ],
 
-      compiler: ['${variable.name}'],
+      compiler: ['${fields.variable.name}'],
     },
 
     {
@@ -51,7 +51,7 @@ export default defineBlocks(
         },
       ],
 
-      compiler: ['${variable.name} = ${input.value}'],
+      compiler: ['${fields.variable.name} = ${inputs.value}'],
     },
   ]
 )

@@ -26,8 +26,8 @@ export default defineBlocks(
       ],
 
       compiler(context) {
-        const count = context.input.count || 10
-        const body = context.input.body || ''
+        const count = context.getInput('count', 10)
+        const body = context.getInput('body', '')
         return [`for (let i = 0; i < ${count}; i++) {`, body, '}']
       },
     },
@@ -53,9 +53,9 @@ export default defineBlocks(
       ],
 
       compiler(context) {
-        const item = context.item?.name || 'i'
-        const list = context.input.list || '[]'
-        const body = context.input.body || ''
+        const item = context.getField('i', '')
+        const list = context.getInput('list', '[]')
+        const body = context.getInput('body', '')
 
         return [`for (var ${item} in ${list}) {`, body, '}']
       },
@@ -78,7 +78,7 @@ export default defineBlocks(
         },
       ],
 
-      compiler: ['${action}'],
+      compiler: ['${fields.action}'],
     },
   ]
 )

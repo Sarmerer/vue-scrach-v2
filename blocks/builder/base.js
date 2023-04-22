@@ -1,10 +1,12 @@
 import { defineBlocks } from '..'
 import { BlockInput, BlockField } from '../types'
 
-export default defineBlocks(
+export const style = { background: 'teal', text: 'white' }
+
+export const blocks = defineBlocks(
   {
     prefix: 'base',
-    style: { background: 'darkgreen' },
+    style,
   },
 
   [
@@ -49,7 +51,7 @@ export default defineBlocks(
           type: BlockInput.Dummy,
           fields: [
             { type: BlockField.Label, value: 'background color' },
-            { type: BlockField.Text, name: 'background_color', value: 'red' },
+            { type: BlockField.Text, name: 'background_color', value: 'teal' },
           ],
         },
         {
@@ -65,7 +67,7 @@ export default defineBlocks(
         let output = false
         let previous = false
         let next = false
-        switch (context.connections) {
+        switch (context.getField('connections')) {
           case 'has output':
             output = true
             break
@@ -82,18 +84,18 @@ export default defineBlocks(
         }
 
         return {
-          type: context.name,
-          inline: context.display == 'inline',
+          type: context.getField('name'),
+          inline: context.getField('display') == 'inline',
           previous,
           next,
           output,
-          inputs: context.input.inputs || [],
-          style: {
-            background: context.background_color,
-            text: context.text_color,
-          },
+          inputs: context.getInput('inputs', []),
+          background: context.getField('background_color', 'teal'),
+          text: context.getField('text_color', 'white'),
         }
       },
     },
   ]
 )
+
+export default { blocks, style }

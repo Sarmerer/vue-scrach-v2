@@ -33,7 +33,7 @@ export default defineBlocks(
       ],
 
       compiler(context) {
-        const items = Object.values(context.input).join(', ')
+        const items = Object.values(context.inputs).join(', ')
         return [`[${items}]`]
       },
     },

@@ -1,6 +1,7 @@
 import { Block } from '../block'
 import { BlockInput } from '../block-input'
 import { Generator } from '.'
+import { CompilerContext } from './context'
 
 export class JSONGenerator extends Generator {
   constructor(scratch) {
@@ -20,13 +21,15 @@ export class JSONGenerator extends Generator {
       return null
     }
 
-    const context = block.getFieldsValues()
-    context.input = {}
+    const fields = block.getFieldsValues()
+    const inputs = {}
     for (const [name, input] of Object.entries(block.getInputs())) {
-      context.input[name] = JSONGenerator.CompileInput(input)
+      inputs[name] = JSONGenerator.CompileInput(input)
     }
 
     const objects = []
+
+    const context = new CompilerContext(block, inputs, fields)
     objects.push(compiler(context))
 
     if (block.hasNext() && block.nextConnection.isConnected()) {

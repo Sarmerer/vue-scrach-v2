@@ -274,7 +274,7 @@ export class AphroditeDrawer extends Drawer {
   getStatement(input) {
     const closureWidth = Math.max(input.groupWidth, Constraints.MinInputWidth)
     let previousWidth =
-      this.block.inputs[input.index - 1]?.width || closureWidth
+      this.block.inputs[input.index - 1]?.groupWidth || closureWidth
 
     previousWidth -= Constraints.CornerArcDepth
 

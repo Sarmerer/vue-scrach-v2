@@ -35,11 +35,16 @@ export default {
       handler(def) {
         if (!Array.isArray(def) || !def.length) return
 
+        let x = 50
+        let y = 50
+
         if (this.block) {
+          x = this.block.position.x
+          y = this.block.position.y
           this.previewScratch.removeBlock(this.block)
         }
 
-        const block = new Block(this.scratch)
+        const block = new Block(this.previewScratch, x, y)
         block.applyDefinition(def[0])
         this.previewScratch.addBlock(block)
         this.block = block

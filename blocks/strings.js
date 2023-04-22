@@ -20,7 +20,7 @@ export default defineBlocks(
         },
       ],
 
-      compiler: ['console.log(${input.text})'],
+      compiler: ['console.log(${inputs.text})'],
     },
 
     {
@@ -39,7 +39,7 @@ export default defineBlocks(
         },
       ],
 
-      compiler: ['"${value}"'],
+      compiler: ['"${fields.value}"'],
     },
   ]
 )

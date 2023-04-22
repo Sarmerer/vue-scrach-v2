@@ -1,18 +1,17 @@
 import { defineBlocks } from '..'
 import { BlockInput, BlockField } from '../types'
 
-export default defineBlocks(
+export const style = { background: '#6B5B95', text: 'white' }
+
+export const blocks = defineBlocks(
   {
     prefix: 'fields',
-
-    style: {
-      background: 'darkgreen',
-    },
+    style,
   },
 
   [
     {
-      type: 'field:label',
+      type: 'label',
       previous: true,
       next: true,
       inputs: [
@@ -28,13 +27,13 @@ export default defineBlocks(
       compiler(context) {
         return {
           type: BlockField.Label,
-          value: context.value,
+          value: context.getField('value'),
         }
       },
     },
 
     {
-      type: 'field:text',
+      type: 'text',
       previous: true,
       next: true,
       inputs: [
@@ -54,11 +53,36 @@ export default defineBlocks(
 
       compiler(context) {
         return {
-          type: BlockField.Label,
-          value: context.value,
-          placeholder: context.placeholder,
+          type: BlockField.Text,
+          value: context.getField('value'),
+          placeholder: context.getField('placeholder'),
+        }
+      },
+    },
+
+    {
+      type: 'number',
+      previous: true,
+      next: true,
+      inputs: [
+        {
+          type: BlockInput.Dummy,
+          fields: [
+            { type: BlockField.Label, value: 'number input' },
+            { type: BlockField.Text, name: 'value', value: 0 },
+          ],
+        },
+      ],
+
+      compiler(context) {
+        return {
+          type: BlockField.Text,
+          value: context.getField('value'),
+          placeholder: context.getField('placeholder'),
         }
       },
     },
   ]
 )
+
+export default { blocks, style }

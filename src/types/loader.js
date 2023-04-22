@@ -40,7 +40,7 @@ export class ScratchLoader {
 
       const { type } = blockData
       const factory = this.getFactory(type)
-      if (typeof factory !== 'function') {
+      if (!factory) {
         console.error('could not recreate block of type:', blockData?.type)
         continue
       }
@@ -57,6 +57,10 @@ export class ScratchLoader {
 
     for (const block of Object.values(this.blocksCache)) {
       this.scratch.addBlock(block)
+    }
+
+    for (const block of this.scratch.blocks) {
+      this.scratch.renderer.update(block, {})
     }
 
     this.blocksCache = {}
@@ -134,7 +138,7 @@ export class ScratchLoader {
     if (typeof type !== 'string') return
 
     const factory = Scratch.Blocks[type]
-    if (!factory) return null
+    if (typeof factory !== 'function') return null
 
     return factory
   }
