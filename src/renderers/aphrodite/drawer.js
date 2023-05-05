@@ -7,7 +7,6 @@ import { Drawer } from '../../types/block-drawer'
 import { Constraints } from './constraints'
 
 import { Block as DrawableBlock } from './drawables/block'
-import { Groups as DrawableGroups } from './drawables/groups'
 import { Input as DrawableInput } from './drawables/input'
 import { Field as DrawableField } from './drawables/field'
 
@@ -27,7 +26,6 @@ export class AphroditeDrawer extends Drawer {
     super(block, renderer)
 
     this.drawable = new DrawableBlock(this.block)
-    this.drawableGroups = new DrawableGroups(this.block)
     this.drawableInputs = new Map()
     this.drawableFields = new Map()
     this.path = ''
@@ -174,7 +172,7 @@ export class AphroditeDrawer extends Drawer {
   }
 
   getTop() {
-    let width = this.block.inputs[0].groupWidth
+    let width = this.block.width
     const top = []
 
     if (this.isCornerRounded(Corner.TL)) {
@@ -197,7 +195,10 @@ export class AphroditeDrawer extends Drawer {
 
   getBottom() {
     const lastInput = this.block.inputs[this.block.inputs.length - 1]
-    let width = lastInput.groupWidth
+    let width =
+      lastInput.type == BlockInput.Statement
+        ? Constraints.StatementClosureWidth
+        : this.block.width
 
     const bottom = []
     const corner = []
@@ -274,15 +275,13 @@ export class AphroditeDrawer extends Drawer {
   }
 
   getStatement(input) {
-    const closureWidth = Math.max(
-      input.groupWidth,
-      Constraints.StatementClosureWidth
-    )
-    const previousWidth =
-      this.block.inputs[input.index - 1]?.groupWidth || closureWidth
+    const isLast = input.index >= this.block.inputs.length - 1
+    const closureWidth = isLast
+      ? Constraints.StatementClosureWidth
+      : this.block.width
 
     const notchRemainder =
-      previousWidth -
+      this.block.width -
       Constraints.StackSocketOffset -
       Constraints.StackSocketWidth -
       Constraints.CornerArcDepth -
@@ -306,7 +305,7 @@ export class AphroditeDrawer extends Drawer {
       `h ${socketRemainder}`,
     ]
 
-    if (input.index == this.block.inputs.length - 1) {
+    if (isLast) {
       path.push(
         `v ${Constraints.StatementClosureHeight + Constraints.StackSocketDepth}`
       )
@@ -395,7 +394,7 @@ export class AphroditeDrawer extends Drawer {
 
       const offsetX =
         input.type == BlockInput.Value
-          ? input.groupWidth
+          ? this.block.width
           : Constraints.StatementBarWidth
 
       const inputPosition =
@@ -425,7 +424,6 @@ export class AphroditeDrawer extends Drawer {
       this.measureInput(input)
     }
 
-    this.drawableGroups.measure()
     this.drawable.measure()
   }
 

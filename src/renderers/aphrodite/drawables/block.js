@@ -14,11 +14,14 @@ export class Block extends Drawable {
 
   measureWidth() {
     if (!this.drawable.isInline) {
-      return (
-        this.drawable.inputs
-          .map((i) => i.groupWidth)
-          .sort((a, b) => b - a)[0] || 0
-      )
+      let widestInput = Constraints.MinInputWidth
+      for (const input of this.drawable.inputs) {
+        if (input.width < widestInput) continue
+
+        widestInput = input.width
+      }
+
+      return widestInput
     }
 
     let width = 0

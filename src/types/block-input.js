@@ -36,12 +36,6 @@ export class BlockInput extends DOMElement {
     this.height = 0
 
     this.index = block.inputs.length
-    this.group = 0
-
-    const prev = this.getPrev()
-    if (prev) {
-      this.group = prev.group
-    }
   }
 
   /** @returns {Boolean} */
@@ -137,7 +131,6 @@ export class BlockStatementInput extends BlockInput {
   constructor(block, name) {
     super(block, name, BlockInput.Statement)
     this.connection = new Connection(Connection.Statement, block, this)
-    this.group++
   }
 }
 
