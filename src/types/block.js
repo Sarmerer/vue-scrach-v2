@@ -1,12 +1,7 @@
 import { DOMElement } from './dom-element'
 import { Scratch } from './scratch'
 import { uuidv4 } from '../utils'
-import {
-  BlockDummyInput,
-  BlockInput,
-  BlockStatementInput,
-  BlockValueInput,
-} from './block-input'
+import { BlockInput, BlockStatementInput, BlockValueInput } from './block-input'
 import { BlockField } from '../types/block-field'
 import { Connection } from './connection'
 import { Point } from './point'
@@ -268,25 +263,19 @@ export class Block extends DOMElement {
     })
   }
 
+  onUpdate_() {
+    this.onUpdate(this)
+  }
+
+  onUpdate() {}
+
   /**
    * @param {Number} type
    * @param {String} name
    * @returns {BlockInput}
    */
   addInput(type, name = null) {
-    const types = {
-      [BlockInput.Dummy]: BlockDummyInput,
-      [BlockInput.Value]: BlockValueInput,
-      [BlockInput.Statement]: BlockStatementInput,
-    }
-
-    const typedClass = types[type]
-    if (!typedClass) {
-      console.error('unknown input type:', type)
-      return
-    }
-
-    const input = new typedClass(this, name, type)
+    const input = BlockInput.Typed(this, type, name)
     this.inputs.push(input)
     return input
   }
@@ -405,6 +394,10 @@ export class Block extends DOMElement {
       this.setTextColor(def.text)
     }
 
+    if (typeof def.updated == 'function') {
+      this.onUpdate = def.updated
+    }
+
     this.inputs = []
     for (const inputDef of def.inputs || []) {
       if (typeof inputDef.type !== 'number') {
@@ -435,9 +428,9 @@ export class Block extends DOMElement {
       y: this.position.y,
 
       inputs: this.inputs.map((i) => i.toJSON()),
-      outputConnection: this.outputConnection?.toJSON(),
-      previousConnection: this.previousConnection?.toJSON(),
-      nextConnection: this.nextConnection?.toJSON(),
+      outputConnection: this.outputConnection?.toJSON() || null,
+      previousConnection: this.previousConnection?.toJSON() || null,
+      nextConnection: this.nextConnection?.toJSON() || null,
     }
   }
 }

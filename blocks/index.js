@@ -1,3 +1,5 @@
+import { Scratch } from '../src/types/scratch'
+import { Block } from './types'
 import { CompilerContext } from '../src/types/generator/context'
 
 /**
@@ -11,6 +13,9 @@ import { CompilerContext } from '../src/types/generator/context'
  * @callback BlockCompiler
  * @param {CompilerContext} context
  * @returns {Array<String> | Object}
+ *
+ * @callback BlockUpdateHook
+ * @param {Block} block
  *
  * @typedef {Object} FieldDeclaration
  * @property {Number} FieldDeclaration.type
@@ -31,16 +36,17 @@ import { CompilerContext } from '../src/types/generator/context'
  * @property {Boolean} BlockDefinition.previous
  * @property {Boolean} BlockDefinition.next
  * @property {Array<String> | BlockCompiler} BlockDefinition.compiler
+ * @property {BlockUpdateHook} BlockDefinition.updated
  * @property {Array<InputDeclaration>} BlockDefinition.inputs
  *
+ * @typedef {Object} BlockDefinitionConfig
+ * @param {String} BlockDefinitionConfig.prefix
+ * @param {Object} BlockDefinitionConfig.style
+ * @param {string} BlockDefinitionConfig.style.background
+ * @param {string} BlockDefinitionConfig.style.text
  *
  * @param {Array<BlockDefinition>} blocksDefs
- * @param {Object} config
- * @param {String} config.prefix
- *
- * @param {Object} config.style
- * @param {string} config.style.background
- * @param {string} config.style.text
+ * @param {BlockDefinitionConfig} config
  *
  * @callback BlockDefinitionBakedCallback
  * @param {Block} block
@@ -51,23 +57,39 @@ import { CompilerContext } from '../src/types/generator/context'
 export function defineBlocks(config, blocksDefs) {
   const blocks = {}
   for (const blockDef of blocksDefs) {
-    if (!blockDef.type) {
-      console.warn('block definition must have a type, got:', blockDef)
-      continue
-    }
+    const factory = defineBlock(config, blockDef)
+    if (typeof factory !== 'function') continue
 
-    if (config?.style) {
-      extendBlockStyles(config.style, blockDef)
-    }
-
-    const prefix = config?.prefix || ''
-    blockDef.type = prefix ? `${prefix}:${blockDef.type}` : blockDef.type
-    blocks[blockDef.type] = function (block) {
-      block.applyDefinition(blockDef)
-    }
+    blocks[blockDef.type] = factory
   }
 
   return blocks
+}
+
+/**
+ * @param {BlockDefinitionConfig} config
+ * @param {BlockDefinition} blockDef
+ * @returns {function | null}
+ */
+export function defineBlock(config, blockDef) {
+  if (!blockDef.type) {
+    console.warn('block definition must have a type, got:', blockDef)
+    return null
+  }
+
+  if (config?.style) {
+    extendBlockStyles(config.style, blockDef)
+  }
+
+  const prefix = config?.prefix || ''
+  blockDef.type = prefix ? `${prefix}:${blockDef.type}` : blockDef.type
+  const factory = function (block) {
+    block.applyDefinition(blockDef)
+  }
+
+  Scratch.DeclareBlock(blockDef.type, factory)
+
+  return factory
 }
 
 function extendBlockStyles(styles, blockDef) {
@@ -80,4 +102,4 @@ function extendBlockStyles(styles, blockDef) {
   }
 }
 
-export default { defineBlocks }
+export default { defineBlocks, defineBlock }

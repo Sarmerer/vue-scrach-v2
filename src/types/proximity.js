@@ -8,6 +8,7 @@ export class Proximity {
     this.scratch = scratch
     this.connections = []
 
+    this.isActive = false
     this.activeBlock = null
     this.candidates = []
     this.candidate = null
@@ -16,6 +17,10 @@ export class Proximity {
   /** @param {Connection} connection */
   addConnection(connection) {
     this.connections.push(connection)
+
+    if (this.isActive) {
+      this.candidates = this.getCandidates(this.activeBlock)
+    }
   }
 
   /** @param {Connection} connection */
@@ -24,6 +29,10 @@ export class Proximity {
     if (index == -1) return
 
     this.connections.splice(index, 1)
+
+    if (this.isActive) {
+      this.candidates = this.getCandidates(this.activeBlock)
+    }
   }
 
   /** @param {Block} block */
@@ -57,10 +66,11 @@ export class Proximity {
 
   /** @param {Block} block */
   activate(block) {
-    if (this.activeBlock || !block) return
+    if (this.isActive || !block) return
 
     this.activeBlock = block
     this.candidates = this.getCandidates(this.activeBlock)
+    this.isActive = true
   }
 
   /** @param {Block} block */
@@ -95,6 +105,7 @@ export class Proximity {
     const candidate = this.candidate
     const activeBlock = this.activeBlock
 
+    this.isActive = false
     this.activeBlock = null
     this.setCandidate(null)
     this.candidates = []

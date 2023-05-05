@@ -92,8 +92,29 @@ export class BlockInput extends DOMElement {
     return {
       id: this.id,
       fields: this.fields.map((f) => f.toJSON()),
-      connection: this.connection?.toJSON(),
+      connection: this.connection?.toJSON() || null,
     }
+  }
+
+  /**
+   * @param {Block} block
+   * @param {Number} type
+   * @param {String} name
+   */
+  static Typed(block, type, name = null) {
+    const types = {
+      [BlockInput.Dummy]: BlockDummyInput,
+      [BlockInput.Value]: BlockValueInput,
+      [BlockInput.Statement]: BlockStatementInput,
+    }
+
+    const typedClass = types[type]
+    if (!typedClass) {
+      console.error('unknown input type:', type)
+      return null
+    }
+
+    return new typedClass(block, name)
   }
 }
 

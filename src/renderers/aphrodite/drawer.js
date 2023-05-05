@@ -96,6 +96,8 @@ export class AphroditeDrawer extends Drawer {
 
     this.positionBlockConnections()
     this.positionInputConnections()
+
+    this.block.onUpdate_()
   }
 
   /**
