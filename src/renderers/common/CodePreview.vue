@@ -19,7 +19,8 @@ export default {
 .scratch__code-preview {
   flex: 0 0 200px;
   padding: 10px;
-  background-color: ghostwhite;
+  background-color: white;
+  border-left: 1px solid #e7e8ea;
   font-size: 12px;
   margin: 0;
   white-space: break-spaces;

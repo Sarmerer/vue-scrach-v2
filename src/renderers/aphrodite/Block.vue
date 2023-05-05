@@ -59,9 +59,11 @@ export default {
     },
 
     fill() {
-      if (!this.block.isShadow) return this.block.colors.background
+      if (this.block.isShadow) {
+        return '#e7e8ea'
+      }
 
-      return 'lightgrey'
+      return this.block.colors.background
     },
 
     transform() {
@@ -112,7 +114,7 @@ export default {
 }
 
 .scratch__block > path {
-  stroke-width: 1;
+  stroke-width: 2;
   stroke-linecap: round;
   stroke-opacity: 60%;
   stroke: white;

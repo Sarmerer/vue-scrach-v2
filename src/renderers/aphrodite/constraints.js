@@ -25,6 +25,8 @@ export class Constraints {
   static CornerArcDepth = 8
 
   static FieldWidthTolerance = {
+    [BlockField.Text]: 12,
+    [BlockField.Number]: 12,
     [BlockField.Select]: 24,
     [BlockField.Variable]: 24,
   }

@@ -1,4 +1,3 @@
-import { BlockField } from '../../../types/block-field'
 import { Constraints } from '../constraints'
 import { Drawable } from './drawable'
 
@@ -23,7 +22,7 @@ export class Field extends Drawable {
 
     const pseudo = document.createElement('div')
     pseudo.appendChild(document.createTextNode(string))
-    pseudo.style.font = 'normal 12pt sans-serif'
+    pseudo.style.font = '14px "Noto Sans", sans-serif'
     pseudo.style.position = 'absolute'
     pseudo.style.visibility = 'hidden'
     pseudo.style.whiteSpace = 'nowrap'
