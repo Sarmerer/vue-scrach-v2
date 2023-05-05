@@ -275,14 +275,21 @@ export class AphroditeDrawer extends Drawer {
 
   getStatement(input) {
     const closureWidth = Math.max(input.groupWidth, Constraints.MinInputWidth)
-    let previousWidth =
+    const previousWidth =
       this.block.inputs[input.index - 1]?.groupWidth || closureWidth
 
-    previousWidth -= Constraints.CornerArcDepth
+    const remainder =
+      previousWidth -
+      Constraints.StackSocketOffset -
+      Constraints.StackSocketWidth -
+      Constraints.CornerArcDepth -
+      Constraints.StatementBarWidth
 
     const depth = Constraints.CornerArcDepth
     const path = [
-      `h ${Constraints.StatementBarWidth - previousWidth}`,
+      `h ${-remainder}`,
+      ...Constraints.GetStackNotch(),
+      // `h ${Constraints.StatementBarWidth - previousWidth}`,
       `a ${depth} ${depth} 0 0 0 ${-depth} ${depth}`,
       `v ${input.height - depth * 2}`,
       `a ${depth} ${depth} 0 0 0 ${depth} ${depth}`,

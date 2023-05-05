@@ -9,6 +9,8 @@ export class Constraints {
   static RowSocketHeight = 16
   static RowSocketOffset = 12
 
+  static SockedCurviness = 3
+
   static StatementBarWidth = 16
   static StatementClosureHeight = 16
   static EmptyInlineInputWidth = 16
@@ -32,7 +34,7 @@ export class Constraints {
   }
 
   static GetStackSocket() {
-    const curveWidth = 3
+    const curveWidth = Constraints.SockedCurviness
     return [
       `h ${Constraints.StackSocketOffset}`,
       `q 0 ${Constraints.StackSocketDepth} ${curveWidth} ${Constraints.StackSocketDepth}`,
@@ -42,7 +44,7 @@ export class Constraints {
   }
 
   static GetStackNotch() {
-    const curveWidth = 3
+    const curveWidth = Constraints.SockedCurviness
     return [
       `q 0 ${Constraints.StackSocketDepth} ${-curveWidth} ${
         Constraints.StackSocketDepth
@@ -54,7 +56,7 @@ export class Constraints {
   }
 
   static GetRowSocket() {
-    const curveHeight = 3
+    const curveHeight = Constraints.SockedCurviness
     return [
       `v ${Constraints.RowSocketOffset}`,
       `q ${-Constraints.RowSocketDepth} 0 ${-Constraints.RowSocketDepth} ${curveHeight}`,
@@ -64,7 +66,7 @@ export class Constraints {
   }
 
   static GetRowNotch() {
-    const curveHeight = 3
+    const curveHeight = Constraints.SockedCurviness
     return [
       `q ${-Constraints.RowSocketDepth} 0 ${-Constraints.RowSocketDepth} ${-curveHeight}`,
       `v ${curveHeight * 2 - Constraints.RowSocketHeight}`,
