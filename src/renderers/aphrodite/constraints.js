@@ -13,6 +13,7 @@ export class Constraints {
 
   static StatementBarWidth = 16
   static StatementClosureHeight = 16
+  static StatementClosureWidth = 60
   static EmptyInlineInputWidth = 16
 
   static MinInputHeight = 40

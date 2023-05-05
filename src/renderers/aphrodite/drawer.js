@@ -274,30 +274,44 @@ export class AphroditeDrawer extends Drawer {
   }
 
   getStatement(input) {
-    const closureWidth = Math.max(input.groupWidth, Constraints.MinInputWidth)
+    const closureWidth = Math.max(
+      input.groupWidth,
+      Constraints.StatementClosureWidth
+    )
     const previousWidth =
       this.block.inputs[input.index - 1]?.groupWidth || closureWidth
 
-    const remainder =
+    const notchRemainder =
       previousWidth -
       Constraints.StackSocketOffset -
       Constraints.StackSocketWidth -
       Constraints.CornerArcDepth -
       Constraints.StatementBarWidth
 
+    const socketRemainder =
+      closureWidth -
+      Constraints.CornerArcDepth -
+      Constraints.StatementBarWidth -
+      Constraints.StackSocketOffset -
+      Constraints.StackSocketWidth
+
     const depth = Constraints.CornerArcDepth
     const path = [
-      `h ${-remainder}`,
+      `h ${-notchRemainder}`,
       ...Constraints.GetStackNotch(),
-      // `h ${Constraints.StatementBarWidth - previousWidth}`,
       `a ${depth} ${depth} 0 0 0 ${-depth} ${depth}`,
-      `v ${input.height - depth * 2}`,
+      `v ${input.height - Constraints.StackSocketDepth - depth * 2}`,
       `a ${depth} ${depth} 0 0 0 ${depth} ${depth}`,
-      `h ${closureWidth - Constraints.StatementBarWidth - depth}`,
+      ...Constraints.GetStackSocket(),
+      `h ${socketRemainder}`,
     ]
 
     if (input.index == this.block.inputs.length - 1) {
-      path.push(`v ${Constraints.StatementClosureHeight}`)
+      path.push(
+        `v ${Constraints.StatementClosureHeight + Constraints.StackSocketDepth}`
+      )
+    } else {
+      path.push(`v ${Constraints.StackSocketDepth}`)
     }
 
     return path
@@ -340,21 +354,22 @@ export class AphroditeDrawer extends Drawer {
   }
 
   positionInputConnections(delta) {
-    const { x, y } = this.block.position
-
-    let inputOffsetTop = 0
-    let inputOffsetLeft = 0
-    for (const input of this.block.inputs) {
-      if (delta instanceof Point) {
+    if (delta instanceof Point) {
+      for (const input of this.block.inputs) {
         this.moveConnectionBy(input.connection, delta)
 
         for (const field of input.fields) {
           field.position.moveBy(delta.x, delta.y)
         }
-
-        continue
       }
 
+      return
+    }
+
+    const { x, y } = this.block.position
+    let inputOffsetTop = 0
+    let inputOffsetLeft = 0
+    for (const input of this.block.inputs) {
       let fieldOffsetLeft = 0
       for (const field of input.fields) {
         const fieldPosition = new Point(

@@ -40,38 +40,42 @@ export class Input extends Drawable {
   }
 
   measureHeight() {
-    let height = Constraints.MinInputHeight
     switch (this.drawable.type) {
       case BlockInput.Value:
-        height = 0
-        if (this.drawable.block.isInline) {
-          height += Constraints.FieldPaddingY * 2
-        }
-
-        const target = this.drawable.connection?.getTargetBlock()
-        if (!target) {
-          height = Constraints.MinInputHeight
-          break
-        }
-
-        height += target.height
-        break
+        return this.measureValueHeight()
       case BlockInput.Statement:
-        let curr = this.drawable?.connection?.getTargetBlock()
-        let stackHeight = 0
-        while (curr) {
-          stackHeight += curr.height
+        return this.measureStatementHeight()
+      default:
+        return Constraints.MinInputHeight
+    }
+  }
 
-          const next = curr.nextConnection?.getTargetBlock()
-          if (!next) break
-
-          curr = next
-        }
-
-        height = Math.max(Constraints.MinInputHeight, stackHeight)
-        break
+  measureValueHeight() {
+    let height = 0
+    if (this.drawable.block.isInline) {
+      height += Constraints.FieldPaddingY * 2
     }
 
-    return height
+    const target = this.drawable.connection?.getTargetBlock()
+    if (!target) {
+      return Constraints.MinInputHeight
+    }
+
+    return height + target.height
+  }
+
+  measureStatementHeight() {
+    let curr = this.drawable?.connection?.getTargetBlock()
+    let stackHeight = 0
+    while (curr) {
+      stackHeight += curr.height
+
+      const next = curr.nextConnection?.getTargetBlock()
+      if (!next) break
+
+      curr = next
+    }
+
+    return Math.max(Constraints.MinInputHeight, stackHeight)
   }
 }
