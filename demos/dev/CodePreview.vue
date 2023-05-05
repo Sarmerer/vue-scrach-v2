@@ -1,28 +1,46 @@
 <template>
-  <div class="scratch--code-preview">
+  <div class="scratch-wrapper">
+    <Toolbox v-bind="{ scratch, categories }" />
     <ScratchRenderer v-bind="{ scratch }" />
     <CodePreview v-bind="{ code }" />
   </div>
 </template>
 
 <script>
-import { Scratch } from '../../src/types/scratch'
-import toolbox from '../../toolboxes/scripting'
+import fields_ from '../../blocks/sql/fields'
+import functions_ from '../../blocks/sql/functions'
+import loops_ from '../../blocks/sql/loops'
+import queries_ from '../../blocks/sql/queries'
+import variables_ from '../../blocks/sql/variables'
 
+import mixins from './mixins'
 import ScratchRenderer from '../../src/index.vue'
+import Toolbox from '../../src/renderers/aphrodite/Toolbox.vue'
 import CodePreview from '../../src/renderers/common/CodePreview.vue'
 
 export default {
-  props: {
-    scratch: {
-      type: Scratch,
-      required: true,
-    },
+  mixins: [mixins],
+
+  components: {
+    Toolbox,
+    CodePreview,
+    ScratchRenderer,
   },
 
-  components: { ScratchRenderer, CodePreview },
-
   computed: {
+    categories() {
+      const modules = {
+        Data: queries_,
+        Fields: fields_,
+        Functions: functions_,
+        Loops: loops_,
+        Variables: variables_,
+      }
+
+      const categories = this.mapModulesToCategories(modules)
+      return categories
+    },
+
     code() {
       if (!this.scratch?.generator) return ''
 
@@ -30,29 +48,19 @@ export default {
     },
   },
 
-  created() {
-    this.scratch.setToolbox(toolbox)
-  },
-
-  mounted() {
-    const s = this.scratch.spawnBlock('strings:print', 100, 200)
-    const s1 = this.scratch.spawnBlock('strings:print', 100, 200)
-    s.nextConnection.connect(s1.previousConnection)
-
-    const l = this.scratch.spawnBlock('lists:new', 200, 200)
-    const l2 = this.scratch.spawnBlock('math:operation', 200, 200)
-    l.inputs[0].connection.connect(l2.outputConnection)
-
-    const p = this.scratch.spawnBlock('loops:repeat', 100, 100)
-    p.inputs[0].connection.connect(l.outputConnection)
-    p.inputs[1].connection.connect(s.previousConnection)
+  methods: {
+    onInit(scratch) {
+      this.$emit('init', scratch)
+    },
   },
 }
 </script>
 
-<style scoped>
-.scratch--code-preview {
+<style lang="scss" scoped>
+.scratch-wrapper {
   height: 100%;
+  width: 100%;
   display: flex;
+  border: 1px solid #e7e8ea;
 }
 </style>

@@ -1,8 +1,7 @@
 <template>
   <div class="scratch__workspace--aphrodite">
-    <Toolbox v-bind="{ toolbox }" />
     <Blocks
-      class="scratch__workspace__blocks--aphrodite"
+      class="scratch__workspace__blocks scratch__workspace__blocks--aphrodite"
       v-bind="{ scratch }"
     />
   </div>
@@ -11,8 +10,6 @@
 <script>
 import { Scratch } from '../../types/scratch'
 
-import CodePreview from '../common/CodePreview.vue'
-import Toolbox from './Toolbox.vue'
 import Blocks from './Blocks.vue'
 
 export default {
@@ -26,15 +23,7 @@ export default {
   },
 
   components: {
-    CodePreview,
-    Toolbox,
     Blocks,
-  },
-
-  computed: {
-    toolbox() {
-      return this.scratch.toolbox
-    },
   },
 }
 </script>

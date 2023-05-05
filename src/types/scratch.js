@@ -10,7 +10,6 @@ import { DionysusRenderer } from '../renderers/dionysus/renderer'
 import { AphroditeRenderer } from '../renderers/aphrodite/renderer'
 import { Point } from './point'
 import { CodeGenerator } from './generator/code'
-import { Toolbox } from './toolbox'
 
 export class Scratch extends DOMElement {
   static Blocks = {}
@@ -33,8 +32,6 @@ export class Scratch extends DOMElement {
     this.proximity = new Proximity(this)
 
     this.generator = new CodeGenerator(this)
-    this.toolbox = new Toolbox(this)
-
     this.renderer = new Scratch.Renderer(this)
     this.renderer.init()
   }
@@ -62,27 +59,6 @@ export class Scratch extends DOMElement {
     }
 
     this.generator = new generator(this)
-  }
-
-  /**
-   * @param {import('../../toolboxes').ToolboxDefinition} toolbox
-   */
-  setToolbox(toolbox) {
-    Scratch.Blocks = {}
-
-    if (toolbox.renderer) {
-      this.setRenderer(toolbox.renderer)
-    }
-
-    if (toolbox.generator) {
-      this.setGenerator(toolbox.generator)
-    }
-
-    Scratch.DeclareBlocksFromToolbox(toolbox)
-
-    this.toolbox.blocks = toolbox.blocks
-    this.toolbox.categories = toolbox.categories
-    this.toolbox.generator = toolbox.generator
   }
 
   /** @returns {Array<Block>} */
@@ -201,19 +177,6 @@ export class Scratch extends DOMElement {
       blocks: this.blocks.map((b) => b.toJSON()),
       variables: this.variables.map((v) => ({ name: v.name, value: v.value })),
     }
-  }
-
-  /**
-   *
-   * @param {import('../../toolboxes').ToolboxDefinition} toolbox
-   */
-  static DeclareBlocksFromToolbox(toolbox) {
-    const blocks = { ...toolbox.blocks }
-    for (const category of toolbox.categories) {
-      Object.assign(blocks, category.blocks)
-    }
-
-    Scratch.DeclareBlocks(blocks)
   }
 
   /**

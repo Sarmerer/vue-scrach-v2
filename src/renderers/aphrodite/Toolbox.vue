@@ -2,49 +2,56 @@
   <div class="scratch__toolbox">
     <div class="toolbox__categories">
       <div
-        v-for="category in toolbox.categories"
+        v-for="category in categories"
         :key="category.name"
         class="toolbox__category"
         @click="setActiveCategory(category)"
       >
-        <div
-          class="toolbox__category__name"
-          :style="{
-            backgroundColor: category.background,
-            color: category.text,
-          }"
-          v-text="category.name"
-        ></div>
-      </div>
-    </div>
+        <div class="toolbox__category__header">
+          <div class="toolbox__category__label">
+            <div
+              class="toolbox__category__marker"
+              :style="{ backgroundColor: category.background }"
+            ></div>
+            <label v-text="category.name"></label>
+          </div>
+          <i
+            v-if="activeCategoryName == category.name"
+            class="fas fa-angle-up"
+          ></i>
+          <i v-else class="fas fa-angle-down"></i>
+        </div>
 
-    <div v-if="scratch" class="toolbox__flyout">
-      <button
-        v-show="activeCategoryName == 'variables'"
-        class="scratch__add-variable"
-        @click="toolbox.addVariable"
-      >
-        Add variable
-      </button>
+        <div v-if="activeCategoryName == category.name" class="toolbox__flyout">
+          <button
+            v-show="activeCategoryName == 'Variables'"
+            class="scratch__add-variable"
+            @click="createVariable"
+          >
+            Add variable
+          </button>
 
-      <div class="toolbox__items">
-        <AphroditeBlocks :style="activeCategorySize" v-bind="{ scratch }">
-          <BlockRenderer
-            v-for="block in activeCategoryBlocks"
-            :key="block.id"
-            v-bind="{ block }"
-            @mousedown.native.stop="toolbox.spawnBlock($event, block)"
-          />
-        </AphroditeBlocks>
+          <div class="toolbox__items">
+            <AphroditeBlocks
+              :style="activeCategorySize"
+              v-bind="{ scratch: renderer }"
+            >
+              <BlockRenderer
+                v-for="block in rendererBlocks"
+                :key="block.id"
+                v-bind="{ block }"
+                @mousedown.native.stop="spawnBlock($event, block)"
+              />
+            </AphroditeBlocks>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { Block } from '../../types/block'
 import { Scratch } from '../../types/scratch'
-import { Toolbox } from '../../types/toolbox'
 
 import BlockRenderer from './Block.vue'
 
@@ -53,8 +60,13 @@ const BLOCKS_MARGIN_LEFT = 50
 
 export default {
   props: {
-    toolbox: {
-      type: Toolbox,
+    scratch: {
+      type: Scratch,
+      requited: true,
+    },
+
+    categories: {
+      type: Array,
       required: true,
     },
   },
@@ -66,28 +78,14 @@ export default {
 
   data() {
     return {
-      scratch: null,
+      renderer: null,
       activeCategory: null,
     }
   },
 
   computed: {
-    activeCategoryBlocks() {
-      if (!this.activeCategory?.blocks) {
-        return []
-      }
-
-      let offsetTop = BLOCKS_MARGIN_TOP
-      return Object.values(this.activeCategory.blocks).map((factory) => {
-        const block = new Block(this.scratch)
-        factory(block)
-        block.position.moveTo(BLOCKS_MARGIN_TOP, offsetTop)
-        block.freeze()
-        this.scratch.addBlock(block)
-        offsetTop += block.height + BLOCKS_MARGIN_TOP
-
-        return block
-      })
+    rendererBlocks() {
+      return this.renderer?.blocks || []
     },
 
     activeCategoryName() {
@@ -95,10 +93,10 @@ export default {
     },
 
     activeCategorySize() {
-      const blocks = this.activeCategoryBlocks
-      const width = this.toolbox.getWidestBlock(blocks) + BLOCKS_MARGIN_LEFT
+      const blocks = this.renderer.blocks
+      const width = this.getWidestBlock(blocks) + BLOCKS_MARGIN_LEFT
       const height =
-        this.toolbox.getTotalBlocksHeight(blocks) +
+        this.getTotalBlocksHeight(blocks) +
         BLOCKS_MARGIN_TOP * (blocks.length + 1)
 
       return { width: `${width}px`, height: `${height}px` }
@@ -112,13 +110,52 @@ export default {
       }
 
       if (category) {
-        this.scratch = new Scratch()
-        this.scratch.setToolbox(this.toolbox)
+        this.initCategory(category)
       } else {
-        this.scratch = null
+        this.renderer = null
       }
 
       this.activeCategory = category
+    },
+
+    initCategory(category) {
+      const renderer = new Scratch()
+      const blocks = Array.isArray(category.blocks) ? category.blocks : []
+      let offsetTop = BLOCKS_MARGIN_TOP
+
+      for (const type of blocks) {
+        const block = renderer.spawnBlock(type, BLOCKS_MARGIN_TOP, offsetTop)
+        if (!block) continue
+
+        block.freeze()
+        offsetTop += block.height + BLOCKS_MARGIN_TOP
+      }
+
+      this.renderer = renderer
+    },
+
+    createVariable() {
+      const name = prompt('Enter a name for a variable')
+      if (!name?.length) return
+
+      this.scratch.addVariable(name)
+    },
+
+    spawnBlock(event, block) {
+      event = this.scratch.normalizeMouseEvent(event)
+      block = this.scratch.spawnBlock(block.type, event.clientX, event.clientY)
+
+      block.dragStart(event)
+    },
+
+    getWidestBlock(blocks) {
+      return blocks.reduce((acc, block) => {
+        return acc > block.width ? acc : block.width
+      }, 0)
+    },
+
+    getTotalBlocksHeight(blocks) {
+      return blocks.reduce((acc, block) => acc + block.height, 0)
     },
   },
 }
@@ -133,13 +170,41 @@ export default {
 
 .toolbox__categories {
   height: 100%;
-  border-right: 1px solid grey;
+  border-right: 1px solid #e7e8ea;
+  overflow-y: scroll;
 }
 
-.toolbox__category__name {
-  user-select: none;
-  background-color: lightgrey;
-  padding: 5px 10px;
+.toolbox__category {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid #e7e8ea;
+}
+
+.toolbox__category__header {
+  height: 46px;
+  min-width: 260px;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.toolbox__category__label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  font-family: 'Noto Sans';
+  font-weight: 600;
+  font-size: 16px;
+  color: #11142d;
+}
+
+.toolbox__category__marker {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
 }
 
 .scratch__add-variable {
@@ -151,6 +216,7 @@ export default {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  border-right: 1px solid grey;
+  border-right: 1px solid #e7e8ea;
+  background-color: white;
 }
 </style>
