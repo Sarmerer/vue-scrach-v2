@@ -1,5 +1,5 @@
-import { BlockValueInput } from '../src/types/block-input'
-import { Block, BlockInput } from './types'
+import { BlockValueInput } from '../../src/types/block-input'
+import { Block, BlockInput } from '../types'
 
 /**
  * @param {Number} from

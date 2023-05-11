@@ -1,9 +1,21 @@
 import { defineBlocks } from '..'
-import { dynamicValueInputs } from '../helpers'
+import { blockPlaceholder } from '../helpers/block-placeholder'
 import { BlockField, BlockInput } from '../types'
 import { tablesProvider } from './helpers'
 
 export const style = { background: '#5297fe', text: 'white' }
+
+const blockPlaceholderDefinition = {
+  type: 'fields_placeholder',
+  previous: true,
+  next: true,
+  inputs: [
+    {
+      type: BlockInput.Dummy,
+      fields: [{ type: BlockField.Label, value: 'Fields' }],
+    },
+  ],
+}
 
 export const blocks = defineBlocks(
   {
@@ -16,10 +28,9 @@ export const blocks = defineBlocks(
       inputs: [
         {
           type: BlockInput.Dummy,
-          fields: [{ type: BlockField.Label, value: 'Insert Fields' }],
+          fields: [{ type: BlockField.Label, value: 'Insert' }],
         },
-        { name: 'field0', type: BlockInput.Value },
-        { name: 'field1', type: BlockInput.Value },
+        { name: 'fields', type: BlockInput.Statement },
         {
           type: BlockInput.Dummy,
           fields: [
@@ -34,10 +45,8 @@ export const blocks = defineBlocks(
         },
       ],
 
-      updated: dynamicValueInputs(1, -2),
-
       compiler(context) {
-        const rows = Object.values(context.inputs)
+        const rows = (context.inputs.fields || '').split('\n')
         const table = context.getField('table') || ''
 
         return ['INSERT {', rows.join(',\n'), '}', `INTO ${table}`]

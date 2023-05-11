@@ -38,6 +38,8 @@ import { CompilerContext } from '../src/types/generator/context'
  * @property {Array<String> | BlockCompiler} BlockDefinition.compiler
  * @property {BlockUpdateHook} BlockDefinition.updated
  * @property {Array<InputDeclaration>} BlockDefinition.inputs
+ * @property {String} BlockDefinition.background
+ * @property {String} BlockDefinition.text
  *
  * @typedef {Object} BlockDefinitionConfig
  * @param {String} BlockDefinitionConfig.prefix

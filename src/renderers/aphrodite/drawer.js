@@ -87,13 +87,13 @@ export class AphroditeDrawer extends Drawer {
     this.updateRelativePosition()
     this.measure()
 
+    this.positionBlockConnections()
+    this.positionInputConnections()
+
     const path = ['m 0 0', ...this.getTop()]
     path.push(...this.getInputs())
     path.push(...this.getBottom(), ...this.getOutput(), 'z')
     this.path = path.join(' ')
-
-    this.positionBlockConnections()
-    this.positionInputConnections()
 
     this.block.onUpdate_()
   }
