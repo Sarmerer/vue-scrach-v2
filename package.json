@@ -5,7 +5,7 @@
     "dev": "vite demos/dev/",
     "sql": "vite demos/sql/",
     "generator": "vite demos/generator/",
-    "build": "vite build --config demos/dev",
+    "build": "vite build demos/dev",
     "serve": "vite preview"
   },
   "devDependencies": {
